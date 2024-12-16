@@ -7,7 +7,7 @@
 ///        and TIM_INT_SRC_COUNT is the number of interrupt sources (4 match registers and
 ///        2 capture channels, although the latter are not implemented in this library).
 /// @note This array is updated by TIMER_SetInterruptHandler() and TIMER_UnsetInterruptHandler().
-static TIMER_InterruptHandler TIMER_Handlers[TIMERS_COUNT * TIM_INT_SRC_COUNT] = {NULL};
+_PRIVATE TIMER_InterruptHandler TIMER_Handlers[TIMERS_COUNT * TIM_INT_SRC_COUNT] = {NULL};
 
 // PRIVATE FUNCTIONS
 
@@ -17,7 +17,7 @@ static TIMER_InterruptHandler TIMER_Handlers[TIMERS_COUNT * TIM_INT_SRC_COUNT] =
 /// @note IR has bits [0..3] for the 4 MR available, and 2 bits [4, 5] for the 2 capture
 ///       channels, that have NOT been implemented in this library yet. Hence, although
 ///       they've been added to the enum for completeness, they won't work (return false).
-static bool who_did_interrupt(u8 which, u8 source)
+_PRIVATE bool who_did_interrupt(u8 which, u8 source)
 {
     switch (which)
     {
@@ -36,7 +36,7 @@ static bool who_did_interrupt(u8 which, u8 source)
 
 /// @brief Clears the interrupt flag for the specified source.
 /// @note IR expects a 1 to clear the interrupt flag.
-static void clear_interrupt(u8 which, u8 source)
+_PRIVATE void clear_interrupt(u8 which, u8 source)
 {
     switch (which)
     {

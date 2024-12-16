@@ -10,12 +10,19 @@
 _DECL_EXTERNALLY BUTTON_Interrupt_Handler BUTTON_Handlers[];
 
 /// @brief Flag to indicate if the button is currently pressed. Used for debouncing.
-_USED_EXTERNALLY u8 eint0_down = false, eint1_down = false, eint2_down = false;
+_USED_EXTERNALLY u8 eint0_down = 0, eint1_down = 0, eint2_down = 0;
 
 /// @brief Flag to indicate if the debouncer is currently active. Set in debouncer.c.
 _DECL_EXTERNALLY bool debouncer_on;
 
-// INTERRUPT HANDLERS
+// PRIVATE FUNCTIONS
+
+_PRIVATE inline void reset_deb(void)
+{
+    LPC_RIT->RICOUNTER = 0;
+}
+
+// INTERRUPT HANDLER
 
 _INT_HANDLER RIT_IRQHandler(void)
 {
@@ -78,4 +85,7 @@ _INT_HANDLER RIT_IRQHandler(void)
             SET_BIT(LPC_PINCON->PINSEL4, 24); // Set P2.12 back to 01 (EINT2)
         }
     }
+
+    reset_deb();
+    SET_BIT(LPC_RIT->RICTRL, 0); // Clear interrupt flag
 }

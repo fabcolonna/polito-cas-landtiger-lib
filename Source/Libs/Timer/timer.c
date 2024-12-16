@@ -1,12 +1,11 @@
 #include "timer.h"
 #include "LPC17xx.h"
 
-#include <stdbool.h>
 #include <stdlib.h>
 
 // PRIVATE FUNCTIONS for MATCH REGISTERS
 
-static void set_match_reg(LPC_TIM_TypeDef *const timer, const TIMER_MatchReg match_reg)
+_PRIVATE void set_match_reg(LPC_TIM_TypeDef *const timer, const TIMER_MatchReg match_reg)
 {
     switch (match_reg.which)
     {
@@ -27,7 +26,7 @@ static void set_match_reg(LPC_TIM_TypeDef *const timer, const TIMER_MatchReg mat
     timer->MCR |= match_reg.actions << (3 * match_reg.which);
 }
 
-static void unset_match_reg(LPC_TIM_TypeDef *const timer, const TIMER_MatchReg match_reg)
+_PRIVATE void unset_match_reg(LPC_TIM_TypeDef *const timer, const TIMER_MatchReg match_reg)
 {
     switch (match_reg.which)
     {
@@ -48,7 +47,7 @@ static void unset_match_reg(LPC_TIM_TypeDef *const timer, const TIMER_MatchReg m
     timer->MCR &= ~(match_reg.actions << (3 * match_reg.which));
 }
 
-static void clear_match_regs(LPC_TIM_TypeDef *const timer)
+_PRIVATE void clear_match_regs(LPC_TIM_TypeDef *const timer)
 {
     timer->MR0 = 0;
     timer->MR1 = 0;
@@ -227,6 +226,23 @@ void TIMER_Disable(TIMER timer)
         CLR_BIT(LPC_TIM3->TCR, 0);
         break;
     }
+}
+
+bool TIMER_IsEnabled(TIMER timer)
+{
+    switch (timer.which)
+    {
+    case 0:
+        return IS_BIT_SET(LPC_TIM0->TCR, 0);
+    case 1:
+        return IS_BIT_SET(LPC_TIM1->TCR, 0);
+    case 2:
+        return IS_BIT_SET(LPC_TIM2->TCR, 0);
+    case 3:
+        return IS_BIT_SET(LPC_TIM3->TCR, 0);
+    }
+		
+		return false;
 }
 
 void TIMER_Reset(TIMER timer)

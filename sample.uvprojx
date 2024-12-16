@@ -545,45 +545,33 @@
               <FileType>5</FileType>
               <FilePath>.\Source\Libs\Utils\utils.h</FilePath>
             </File>
-            <File>
-              <FileName>config.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\Source\Libs\Utils\config.h</FilePath>
-            </File>
-          </Files>
-        </Group>
-        <Group>
-          <GroupName>Startup</GroupName>
-          <Files>
-            <File>
-              <FileName>startup_LPC17xx.s</FileName>
-              <FileType>2</FileType>
-              <FilePath>.\Source\Startup\startup_LPC17xx.s</FilePath>
-            </File>
-            <File>
-              <FileName>system_LPC17xx.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\Source\Startup\system_LPC17xx.c</FilePath>
-            </File>
           </Files>
         </Group>
         <Group>
           <GroupName>SysTick</GroupName>
           <Files>
             <File>
-              <FileName>systick.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\Source\Libs\SysTick\systick.h</FilePath>
+              <FileName>delay.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Source\Libs\SysTick\delay.c</FilePath>
             </File>
             <File>
-              <FileName>systick.s</FileName>
+              <FileName>delay.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Source\Libs\SysTick\delay.h</FilePath>
+            </File>
+            <File>
+              <FileName>delay.s</FileName>
               <FileType>2</FileType>
-              <FilePath>.\Source\Libs\SysTick\systick.s</FilePath>
+              <FilePath>.\Source\Libs\SysTick\delay.s</FilePath>
             </File>
           </Files>
         </Group>
         <Group>
           <GroupName>::CMSIS</GroupName>
+        </Group>
+        <Group>
+          <GroupName>::Device</GroupName>
         </Group>
       </Groups>
     </Target>
@@ -1126,45 +1114,33 @@
               <FileType>5</FileType>
               <FilePath>.\Source\Libs\Utils\utils.h</FilePath>
             </File>
-            <File>
-              <FileName>config.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\Source\Libs\Utils\config.h</FilePath>
-            </File>
-          </Files>
-        </Group>
-        <Group>
-          <GroupName>Startup</GroupName>
-          <Files>
-            <File>
-              <FileName>startup_LPC17xx.s</FileName>
-              <FileType>2</FileType>
-              <FilePath>.\Source\Startup\startup_LPC17xx.s</FilePath>
-            </File>
-            <File>
-              <FileName>system_LPC17xx.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\Source\Startup\system_LPC17xx.c</FilePath>
-            </File>
           </Files>
         </Group>
         <Group>
           <GroupName>SysTick</GroupName>
           <Files>
             <File>
-              <FileName>systick.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\Source\Libs\SysTick\systick.h</FilePath>
+              <FileName>delay.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Source\Libs\SysTick\delay.c</FilePath>
             </File>
             <File>
-              <FileName>systick.s</FileName>
+              <FileName>delay.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Source\Libs\SysTick\delay.h</FilePath>
+            </File>
+            <File>
+              <FileName>delay.s</FileName>
               <FileType>2</FileType>
-              <FilePath>.\Source\Libs\SysTick\systick.s</FilePath>
+              <FilePath>.\Source\Libs\SysTick\delay.s</FilePath>
             </File>
           </Files>
         </Group>
         <Group>
           <GroupName>::CMSIS</GroupName>
+        </Group>
+        <Group>
+          <GroupName>::Device</GroupName>
         </Group>
       </Groups>
     </Target>
@@ -1180,8 +1156,43 @@
           <targetInfo name="SW_Debug"/>
         </targetInfos>
       </component>
+      <component Cclass="Device" Cgroup="Startup" Cvendor="Keil" Cversion="1.0.0" condition="LPC17xx CMSIS Device ARMCC">
+        <package name="LPC1700_DFP" schemaVersion="1.7.28" url="https://www.keil.com/pack/" vendor="Keil" version="2.7.2"/>
+        <targetInfos>
+          <targetInfo name="LandTiger_LPC1768 (release)"/>
+          <targetInfo name="SW_Debug"/>
+        </targetInfos>
+      </component>
     </components>
-    <files/>
+    <files>
+      <file attr="config" category="header" condition="LPC1700 CMSIS Device" name="RTE_Driver\Config\RTE_Device.h" version="2.4.1">
+        <instance index="0">RTE\Device\LPC1768\RTE_Device.h</instance>
+        <component Cclass="Device" Cgroup="Startup" Cvendor="Keil" Cversion="1.0.0" condition="LPC17xx CMSIS Device ARMCC"/>
+        <package name="LPC1700_DFP" schemaVersion="1.7.28" url="https://www.keil.com/pack/" vendor="Keil" version="2.7.2"/>
+        <targetInfos>
+          <targetInfo name="LandTiger_LPC1768 (release)"/>
+          <targetInfo name="SW_Debug"/>
+        </targetInfos>
+      </file>
+      <file attr="config" category="source" condition="LPC176x" name="Device\Source\ARM\startup_LPC17xx.s" version="1.0.0">
+        <instance index="0">RTE\Device\LPC1768\startup_LPC17xx.s</instance>
+        <component Cclass="Device" Cgroup="Startup" Cvendor="Keil" Cversion="1.0.0" condition="LPC17xx CMSIS Device ARMCC"/>
+        <package name="LPC1700_DFP" schemaVersion="1.7.28" url="https://www.keil.com/pack/" vendor="Keil" version="2.7.2"/>
+        <targetInfos>
+          <targetInfo name="LandTiger_LPC1768 (release)"/>
+          <targetInfo name="SW_Debug"/>
+        </targetInfos>
+      </file>
+      <file attr="config" category="source" condition="LPC176x" name="Device\Source\system_LPC17xx.c" version="1.0.0">
+        <instance index="0">RTE\Device\LPC1768\system_LPC17xx.c</instance>
+        <component Cclass="Device" Cgroup="Startup" Cvendor="Keil" Cversion="1.0.0" condition="LPC17xx CMSIS Device ARMCC"/>
+        <package name="LPC1700_DFP" schemaVersion="1.7.28" url="https://www.keil.com/pack/" vendor="Keil" version="2.7.2"/>
+        <targetInfos>
+          <targetInfo name="LandTiger_LPC1768 (release)"/>
+          <targetInfo name="SW_Debug"/>
+        </targetInfos>
+      </file>
+    </files>
   </RTE>
 
   <LayerInfo>

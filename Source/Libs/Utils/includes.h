@@ -9,12 +9,11 @@
 #include "debouncer.h"
 #include "led.h"
 #include "power.h"
+#include "delay.h"
 #include "timer.h"
 
 #ifdef SIMULATOR
 extern uint8_t ScaleFlag; // Needs to be visible in order to become visible by the simulator
 #endif
-
-extern void SystemInit();
 
 #endif

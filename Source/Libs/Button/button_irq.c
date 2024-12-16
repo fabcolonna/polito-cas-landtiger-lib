@@ -1,6 +1,7 @@
 #include "LPC17xx.h"
 #include "button.h"
 
+#include <stdbool.h>
 #include <stdlib.h>
 
 /// @brief Array of function pointers to the interrupt handlers for each BUTTON peripheral.

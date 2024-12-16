@@ -22,16 +22,10 @@ void BUTTON_Init(u8 eint0_priority, u8 eint1_priority, u8 eint2_priority)
 
     if (!IS_DEF_PRIORITY(eint0_priority) && IS_BETWEEN_EQ(eint0_priority, 0, 15))
         NVIC_SetPriority(RIT_IRQn, eint0_priority);
-    else
-        NVIC_SetPriority(EINT0_IRQn, 0);
 
     if (!IS_DEF_PRIORITY(eint1_priority) && IS_BETWEEN_EQ(eint1_priority, 0, 15))
         NVIC_SetPriority(RIT_IRQn, eint1_priority);
-    else
-        NVIC_SetPriority(EINT1_IRQn, 0);
 
     if (!IS_DEF_PRIORITY(eint2_priority) && IS_BETWEEN_EQ(eint2_priority, 0, 15))
         NVIC_SetPriority(RIT_IRQn, eint2_priority);
-    else
-        NVIC_SetPriority(EINT2_IRQn, 0);
 }

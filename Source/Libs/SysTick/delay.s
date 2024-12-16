@@ -12,7 +12,7 @@ Tick_Init   PROC
             PUSH    {R0, R1, LR}
 
             LDR     R0, =Tick_Ctrl
-            MOV    R1, #0x4             ; 0b00000110: Use Processor Clock, use COUNTFLAG for detecting 0
+            MOV     R1, #0x4            ; 0b00000110: Use Processor Clock, use COUNTFLAG for detecting 0
             STR     R1, [R0]            ; Writeback
 
             LDR     R0, =Tick_Load
@@ -28,41 +28,27 @@ Tick_Init   PROC
 
 Tick_Delay  PROC
             EXPORT  Tick_Delay
-			IMPORT  __aeabi_uidiv
-            PUSH    {R0-R2, R8, LR}
+            PUSH    {R0-R2, LR}
 
             ; Delay is in ms (32 bit) is in R0
-
-            ; Since we don't know the clock frequency, we can't calculate the number of ticks
-            ; but we know that SysTick is calibrated to timer intervals of 10ms for OS use.
-            ; Wew can read the TENMS register in the CALIB (bits 23:0) to get the number of
-            ; ticks for 10ms. We can then use them to calculate the # of ticks for the delay.
-			MOV		R8, R0				; Moving R0 in R8
-			
-            LDR     R2, =Tick_Calib
-            LDR     R0, [R2]
+            LDR     R1, =Tick_Load
             AND     R0, #0x00FFFFFF     ; Mask out the upper 8 bits (reserved)
-			MOV		R1, #10				; Divide by 10, arg in R1
-			BL		__aeabi_uidiv		; Division, result in R0
-			MUL		R0, R8				; Total number of ticks in R0
-
-            LDR     R2, =Tick_Load
-            AND     R0, #0x00FFFFFF     ; Mask out the upper 8 bits (reserved)
-            STR     R0, [R2]            ; Write the value to the LOAD register
+            STR     R0, [R1]            ; Write the value to the LOAD register
 
             LDR     R2, =Tick_Ctrl
             ORR     R1, #0x1            ; 0b00000001: Enable the counter
             STR     R1, [R2]            ; Writeback
 
             ; Wait for the COUNTFLAG to be set
-Delay_Loop  TST     R2, #0x10000
+Delay_Loop  LDR     R1, [R2]            ; Reading the control register
+            TST     R1, #0x10000
             BEQ     Delay_Loop          ; If Z=1, & = 0, meaning COUNTFLAG is not set
 
             ; Disabling counter
             AND     R1, #0xFFFFFFFE     ; 0b11111110: Disable the counter
             STR     R1, [R2]            ; Writeback
 
-            POP     {R0-R2, R8, PC}
+            POP     {R0-R2, PC}
             ENDP
 
             END

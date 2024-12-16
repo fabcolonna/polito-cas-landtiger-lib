@@ -7,8 +7,17 @@ typedef uint32_t u32;
 typedef uint16_t u16;
 typedef uint8_t u8;
 
+typedef enum
+{
+    INT_PRIO_MAX = 0,
+    INT_PRIO_MIN = 15,
+    INT_PRIO_DEF = -1
+} INT_Priority;
+
 #define IS_BETWEEN_EQ(value, low, hi) ((value) >= (low) && (value) <= (hi))
 #define IS_BETWEEN(value, low, hi) ((value) > (low) && (value) < (hi))
+
+#define IS_BIT_SET(reg, bit) (((reg) & (1 << bit)) == 1)
 
 #define SET_BIT(reg, bit) (reg |= (1 << bit))
 #define CLR_BIT(reg, bit) (reg &= ~(1 << bit))
@@ -18,6 +27,7 @@ typedef uint8_t u8;
 
 #define _USED_EXTERNALLY volatile
 #define _DECL_EXTERNALLY extern
+#define _PRIVATE static
 
 #define _INT_HANDLER extern void
 
@@ -25,10 +35,9 @@ typedef uint8_t u8;
 #define _OUT
 #define _IN const
 
-#define DEF_PRIORITY -1
 #define NO_PRESCALER 0
 
-#define IS_DEF_PRIORITY(prio) (((int)prio) <= DEF_PRIORITY)
+#define IS_DEF_PRIORITY(prio) (((int)prio) <= INT_PRIO_DEF)
 #define IS_NO_PRESCALER(presc) (((int)presc) <= NO_PRESCALER)
 
 #endif

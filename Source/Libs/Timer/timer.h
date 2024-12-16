@@ -3,14 +3,15 @@
 
 #include "timer_types.h"
 #include "utils.h"
+#include <stdbool.h>
 #include <stdint.h>
 
 /// @brief Initializes a TIMER peripheral.
 /// @param timer [OUTPUT] Configured TIMER peripheral
 /// @param which Which timer to initialize (0-3)
 /// @param prescaler Prescaler value. If set to NO_PRESCALER, prescaler won't be used.
-/// @param int_priority Timer interrupt priority (0 (highest), 15 (lowest)). If set to DEF_PRIORITY, the default
-/// priority is set.
+/// @param int_priority Timer interrupt priority (0 (highest), 15 (lowest)). If set to
+///                     INT_PRIO_DEF, the default priority is set.
 void TIMER_Init(_OUT TIMER *timer, u8 which, u32 prescaler, u8 int_priority);
 
 /// @brief Deconfigures a TIMER peripheral (also match registers).
@@ -27,6 +28,8 @@ void TIMER_UnsetMatch(TIMER timer, TIMER_MatchReg match_reg);
 
 void TIMER_Enable(TIMER timer);
 void TIMER_Disable(TIMER timer);
+
+bool TIMER_IsEnabled(TIMER timer);
 
 /// @brief Resets a TIMER peripheral without deconfiguring it.
 /// @note In order to use the TIMER peripheral again, it must be enabled.

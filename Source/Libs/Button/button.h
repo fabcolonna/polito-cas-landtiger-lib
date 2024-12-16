@@ -8,7 +8,7 @@
 /// @param eint0_priority Interrupt priority (0 (highest), 15 (lowest)) for EINT0.
 /// @param eint1_priority Interrupt priority for EINT1.
 /// @param eint2_priority Interrupt priority for EINT2.
-/// @note If DEF_PRIORITY is passed to the priorities, the default priority will be used.
+/// @note If INT_DEF_PRIO is passed to the priorities, the default priority will be used.
 void BUTTON_Init(u8 eint0_priority, u8 eint1_priority, u8 eint2_priority);
 
 // INTERRUPTS

@@ -5,6 +5,7 @@
         "includes.h": "c",
         "lpc17xx.h": "c",
         "core_cm3.h": "c",
-        "cmsis_compiler.h": "c"
+        "cmsis_compiler.h": "c",
+        "system_lpc17xx.h": "c"
     }
 }

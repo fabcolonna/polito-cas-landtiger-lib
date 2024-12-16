@@ -25,10 +25,11 @@ void LED_Off(u8 which)
 
 void LED_Output(u8 value)
 {
+    LED_Off(LED_ALL);
     LED_On(value);
 }
 
 void LED_Clear(void)
 {
-		LPC_GPIO2->FIOCLR = LED_ALL;
+    LPC_GPIO2->FIOCLR = LED_ALL;
 }
