@@ -1,0 +1,20 @@
+{
+    "configurations": [
+        {
+            "name": "ARM",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "${workspaceFolder}/Source/**",
+                "/Volumes/[C] Windows 11/Program Files/Arm/Packs/Keil/LPC1700_DFP/2.7.2/Device/Include/**", // on macOS with Parallels VM
+                "${workspaceFolder}/Source/CMSIS_core/**"
+            ],
+            "defines": [],
+            "macFrameworkPath": [
+                "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/System/Library/Frameworks"
+            ],
+            "cStandard": "c11",
+            "intelliSenseMode": "clang-arm64"
+        }
+    ],
+    "version": 4
+}
