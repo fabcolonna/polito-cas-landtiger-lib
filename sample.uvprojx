@@ -413,22 +413,22 @@
           </Files>
         </Group>
         <Group>
-          <GroupName>DEB</GroupName>
+          <GroupName>RIT</GroupName>
           <Files>
             <File>
-              <FileName>debouncer.c</FileName>
+              <FileName>rit.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\Source\Libs\Debouncer\debouncer.c</FilePath>
+              <FilePath>.\Source\Libs\RIT\rit.c</FilePath>
             </File>
             <File>
-              <FileName>debouncer.h</FileName>
+              <FileName>rit.h</FileName>
               <FileType>5</FileType>
-              <FilePath>.\Source\Libs\Debouncer\debouncer.h</FilePath>
+              <FilePath>.\Source\Libs\RIT\rit.h</FilePath>
             </File>
             <File>
-              <FileName>debouncer_irq.c</FileName>
+              <FileName>rit_irq.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\Source\Libs\Debouncer\debouncer_irq.c</FilePath>
+              <FilePath>.\Source\Libs\RIT\rit_irq.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -564,6 +564,26 @@
               <FileName>delay.s</FileName>
               <FileType>2</FileType>
               <FilePath>.\Source\Libs\SysTick\delay.s</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>Joystick</GroupName>
+          <Files>
+            <File>
+              <FileName>joystick.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Source\Libs\Joystick\joystick.c</FilePath>
+            </File>
+            <File>
+              <FileName>joystick.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Source\Libs\Joystick\joystick.h</FilePath>
+            </File>
+            <File>
+              <FileName>joystick_types.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Source\Libs\Joystick\joystick_types.h</FilePath>
             </File>
           </Files>
         </Group>
@@ -910,7 +930,7 @@
               <MiscControls></MiscControls>
               <Define>SIMULATOR</Define>
               <Undefine></Undefine>
-              <IncludePath>.\Source\Libs\Button;.\Source\CMSIS_core;.\Source;.\Source\Libs\Debouncer;.\Source\Libs\Timer;.\Source\Libs\LED;.\Source\Libs\Power;.\Source\Libs\Utils;.\Source\Program;.\Source\Startup;.\Source\Libs\SysTick</IncludePath>
+              <IncludePath>.\Source\Libs\Button;.\Source\CMSIS_core;.\Source;.\Source\Libs\RIT;.\Source\Libs\Timer;.\Source\Libs\LED;.\Source\Libs\Power;.\Source\Libs\Utils;.\Source\Program;.\Source\Startup;.\Source\Libs\SysTick;.\Source\Libs\Utils\DynamicArray;.\Source\Libs\Joystick</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -982,22 +1002,22 @@
           </Files>
         </Group>
         <Group>
-          <GroupName>DEB</GroupName>
+          <GroupName>RIT</GroupName>
           <Files>
             <File>
-              <FileName>debouncer.c</FileName>
+              <FileName>rit.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\Source\Libs\Debouncer\debouncer.c</FilePath>
+              <FilePath>.\Source\Libs\RIT\rit.c</FilePath>
             </File>
             <File>
-              <FileName>debouncer.h</FileName>
+              <FileName>rit.h</FileName>
               <FileType>5</FileType>
-              <FilePath>.\Source\Libs\Debouncer\debouncer.h</FilePath>
+              <FilePath>.\Source\Libs\RIT\rit.h</FilePath>
             </File>
             <File>
-              <FileName>debouncer_irq.c</FileName>
+              <FileName>rit_irq.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\Source\Libs\Debouncer\debouncer_irq.c</FilePath>
+              <FilePath>.\Source\Libs\RIT\rit_irq.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -1133,6 +1153,26 @@
               <FileName>delay.s</FileName>
               <FileType>2</FileType>
               <FilePath>.\Source\Libs\SysTick\delay.s</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>Joystick</GroupName>
+          <Files>
+            <File>
+              <FileName>joystick.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Source\Libs\Joystick\joystick.c</FilePath>
+            </File>
+            <File>
+              <FileName>joystick.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Source\Libs\Joystick\joystick.h</FilePath>
+            </File>
+            <File>
+              <FileName>joystick_types.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Source\Libs\Joystick\joystick_types.h</FilePath>
             </File>
           </Files>
         </Group>

@@ -1,20 +1,23 @@
 #include "includes.h"
 
-void eint0_handler(void)
+void up0_action(void)
 {
-    LED_Output(248);
+    LED_Output(5);
     Delay(5);
     LED_Output(7);
+    Delay(5);
+    LED_Clear();
 }
 
 int main(void)
 {
     LED_Init();
-    DEB_Init(50, INT_PRIO_MAX);
-    DEB_Enable();
+	
+	  RIT_Init(50, INT_PRIO_MAX);
+    RIT_Enable();
 
-    BUTTON_Init(2, 2, 2);
-    BUTTON_SetInterruptHandler(BTN_INT_SRC_EINT0, eint0_handler);
+    JOYSTICK_Init();
+    JOYSTICK_SetFunction(JOY_ACTION_UP, up0_action);
 
     Power_Init(POWR_CFG_SLEEP_ON_EXIT);
     Power_PowerDownOnWFI();

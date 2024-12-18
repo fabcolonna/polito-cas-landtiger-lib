@@ -6,10 +6,11 @@
 #include <stdlib.h>
 
 #include "button.h"
-#include "debouncer.h"
+#include "delay.h"
+#include "joystick.h"
 #include "led.h"
 #include "power.h"
-#include "delay.h"
+#include "rit.h"
 #include "timer.h"
 
 #ifdef SIMULATOR

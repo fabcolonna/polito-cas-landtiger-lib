@@ -1,14 +1,15 @@
-#include "debouncer.h"
+#include "rit.h"
 #include "LPC17xx.h"
 #include "utils.h"
 #include <stdbool.h>
 
+/// @brief Flag to indicate if the debouncer is currently active.
 _USED_EXTERNALLY bool debouncer_on;
 
 /// @brief PCLK frequency in MHz. Can be checked in the RIT GUI in Keil
 _PRIVATE const u32 pclk_mhz = 100;
 
-void DEB_Init(u32 ival_ms, u16 int_priority)
+void RIT_Init(u32 ival_ms, u16 int_priority)
 {
     CLR_BITS(LPC_SC->PCLKSEL1, 3, 26); // Clear
     SET_BIT(LPC_SC->PCLKSEL1, 26);     // Set PCLK_RIT to CCLK
@@ -29,12 +30,12 @@ void DEB_Init(u32 ival_ms, u16 int_priority)
 
 // USED IN BUTTON
 
-void DEB_Enable(void)
+void RIT_Enable(void)
 {
     SET_BIT(LPC_RIT->RICTRL, 3);
 }
 
-void DEB_Disable(void)
+void RIT_Disable(void)
 {
     CLR_BIT(LPC_RIT->RICTRL, 3);
 }

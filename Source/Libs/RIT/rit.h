@@ -1,5 +1,5 @@
-#ifndef __DEBOUNCER_H
-#define __DEBOUNCER_H
+#ifndef __RIT_H
+#define __RIT_H
 
 #include "utils.h"
 #include <stdint.h>
@@ -8,9 +8,9 @@
 /// @param ival_ms Interval in millis between each debounce check
 /// @param int_priority Debouncer interrupt priority (0 (highest), 15 (lowest)). If set to
 ///        INT_PRIO_DEF, the default priority will be used.
-void DEB_Init(u32 ival_ms, u16 int_priority);
+void RIT_Init(u32 ival_ms, u16 int_priority);
 
-void DEB_Enable(void);
-void DEB_Disable(void);
+void RIT_Enable(void);
+void RIT_Disable(void);
 
 #endif
