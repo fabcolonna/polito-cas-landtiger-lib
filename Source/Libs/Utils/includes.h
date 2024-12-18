@@ -17,4 +17,6 @@
 extern uint8_t ScaleFlag; // Needs to be visible in order to become visible by the simulator
 #endif
 
+extern void SystemInit();
+
 #endif

@@ -23,16 +23,11 @@ _DECL_EXTERNALLY bool debouncer_on;
 _DECL_EXTERNALLY JOYSTICK_Function JOYSTICK_Functions[];
 
 // Checking each GPIO PIN corresponding to the joystick functionalities
-static u8 joy_up = 0, joy_down = 0, joy_left = 0, joy_right = 0, joy_sel = 0;
+// static u8 joy_up = 0, joy_down = 0, joy_left = 0, joy_right = 0, joy_sel = 0;
 
 // PRIVATE FUNCTIONS
 
-_PRIVATE inline void reset_rit(void)
-{
-    LPC_RIT->RICOUNTER = 0;
-}
-
-_PRIVATE void handle_button_debouncing(void)
+_PRIVATE inline void handle_button_debouncing(void)
 {
     if (!debouncer_on)
         return;
@@ -95,67 +90,31 @@ _PRIVATE void handle_button_debouncing(void)
     }
 }
 
-_PRIVATE void handle_joystick_controls(void)
+_PRIVATE inline void handle_joystick_controls(void)
 {
-    if ((LPC_GPIO1->FIOPIN & (1 << 29)) == 0)
-    {
-        joy_up++;
+    if ((LPC_GPIO1->FIOPIN & (1 << 29)) == 0 && JOYSTICK_Functions[JOY_ACTION_UP])
+        JOYSTICK_Functions[JOY_ACTION_UP]();
 
-        if (joy_up == 1 && JOYSTICK_Functions[JOY_ACTION_UP])
-            JOYSTICK_Functions[JOY_ACTION_UP]();
-    }
-    else
-        joy_up = 0; // Resetting when the button is released
+    if ((LPC_GPIO1->FIOPIN & (1 << 25)) == 0 && JOYSTICK_Functions[JOY_ACTION_SEL])
+        JOYSTICK_Functions[JOY_ACTION_SEL]();
 
-    if ((LPC_GPIO1->FIOPIN & (1 << 26)) == 0)
-    {
-        joy_down++;
+    if ((LPC_GPIO1->FIOPIN & (1 << 26)) == 0 && JOYSTICK_Functions[JOY_ACTION_DOWN])
+        JOYSTICK_Functions[JOY_ACTION_DOWN]();
 
-        if (joy_down == 1 && JOYSTICK_Functions[JOY_ACTION_DOWN])
-            JOYSTICK_Functions[JOY_ACTION_DOWN]();
-    }
-    else
-        joy_down = 0; // Resetting when the button is released
+    if ((LPC_GPIO1->FIOPIN & (1 << 27)) == 0 && JOYSTICK_Functions[JOY_ACTION_LEFT])
+        JOYSTICK_Functions[JOY_ACTION_LEFT]();
 
-    if ((LPC_GPIO1->FIOPIN & (1 << 27)) == 0)
-    {
-        joy_left++;
-
-        if (joy_left == 1 && JOYSTICK_Functions[JOY_ACTION_LEFT])
-            JOYSTICK_Functions[JOY_ACTION_LEFT]();
-    }
-    else
-        joy_left = 0; // Resetting when the button is released
-
-    if ((LPC_GPIO1->FIOPIN & (1 << 28)) == 0)
-    {
-        joy_right++;
-
-        if (joy_right == 1 && JOYSTICK_Functions[JOY_ACTION_RIGHT])
-            JOYSTICK_Functions[JOY_ACTION_RIGHT]();
-    }
-    else
-        joy_right = 0; // Resetting when the button is released
-
-    if ((LPC_GPIO1->FIOPIN & (1 << 25)) == 0)
-    {
-        joy_sel++;
-
-        if (joy_sel == 1 && JOYSTICK_Functions[JOY_ACTION_SEL])
-            JOYSTICK_Functions[JOY_ACTION_SEL]();
-    }
-    else
-        joy_sel = 0; // Resetting when the button is released
+    if ((LPC_GPIO1->FIOPIN & (1 << 28)) == 0 && JOYSTICK_Functions[JOY_ACTION_RIGHT])
+        JOYSTICK_Functions[JOY_ACTION_RIGHT]();
 }
 
 // INTERRUPT HANDLER
 
 _INT_HANDLER RIT_IRQHandler(void)
 {
-
-    handle_button_debouncing();
     handle_joystick_controls();
+    handle_button_debouncing();
 
-    reset_rit();
+    LPC_RIT->RICOUNTER = 0;      // Reset counter
     SET_BIT(LPC_RIT->RICTRL, 0); // Clear interrupt flag
 }

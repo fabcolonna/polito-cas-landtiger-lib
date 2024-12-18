@@ -588,10 +588,22 @@
           </Files>
         </Group>
         <Group>
-          <GroupName>::CMSIS</GroupName>
+          <GroupName>System</GroupName>
+          <Files>
+            <File>
+              <FileName>startup_LPC17xx.s</FileName>
+              <FileType>2</FileType>
+              <FilePath>.\Source\System\startup_LPC17xx.s</FilePath>
+            </File>
+            <File>
+              <FileName>system_LPC17xx.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Source\System\system_LPC17xx.c</FilePath>
+            </File>
+          </Files>
         </Group>
         <Group>
-          <GroupName>::Device</GroupName>
+          <GroupName>::CMSIS</GroupName>
         </Group>
       </Groups>
     </Target>
@@ -639,7 +651,7 @@
             <InvalidFlash>1</InvalidFlash>
           </TargetStatus>
           <OutputDirectory>.\Objects\</OutputDirectory>
-          <OutputName>sample_BUTTON_DE-BOUNCING</OutputName>
+          <OutputName>cas-base-proj</OutputName>
           <CreateExecutable>1</CreateExecutable>
           <CreateLib>0</CreateLib>
           <CreateHexFile>0</CreateHexFile>
@@ -1177,10 +1189,22 @@
           </Files>
         </Group>
         <Group>
-          <GroupName>::CMSIS</GroupName>
+          <GroupName>System</GroupName>
+          <Files>
+            <File>
+              <FileName>startup_LPC17xx.s</FileName>
+              <FileType>2</FileType>
+              <FilePath>.\Source\System\startup_LPC17xx.s</FilePath>
+            </File>
+            <File>
+              <FileName>system_LPC17xx.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Source\System\system_LPC17xx.c</FilePath>
+            </File>
+          </Files>
         </Group>
         <Group>
-          <GroupName>::Device</GroupName>
+          <GroupName>::CMSIS</GroupName>
         </Group>
       </Groups>
     </Target>
@@ -1196,41 +1220,25 @@
           <targetInfo name="SW_Debug"/>
         </targetInfos>
       </component>
-      <component Cclass="Device" Cgroup="Startup" Cvendor="Keil" Cversion="1.0.0" condition="LPC17xx CMSIS Device ARMCC">
-        <package name="LPC1700_DFP" schemaVersion="1.7.28" url="https://www.keil.com/pack/" vendor="Keil" version="2.7.2"/>
-        <targetInfos>
-          <targetInfo name="LandTiger_LPC1768 (release)"/>
-          <targetInfo name="SW_Debug"/>
-        </targetInfos>
-      </component>
     </components>
     <files>
       <file attr="config" category="header" condition="LPC1700 CMSIS Device" name="RTE_Driver\Config\RTE_Device.h" version="2.4.1">
-        <instance index="0">RTE\Device\LPC1768\RTE_Device.h</instance>
+        <instance index="0" removed="1">RTE\Device\LPC1768\RTE_Device.h</instance>
         <component Cclass="Device" Cgroup="Startup" Cvendor="Keil" Cversion="1.0.0" condition="LPC17xx CMSIS Device ARMCC"/>
         <package name="LPC1700_DFP" schemaVersion="1.7.28" url="https://www.keil.com/pack/" vendor="Keil" version="2.7.2"/>
-        <targetInfos>
-          <targetInfo name="LandTiger_LPC1768 (release)"/>
-          <targetInfo name="SW_Debug"/>
-        </targetInfos>
+        <targetInfos/>
       </file>
       <file attr="config" category="source" condition="LPC176x" name="Device\Source\ARM\startup_LPC17xx.s" version="1.0.0">
-        <instance index="0">RTE\Device\LPC1768\startup_LPC17xx.s</instance>
+        <instance index="0" removed="1">RTE\Device\LPC1768\startup_LPC17xx.s</instance>
         <component Cclass="Device" Cgroup="Startup" Cvendor="Keil" Cversion="1.0.0" condition="LPC17xx CMSIS Device ARMCC"/>
         <package name="LPC1700_DFP" schemaVersion="1.7.28" url="https://www.keil.com/pack/" vendor="Keil" version="2.7.2"/>
-        <targetInfos>
-          <targetInfo name="LandTiger_LPC1768 (release)"/>
-          <targetInfo name="SW_Debug"/>
-        </targetInfos>
+        <targetInfos/>
       </file>
       <file attr="config" category="source" condition="LPC176x" name="Device\Source\system_LPC17xx.c" version="1.0.0">
-        <instance index="0">RTE\Device\LPC1768\system_LPC17xx.c</instance>
+        <instance index="0" removed="1">RTE\Device\LPC1768\system_LPC17xx.c</instance>
         <component Cclass="Device" Cgroup="Startup" Cvendor="Keil" Cversion="1.0.0" condition="LPC17xx CMSIS Device ARMCC"/>
         <package name="LPC1700_DFP" schemaVersion="1.7.28" url="https://www.keil.com/pack/" vendor="Keil" version="2.7.2"/>
-        <targetInfos>
-          <targetInfo name="LandTiger_LPC1768 (release)"/>
-          <targetInfo name="SW_Debug"/>
-        </targetInfos>
+        <targetInfos/>
       </file>
     </files>
   </RTE>
