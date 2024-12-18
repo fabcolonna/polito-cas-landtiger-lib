@@ -19,5 +19,7 @@ This library is currently under development. These are the peripherals that will
 - [X] SYSTick
 - [X] Power Management
 - [X] LEDs
-- [ ] Sound System & MIDI Interface
+- [X] Joystick (does NOT support prolonged press)
+- [ ] ADC for potentiometer support
+- [ ] DAC Sound System & MIDI Interface
 - [ ] Screen (finna be tough)
