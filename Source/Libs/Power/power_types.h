@@ -11,13 +11,15 @@ typedef enum
 // Each enum constant equals to the BIT in the PCONP register associated to that peripheral.
 typedef enum
 {
-    PCTIM0 = 1,
-    PCTIM1 = 2,
-    PCADC = 12,
-    PCGPIO = 15,
-    PCRIT = 16,
-    PCTIM2 = 22,
-    PCTIM3 = 23
+    POW_PCTIM0 = 1,
+    POW_PCTIM1 = 2,
+    POW_PCADC = 12,
+    POW_PCCAN1 = 13,
+    POW_PCCAN2 = 14,
+    POW_PCGPIO = 15,
+    POW_PCRIT = 16,
+    POW_PCTIM2 = 22,
+    POW_PCTIM3 = 23
 } POWER_Peripheral;
 
 #endif

@@ -5,6 +5,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 
+#include "adc_pm.h"
 #include "button.h"
 #include "delay.h"
 #include "joystick.h"

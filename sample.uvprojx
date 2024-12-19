@@ -603,6 +603,26 @@
           </Files>
         </Group>
         <Group>
+          <GroupName>ADC-PM</GroupName>
+          <Files>
+            <File>
+              <FileName>adc_pm.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Source\Libs\ADC-PM\adc_pm.c</FilePath>
+            </File>
+            <File>
+              <FileName>adc_pm.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Source\Libs\ADC-PM\adc_pm.h</FilePath>
+            </File>
+            <File>
+              <FileName>adc_pm_irq.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Source\Libs\ADC-PM\adc_pm_irq.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
           <GroupName>::CMSIS</GroupName>
         </Group>
       </Groups>
@@ -942,7 +962,7 @@
               <MiscControls></MiscControls>
               <Define>SIMULATOR</Define>
               <Undefine></Undefine>
-              <IncludePath>.\Source\Libs\Button;.\Source\CMSIS_core;.\Source;.\Source\Libs\RIT;.\Source\Libs\Timer;.\Source\Libs\LED;.\Source\Libs\Power;.\Source\Libs\Utils;.\Source\Program;.\Source\Startup;.\Source\Libs\SysTick;.\Source\Libs\Utils\DynamicArray;.\Source\Libs\Joystick</IncludePath>
+              <IncludePath>.\Source\Libs\Button;.\Source\CMSIS_core;.\Source;.\Source\Libs\RIT;.\Source\Libs\Timer;.\Source\Libs\LED;.\Source\Libs\Power;.\Source\Libs\Utils;.\Source\Program;.\Source\Startup;.\Source\Libs\SysTick;.\Source\Libs\Utils\DynamicArray;.\Source\Libs\Joystick;.\Source\Libs\ADC-PM</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -1200,6 +1220,26 @@
               <FileName>system_LPC17xx.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\Source\System\system_LPC17xx.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>ADC-PM</GroupName>
+          <Files>
+            <File>
+              <FileName>adc_pm.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Source\Libs\ADC-PM\adc_pm.c</FilePath>
+            </File>
+            <File>
+              <FileName>adc_pm.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Source\Libs\ADC-PM\adc_pm.h</FilePath>
+            </File>
+            <File>
+              <FileName>adc_pm_irq.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Source\Libs\ADC-PM\adc_pm_irq.c</FilePath>
             </File>
           </Files>
         </Group>

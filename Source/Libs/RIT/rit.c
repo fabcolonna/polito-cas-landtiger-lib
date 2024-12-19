@@ -1,6 +1,8 @@
 #include "rit.h"
 #include "LPC17xx.h"
+#include "power.h"
 #include "utils.h"
+
 #include <stdbool.h>
 
 /// @brief Flag to indicate if the debouncer is currently active.
@@ -11,6 +13,9 @@ _PRIVATE const u32 pclk_mhz = 100;
 
 void RIT_Init(u32 ival_ms, u16 int_priority)
 {
+    // Powering up the RIT
+    POWER_TurnOnPeripheral(POW_PCRIT);
+
     CLR_BITS(LPC_SC->PCLKSEL1, 3, 26); // Clear
     SET_BIT(LPC_SC->PCLKSEL1, 26);     // Set PCLK_RIT to CCLK
     SET_BIT(LPC_SC->PCONP, 16);        // Enable power to RIT

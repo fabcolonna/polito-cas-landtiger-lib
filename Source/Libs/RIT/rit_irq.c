@@ -1,4 +1,5 @@
 #include "LPC17xx.h"
+#include "adc_pm.h"
 #include "button_types.h"
 #include "joystick_types.h"
 #include "rit.h"
@@ -114,6 +115,9 @@ _INT_HANDLER RIT_IRQHandler(void)
 {
     handle_joystick_controls();
     handle_button_debouncing();
+
+    // Getting samples from PM every <RIT ival>
+    ADC_PMGetSample();
 
     LPC_RIT->RICOUNTER = 0;      // Reset counter
     SET_BIT(LPC_RIT->RICTRL, 0); // Clear interrupt flag

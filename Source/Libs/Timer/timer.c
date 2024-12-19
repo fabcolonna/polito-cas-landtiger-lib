@@ -1,5 +1,6 @@
 #include "timer.h"
 #include "LPC17xx.h"
+#include "power.h"
 
 #include <stdlib.h>
 
@@ -69,6 +70,8 @@ void TIMER_Init(_OUT TIMER *timer, u8 which, u32 prescaler, u8 int_priority)
     switch (which)
     {
     case 0:
+        POWER_TurnOnPeripheral(POW_PCTIM0);
+
         if (valid_prescaler)
             LPC_TIM0->PR = prescaler;
 
@@ -78,6 +81,8 @@ void TIMER_Init(_OUT TIMER *timer, u8 which, u32 prescaler, u8 int_priority)
             NVIC_SetPriority(TIMER0_IRQn, int_priority);
         break;
     case 1:
+        POWER_TurnOnPeripheral(POW_PCTIM1);
+
         if (valid_prescaler)
             LPC_TIM1->PR = prescaler;
 
@@ -87,6 +92,8 @@ void TIMER_Init(_OUT TIMER *timer, u8 which, u32 prescaler, u8 int_priority)
             NVIC_SetPriority(TIMER1_IRQn, int_priority);
         break;
     case 2:
+        POWER_TurnOnPeripheral(POW_PCTIM2);
+
         if (valid_prescaler)
             LPC_TIM2->PR = prescaler;
 
@@ -96,6 +103,8 @@ void TIMER_Init(_OUT TIMER *timer, u8 which, u32 prescaler, u8 int_priority)
             NVIC_SetPriority(TIMER2_IRQn, int_priority);
         break;
     case 3:
+        POWER_TurnOnPeripheral(POW_PCTIM3);
+
         if (valid_prescaler)
             LPC_TIM3->PR = prescaler;
 
@@ -120,21 +129,29 @@ void TIMER_Deinit(TIMER timer)
     switch (timer.which)
     {
     case 0:
+        POWER_TurnOffPeripheral(POW_PCTIM0);
+
         LPC_TIM0->PR = 0;
         clear_match_regs(LPC_TIM0);
         NVIC_DisableIRQ(TIMER0_IRQn);
         break;
     case 1:
+        POWER_TurnOffPeripheral(POW_PCTIM1);
+
         LPC_TIM1->PR = 0;
         clear_match_regs(LPC_TIM1);
         NVIC_DisableIRQ(TIMER1_IRQn);
         break;
     case 2:
+        POWER_TurnOffPeripheral(POW_PCTIM2);
+
         LPC_TIM2->PR = 0;
         clear_match_regs(LPC_TIM2);
         NVIC_DisableIRQ(TIMER2_IRQn);
         break;
     case 3:
+        POWER_TurnOffPeripheral(POW_PCTIM3);
+
         LPC_TIM3->PR = 0;
         clear_match_regs(LPC_TIM3);
         NVIC_DisableIRQ(TIMER3_IRQn);
@@ -241,8 +258,8 @@ bool TIMER_IsEnabled(TIMER timer)
     case 3:
         return IS_BIT_SET(LPC_TIM3->TCR, 0);
     }
-		
-		return false;
+
+    return false;
 }
 
 void TIMER_Reset(TIMER timer)
