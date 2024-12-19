@@ -20,6 +20,11 @@ This library is currently under development. These are the peripherals that will
 - [X] Power Management
 - [X] LEDs
 - [X] Joystick (does NOT support prolonged press)
-- [ ] ADC for potentiometer support
+- [X] ADC for potentiometer support
 - [ ] DAC Sound System & MIDI Interface
 - [ ] Screen (finna be tough)
+
+## Maybe in the future
+
+- [ ] RIT that accepts tasks from the outside, possibly with different timings
+- [ ] A more general-purpose interface for ADC

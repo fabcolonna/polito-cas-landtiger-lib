@@ -14,6 +14,13 @@ typedef enum
     INT_PRIO_DEF = -1
 } INT_Priority;
 
+// CLOCKS. Change these values according to your system.
+
+#define PCLOCK_HZ 25000000
+#define CCLOCK_HZ 100000000
+
+// MACROS
+
 #define IS_BETWEEN_EQ(value, low, hi) ((value) >= (low) && (value) <= (hi))
 #define IS_BETWEEN(value, low, hi) ((value) > (low) && (value) < (hi))
 

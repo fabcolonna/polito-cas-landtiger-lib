@@ -530,6 +530,11 @@
               <FileType>1</FileType>
               <FilePath>.\Source\Program\main.c</FilePath>
             </File>
+            <File>
+              <FileName>wave.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Source\Program\wave.h</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -623,7 +628,25 @@
           </Files>
         </Group>
         <Group>
+          <GroupName>DAC</GroupName>
+          <Files>
+            <File>
+              <FileName>dac.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Source\Libs\DAC\dac.c</FilePath>
+            </File>
+            <File>
+              <FileName>dac.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Source\Libs\DAC\dac.h</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
           <GroupName>::CMSIS</GroupName>
+        </Group>
+        <Group>
+          <GroupName>::Device</GroupName>
         </Group>
       </Groups>
     </Target>
@@ -962,7 +985,7 @@
               <MiscControls></MiscControls>
               <Define>SIMULATOR</Define>
               <Undefine></Undefine>
-              <IncludePath>.\Source\Libs\Button;.\Source\CMSIS_core;.\Source;.\Source\Libs\RIT;.\Source\Libs\Timer;.\Source\Libs\LED;.\Source\Libs\Power;.\Source\Libs\Utils;.\Source\Program;.\Source\Startup;.\Source\Libs\SysTick;.\Source\Libs\Utils\DynamicArray;.\Source\Libs\Joystick;.\Source\Libs\ADC-PM</IncludePath>
+              <IncludePath>.\Source\Libs\Button;.\Source\CMSIS_core;.\Source;.\Source\Libs\RIT;.\Source\Libs\Timer;.\Source\Libs\LED;.\Source\Libs\Power;.\Source\Libs\Utils;.\Source\Program;.\Source\Startup;.\Source\Libs\SysTick;.\Source\Libs\Utils\DynamicArray;.\Source\Libs\Joystick;.\Source\Libs\ADC-PM;.\Source\Libs\DAC</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -1151,6 +1174,11 @@
               <FileType>1</FileType>
               <FilePath>.\Source\Program\main.c</FilePath>
             </File>
+            <File>
+              <FileName>wave.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Source\Program\wave.h</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -1244,7 +1272,25 @@
           </Files>
         </Group>
         <Group>
+          <GroupName>DAC</GroupName>
+          <Files>
+            <File>
+              <FileName>dac.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Source\Libs\DAC\dac.c</FilePath>
+            </File>
+            <File>
+              <FileName>dac.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Source\Libs\DAC\dac.h</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
           <GroupName>::CMSIS</GroupName>
+        </Group>
+        <Group>
+          <GroupName>::Device</GroupName>
         </Group>
       </Groups>
     </Target>
@@ -1255,6 +1301,13 @@
     <components>
       <component Cclass="CMSIS" Cgroup="CORE" Cvendor="ARM" Cversion="6.1.0" condition="ARMv6_7_8-M Device">
         <package name="CMSIS" schemaVersion="1.7.36" url="https://www.keil.com/pack/" vendor="ARM" version="6.1.0"/>
+        <targetInfos>
+          <targetInfo name="LandTiger_LPC1768 (release)"/>
+          <targetInfo name="SW_Debug"/>
+        </targetInfos>
+      </component>
+      <component Cclass="Device" Cgroup="GPDMA" Cvendor="Keil" Cversion="1.4.0" condition="LPC17xx CMSIS Device">
+        <package name="LPC1700_DFP" schemaVersion="1.7.28" url="https://www.keil.com/pack/" vendor="Keil" version="2.7.2"/>
         <targetInfos>
           <targetInfo name="LandTiger_LPC1768 (release)"/>
           <targetInfo name="SW_Debug"/>

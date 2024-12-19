@@ -9,6 +9,14 @@
 
 typedef enum
 {
+    TIMER_0 = 0,
+    TIMER_1,
+    TIMER_2,
+    TIMER_3
+} TIMER_Which;
+
+typedef enum
+{
     TIM_MR_NOP = 0,
     TIM_MR_INT = 1 << 0,
     TIM_MR_RES = 1 << 1,
