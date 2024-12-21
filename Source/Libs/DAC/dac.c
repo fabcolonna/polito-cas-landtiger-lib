@@ -2,99 +2,129 @@
 #include "LPC17xx.h"
 #include "timer.h"
 
+#define DAC_CLK_HZ 25000000
+#define DAC_SIN_TABLE_SZ 45
+
 _PRIVATE TIMER DAC_SamplesTimer;
 _PRIVATE TIMER DAC_SecondsTimer;
 
-_PRIVATE const u32 DAC_CLKHz = 25000000;
+_PRIVATE u8 DAC_SinVolume = DAC_VOL_DEFAULT;
+_PRIVATE u32 DAC_SinTableIndex = 0;
 
-_PRIVATE inline u16 get_tone_frequency(u16 tone, u8 octave)
+/// @brief Sine wave samples for the DAC. They represent one complete period. Each sample needs to be sent to the DAC
+//         at a specific frequency in order to generate the desired tone.
+const u16 DAC_Sin[] = {410, 467, 523, 576, 627, 673, 714, 749, 778, 799, 813, 819, 817, 807, 789,
+                       764, 732, 694, 650, 602, 550, 495, 438, 381, 324, 270, 217, 169, 125, 87,
+                       55,  30,  12,  2,   0,   6,   20,  41,  70,  105, 146, 193, 243, 297, 353};
+
+_PRIVATE inline u32 get_tone_timing(u16 note, u8 octave)
 {
-    if (octave == DAC_OCT_4)
-        return tone;
+    // Gets the Hz of the tone at the specified octave
+    const u32 freq = (octave <= DAC_OCT_4) ? note << (DAC_OCT_4 - octave) : note >> (octave - DAC_OCT_4);
 
-    return (octave < DAC_OCT_4) ? tone >> (DAC_OCT_4 - octave) : tone << (octave - DAC_OCT_4);
+    /// In order to play the tone, every sample needs to be sent to the DAC at a specific rate
+    /// that depends on the frequency of the tone, the number of samples in the sine wave table
+    /// and the frequency of the TIMER peripheral that is responsible for sending the samples to the DAC
+    /// @example 440Hz tone, 45 samples, 25MHz timer:
+    ///          In one second (25 million cycles), 440 full periods (i.e. 45 samples) need to be sent to the DAC.
+    ///          Hence, Dac_SamplesTimer needs to be set to 25MHz (duration of a second) / (440 * 45) = 1250Hz
+    return DAC_CLK_HZ / (freq * DAC_SIN_TABLE_SZ);
+}
+
+_PRIVATE inline u16 adjust_sample_volume(u16 sample, u8 volume)
+{
+    if (volume == 0)
+        return 0; // Mute
+
+    sample -= 410;
+    sample /= (10 / volume); // If volume is 1 -> sample /= 10 (decrease volume), if 10 -> sample /= 1 (increase volume)
+    sample += 410;
+
+    return sample;
 }
 
 // TIMER INTERRUPTS & SINE WAVE
 
-_PRIVATE u8 requested_volume;
-_PRIVATE u32 sin_table_index = 0;
-
-#define DAC_SIN_TABLE_SIZE 45
-const u16 DAC_Sin[DAC_SIN_TABLE_SIZE] = {410, 467, 523, 576, 627, 673, 714, 749, 778, 799, 813, 819, 817, 807, 789,
-                                         764, 732, 694, 650, 602, 550, 495, 438, 381, 324, 270, 217, 169, 125, 87,
-                                         55,  30,  12,  2,   0,   6,   20,  41,  70,  105, 146, 193, 243, 297, 353};
-
-_PRIVATE void next(void)
+_PRIVATE void next_sample(void)
 {
-    if (requested_volume == 0)
+    if (DAC_SinVolume == 0)
     {
         LPC_DAC->DACR = 0;
         return;
     }
 
-    u16 value = DAC_Sin[sin_table_index++];
-    value -= 410; // Normalization
-    value /= (10 / requested_volume);
-    value += 410;
+    // Sending next sample
+    u16 volumed_sample = adjust_sample_volume(DAC_Sin[DAC_SinTableIndex++], DAC_SinVolume);
+    LPC_DAC->DACR = (volumed_sample << 6);
 
-    LPC_DAC->DACR = (value << 6);
-    if (sin_table_index == DAC_SIN_TABLE_SIZE)
-        sin_table_index = 0;
+    if (DAC_SinTableIndex == DAC_SIN_TABLE_SZ)
+        DAC_SinTableIndex = 0;
 }
 
 // PUBLIC FUNCTIONS
 
 void DAC_BUZInit(u8 timer_a, u8 timer_b, u8 int_priority)
 {
+    // Enable Analog OUT (function 10) on PIN on P0.26, located in PINSEL1
+    LPC_PINCON->PINSEL1 |= (2 << 20);
+    LPC_GPIO0->FIODIR |= (1 << 26);
+
     TIMER_Init(&DAC_SamplesTimer, timer_a, NO_PRESCALER, int_priority);
     TIMER_Init(&DAC_SecondsTimer, timer_b, NO_PRESCALER, int_priority);
 }
 
 void DAC_BUZDeinit(void)
 {
-    TIMER_Disable(DAC_SamplesTimer);
-    TIMER_Reset(DAC_SamplesTimer);
-    TIMER_Deinit(DAC_SamplesTimer);
+    LPC_PINCON->PINSEL1 &= ~(3 << 20);
+    LPC_GPIO0->FIODIR &= ~(1 << 26);
 
-    TIMER_Disable(DAC_SecondsTimer);
-    TIMER_Reset(DAC_SecondsTimer);
+    DAC_BUZStop();
+    TIMER_Deinit(DAC_SamplesTimer);
     TIMER_Deinit(DAC_SecondsTimer);
 }
 
-void DAC_BUZPlay(u16 tone, u8 octave, u8 type, u8 bpm, u8 volume)
+void DAC_BUZSetVolume(u8 volume)
 {
-    requested_volume = volume;
-    const u16 tone_freq = get_tone_frequency(tone, octave);
+    DAC_SinVolume = (IS_BETWEEN_EQ(volume, 0, 10)) ? volume : DAC_VOL_DEFAULT;
+}
 
-    // Frequency at which I send the next sample to the DAC
-    const float sample_freq = tone_freq / DAC_SIN_TABLE_SIZE;
-    TIMER_MatchRegister samples_mr0 = {
-        .which = 0, .actions = TIM_MR_INT | TIM_MR_RES, .match = (u32)(DAC_CLKHz / sample_freq)};
-    TIMER_SetMatch(DAC_SamplesTimer, samples_mr0);
-    TIMER_SetInterruptHandler(DAC_SamplesTimer, TIM_INT_SRC_MR0, next);
+void DAC_BUZPlay(DAC_Tone tone, u16 bpm)
+{
+    // How many samples need to be sent to the DAC in a second in order to play the tone
+    TIMER_SetInterruptHandler(DAC_SamplesTimer, TIM_INT_SRC_MR0, next_sample);
+    TIMER_SetMatch(DAC_SamplesTimer, (TIMER_MatchRegister){.which = TIM_MR0,
+                                                           .actions = TIM_MR_INT | TIM_MR_RES,
+                                                           .match = get_tone_timing(tone.note, tone.octave)});
 
-    // How many seconds does the tone last
-    const float tone_duration_sec = (60 * type) / bpm;
-    TIMER_MatchRegister seconds_mr0 = {
-        .which = 0, .actions = TIM_MR_INT | TIM_MR_RES, .match = (u32)(DAC_CLKHz * tone_duration_sec)};
-    TIMER_SetMatch(DAC_SecondsTimer, seconds_mr0);
+    // Since a tone has a type (i.e. a duration which depends on the BPM), the duration of the tone
+    // needs to be controlled by another timer, which, on match, will stop & clear the samples timer.
+    // The duration (in seconds) of the tone is calculated by the formula: (60 * type) / bpm. Since
+    // each second the seconds timer ticks 25 million times, we need to multiply that by the duration
+    const u32 tone_duration = DAC_CLK_HZ * ((60 * tone.type) / bpm);
     TIMER_SetInterruptHandler(DAC_SecondsTimer, TIM_INT_SRC_MR0, DAC_BUZStop);
+    TIMER_SetMatch(DAC_SecondsTimer, (TIMER_MatchRegister){.which = TIM_MR0,
+                                                           .actions = TIM_MR_INT | TIM_MR_RES | TIM_MR_STP,
+                                                           .match = tone_duration});
 
+    // Starts the timers (i.e. plays)
     TIMER_Enable(DAC_SamplesTimer);
     TIMER_Enable(DAC_SecondsTimer);
 }
 
+bool DAC_BUZIsPlaying(void)
+{
+    return TIMER_IsEnabled(DAC_SamplesTimer) && TIMER_IsEnabled(DAC_SecondsTimer);
+}
+
 void DAC_BUZStop(void)
 {
+    DAC_SinVolume = DAC_VOL_DEFAULT;
+    DAC_SinTableIndex = 0;
+    LPC_DAC->DACR &= ~(0x3FF << 6);
+
     TIMER_Disable(DAC_SamplesTimer);
     TIMER_Reset(DAC_SamplesTimer);
 
     TIMER_Reset(DAC_SecondsTimer);
     TIMER_Disable(DAC_SecondsTimer);
-
-    sin_table_index = 0;
-    requested_volume = 1;
-
-    LPC_DAC->DACR = 0;
 }

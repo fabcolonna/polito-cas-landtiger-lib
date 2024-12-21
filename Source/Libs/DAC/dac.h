@@ -3,6 +3,7 @@
 
 #include "dac_types.h"
 #include "utils.h"
+#include <stdbool.h>
 
 #ifdef DAC_USE_DMA // DMA is not currently working due to "write permission error 65"
 
@@ -33,12 +34,15 @@ void DAC_BUZInit(u8 timer_a, u8 timer_b, u8 int_priority);
 void DAC_BUZDeinit(void);
 
 /// @brief Plays the given note for the given duration.
-/// @param tone The tone to be played, belonging to the DAC_Note enum.
-/// @param octave The octave of the note to be played, belonging to the DAC_Octave enum.
-/// @param type The type of the note to be played, belonging to the DAC_NoteType enum.
-/// @param bpm The beats per minute of the note to be played.
-/// @param volume The volume of the note to be played (between 0 and 10);
-void DAC_BUZPlay(u16 tone, u8 octave, u8 type, u8 bpm, u8 volume);
+/// @param tone The tone to be played
+/// @param bpm The tempo of the note (i.e. 60, 120, 240, etc.)
+void DAC_BUZPlay(DAC_Tone tone, u16 bpm);
+
+/// @brief Sets the volume of the buzzer.
+/// @param volume The volume of the buzzer (between 0 and 10).
+void DAC_BUZSetVolume(u8 volume);
+
+bool DAC_BUZIsPlaying(void);
 
 void DAC_BUZStop(void);
 
