@@ -1,129 +1,100 @@
 #include "dac.h"
 #include "LPC17xx.h"
-
-#ifdef DAC_USE_DMA
-
-#include "GPDMA_LPC17xx.h"
-
-#include <stdbool.h>
-
-_PRIVATE u8 DAC_DMAChannel;
-
-_PRIVATE bool DAC_DMAWasSuccessful;
-
-enum
-{
-    /// @brief By using a double buffer, we avoid possible glitches when the DAC is playing, and we are
-    ///        feeding it with new samples at a high rate.
-    // DAC_CFG_DOUBLEBUF = 0x2,
-
-    /// @brief When enabled, the timer generates a periodic interrupt (or DMA request if enabled). Without this,
-    ///        you would need another mechanism for feeding the DAC with samples (like using a timer).
-    /// @note  This option is highly recommended for DMA mode.
-    DAC_CFG_USE_CNT = 0x4,
-
-    /// @brief Use DMA for the DAC peripheral. This makes the DAC work independently
-    ///        from the CPU, which can perform other tasks while the DAC is playing. DAC automatically
-    ///        retrives new samples from the memory and puts them in the DAC register.
-    DAC_CFG_USE_DMA = 0x8,
-} DAC_DMAConfig;
-
-void DAC_InitDMA(u32 sample_rate_hz)
-{
-    LPC_DAC->DACCTRL |= (DAC_CFG_USE_DMA | DAC_CFG_USE_CNT);
-    LPC_DAC->DACCNTVAL = sample_rate_hz;
-
-    GPDMA_Initialize();
-    DAC_DMAChannel = 1;
-    DAC_DMAWasSuccessful = false;
-}
-
-void DAC_DeinitDMA(void)
-{
-    LPC_DAC->DACR = 0;
-    LPC_DAC->DACCTRL &= ~(DAC_CFG_USE_DMA | DAC_CFG_USE_CNT);
-    LPC_DAC->DACCNTVAL = 0;
-    GPDMA_Uninitialize();
-}
-
-// PLAY FUNCTION & PRIVATE STUFF
-
-_PRIVATE void dma_transfer_complete_callback(u32 event)
-{
-    DAC_DMAWasSuccessful = (event & GPDMA_EVENT_TERMINAL_COUNT_REQUEST) != 0;
-    DAC_StopDMA();
-}
-
-void DAC_PlayDMA(const u16 *const pcm_samples, u32 sample_count)
-{
-    if (!pcm_samples || sample_count == 0)
-        return;
-
-    const u32 status = GPDMA_ChannelConfigure(DAC_DMAChannel, (u32)pcm_samples, (u32)&LPC_DAC->DACR, sample_count,
-                                              GPDMA_CH_CONTROL_SI | GPDMA_CH_CONTROL_DI | GPDMA_WIDTH_HALFWORD,
-                                              GPDMA_CONFIG_E, dma_transfer_complete_callback);
-
-    if (status != 0)
-        return;
-
-    if (GPDMA_ChannelEnable(DAC_DMAChannel) != 0)
-        return;
-}
-
-void DAC_StopDMA(void)
-{
-    GPDMA_ChannelDisable(DAC_DMAChannel);
-}
-
-#else
-
 #include "timer.h"
 
-_PRIVATE TIMER DAC_Timer;
+_PRIVATE TIMER DAC_SamplesTimer;
+_PRIVATE TIMER DAC_SecondsTimer;
 
-_PRIVATE u16 *DAC_Samples;
-_PRIVATE u32 DAC_SampleCount;
-_PRIVATE u32 DAC_SampleIndex;
+_PRIVATE const u32 DAC_CLKHz = 25000000;
 
-_PRIVATE void next_sample_if_available(void)
+_PRIVATE inline u16 get_tone_frequency(u16 tone, u8 octave)
 {
-    if (DAC_SampleIndex < DAC_SampleCount)
-        LPC_DAC->DACR = ((DAC_Samples[DAC_SampleIndex++] << 6) & 0xFFC0);
-    else
-        DAC_Stop();
+    if (octave == DAC_OCT_4)
+        return tone;
+
+    return (octave < DAC_OCT_4) ? tone >> (DAC_OCT_4 - octave) : tone << (octave - DAC_OCT_4);
 }
 
-void DAC_Init(u8 timer, u32 sample_rate_hz)
-{
-    TIMER_Init(&DAC_Timer, timer, NO_PRESCALER, INT_PRIO_DEF);
-    TIMER_SetMatch(DAC_Timer, (TIMER_MatchReg){
-                                  .which = 0, .match = PCLOCK_HZ / sample_rate_hz, .actions = TIM_MR_INT | TIM_MR_RES});
-}
+// TIMER INTERRUPTS & SINE WAVE
 
-void DAC_Deinit(void)
-{
-    TIMER_Deinit(DAC_Timer);
-}
+_PRIVATE u8 requested_volume;
+_PRIVATE u32 sin_table_index = 0;
 
-void DAC_Play(const u16 *const pcm_samples, u32 sample_count)
-{
-    TIMER_Reset(DAC_Timer);
+#define DAC_SIN_TABLE_SIZE 45
+const u16 DAC_Sin[DAC_SIN_TABLE_SIZE] = {410, 467, 523, 576, 627, 673, 714, 749, 778, 799, 813, 819, 817, 807, 789,
+                                         764, 732, 694, 650, 602, 550, 495, 438, 381, 324, 270, 217, 169, 125, 87,
+                                         55,  30,  12,  2,   0,   6,   20,  41,  70,  105, 146, 193, 243, 297, 353};
 
-    if (!pcm_samples || sample_count == 0)
+_PRIVATE void next(void)
+{
+    if (requested_volume == 0)
+    {
+        LPC_DAC->DACR = 0;
         return;
+    }
 
-    DAC_Samples = (u16 *)pcm_samples;
-    DAC_SampleCount = sample_count;
-    DAC_SampleIndex = 0;
+    u16 value = DAC_Sin[sin_table_index++];
+    value -= 410; // Normalization
+    value /= (10 / requested_volume);
+    value += 410;
 
-    TIMER_SetInterruptHandler(DAC_Timer, TIM_INT_SRC_MR0, next_sample_if_available);
-    TIMER_Enable(DAC_Timer);
+    LPC_DAC->DACR = (value << 6);
+    if (sin_table_index == DAC_SIN_TABLE_SIZE)
+        sin_table_index = 0;
 }
 
-void DAC_Stop(void)
+// PUBLIC FUNCTIONS
+
+void DAC_BUZInit(u8 timer_a, u8 timer_b, u8 int_priority)
 {
-    TIMER_Disable(DAC_Timer);
-    TIMER_Reset(DAC_Timer);
+    TIMER_Init(&DAC_SamplesTimer, timer_a, NO_PRESCALER, int_priority);
+    TIMER_Init(&DAC_SecondsTimer, timer_b, NO_PRESCALER, int_priority);
 }
 
-#endif
+void DAC_BUZDeinit(void)
+{
+    TIMER_Disable(DAC_SamplesTimer);
+    TIMER_Reset(DAC_SamplesTimer);
+    TIMER_Deinit(DAC_SamplesTimer);
+
+    TIMER_Disable(DAC_SecondsTimer);
+    TIMER_Reset(DAC_SecondsTimer);
+    TIMER_Deinit(DAC_SecondsTimer);
+}
+
+void DAC_BUZPlay(u16 tone, u8 octave, u8 type, u8 bpm, u8 volume)
+{
+    requested_volume = volume;
+    const u16 tone_freq = get_tone_frequency(tone, octave);
+
+    // Frequency at which I send the next sample to the DAC
+    const float sample_freq = tone_freq / DAC_SIN_TABLE_SIZE;
+    TIMER_MatchRegister samples_mr0 = {
+        .which = 0, .actions = TIM_MR_INT | TIM_MR_RES, .match = (u32)(DAC_CLKHz / sample_freq)};
+    TIMER_SetMatch(DAC_SamplesTimer, samples_mr0);
+    TIMER_SetInterruptHandler(DAC_SamplesTimer, TIM_INT_SRC_MR0, next);
+
+    // How many seconds does the tone last
+    const float tone_duration_sec = (60 * type) / bpm;
+    TIMER_MatchRegister seconds_mr0 = {
+        .which = 0, .actions = TIM_MR_INT | TIM_MR_RES, .match = (u32)(DAC_CLKHz * tone_duration_sec)};
+    TIMER_SetMatch(DAC_SecondsTimer, seconds_mr0);
+    TIMER_SetInterruptHandler(DAC_SecondsTimer, TIM_INT_SRC_MR0, DAC_BUZStop);
+
+    TIMER_Enable(DAC_SamplesTimer);
+    TIMER_Enable(DAC_SecondsTimer);
+}
+
+void DAC_BUZStop(void)
+{
+    TIMER_Disable(DAC_SamplesTimer);
+    TIMER_Reset(DAC_SamplesTimer);
+
+    TIMER_Reset(DAC_SecondsTimer);
+    TIMER_Disable(DAC_SecondsTimer);
+
+    sin_table_index = 0;
+    requested_volume = 1;
+
+    LPC_DAC->DACR = 0;
+}

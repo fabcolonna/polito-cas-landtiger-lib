@@ -3,11 +3,11 @@
 #include "timer.h"
 
 /// @brief Array of function pointers to the interrupt handlers for each TIMER peripheral.
-///        The array is of size TIMERS_COUNT * TIM_INT_SRC_COUNT, where TIMERS_COUNT is 4
+///        The array is of size TIM_COUNT * TIM_INT_SRC_COUNT, where TIM_COUNT is 4
 ///        and TIM_INT_SRC_COUNT is the number of interrupt sources (4 match registers and
 ///        2 capture channels, although the latter are not implemented in this library).
 /// @note This array is updated by TIMER_SetInterruptHandler() and TIMER_UnsetInterruptHandler().
-_PRIVATE TIMER_InterruptHandler TIMER_Handlers[TIMERS_COUNT * TIM_INT_SRC_COUNT] = {NULL};
+_PRIVATE TIMER_InterruptHandler TIMER_Handlers[TIM_COUNT * TIM_INT_SRC_COUNT] = {NULL};
 
 // PRIVATE FUNCTIONS
 

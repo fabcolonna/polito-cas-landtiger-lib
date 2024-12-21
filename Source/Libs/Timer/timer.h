@@ -20,11 +20,11 @@ void TIMER_Deinit(TIMER timer);
 
 /// @brief  Sets the match value for a match register of a TIMER peripheral
 /// @param match_reg Match register to set
-void TIMER_SetMatch(TIMER timer, TIMER_MatchReg match_reg);
+void TIMER_SetMatch(TIMER timer, TIMER_MatchRegister match_reg);
 
 /// @brief Unsets a match register of a TIMER peripheral
 /// @param match_reg Match register to unset. This variable won't be touched.
-void TIMER_UnsetMatch(TIMER timer, TIMER_MatchReg match_reg);
+void TIMER_UnsetMatch(TIMER timer, TIMER_MatchRegister match_reg);
 
 void TIMER_Enable(TIMER timer);
 void TIMER_Disable(TIMER timer);
@@ -38,16 +38,16 @@ void TIMER_Reset(TIMER timer);
 // INTERRUPTS
 
 /// @brief Sets the interrupt handler for a TIMER peripheral, on a specific source between
-///        the 4 match registers and 2 capture channels (enum TIMER_Interrupt_Source).
+///        the 4 match registers and 2 capture channels (enum TIMER_InterruptSource).
 /// @param timer TIMER peripheral
-/// @param source Interrupt source (enum TIMER_Interrupt_Source)
+/// @param source Interrupt source (enum TIMER_InterruptSource)
 /// @param handler Function pointer to the interrupt handler: void function(void)
 void TIMER_SetInterruptHandler(TIMER timer, u8 source, TIMER_InterruptHandler handler);
 
 /// @brief Unsets the interrupt handler for a TIMER peripheral, on a specific source between
-///        the 4 match registers and 2 capture channels (enum TIMER_Interrupt_Source).
+///        the 4 match registers and 2 capture channels (enum TIMER_InterruptSource).
 /// @param timer TIMER peripheral
-/// @param source Interrupt source (enum TIMER_Interrupt_Source)
+/// @param source Interrupt source (enum TIMER_InterruptSource)
 void TIMER_UnsetInterruptHandler(TIMER timer, u8 source);
 
 #endif

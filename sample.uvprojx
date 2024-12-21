@@ -530,11 +530,6 @@
               <FileType>1</FileType>
               <FilePath>.\Source\Program\main.c</FilePath>
             </File>
-            <File>
-              <FileName>wave.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\Source\Program\wave.h</FilePath>
-            </File>
           </Files>
         </Group>
         <Group>
@@ -639,6 +634,16 @@
               <FileName>dac.h</FileName>
               <FileType>5</FileType>
               <FilePath>.\Source\Libs\DAC\dac.h</FilePath>
+            </File>
+            <File>
+              <FileName>dac_dma.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Source\Libs\DAC\dac_dma.c</FilePath>
+            </File>
+            <File>
+              <FileName>dac_types.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Source\Libs\DAC\dac_types.h</FilePath>
             </File>
           </Files>
         </Group>
@@ -1174,11 +1179,6 @@
               <FileType>1</FileType>
               <FilePath>.\Source\Program\main.c</FilePath>
             </File>
-            <File>
-              <FileName>wave.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\Source\Program\wave.h</FilePath>
-            </File>
           </Files>
         </Group>
         <Group>
@@ -1283,6 +1283,16 @@
               <FileName>dac.h</FileName>
               <FileType>5</FileType>
               <FilePath>.\Source\Libs\DAC\dac.h</FilePath>
+            </File>
+            <File>
+              <FileName>dac_dma.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Source\Libs\DAC\dac_dma.c</FilePath>
+            </File>
+            <File>
+              <FileName>dac_types.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Source\Libs\DAC\dac_types.h</FilePath>
             </File>
           </Files>
         </Group>

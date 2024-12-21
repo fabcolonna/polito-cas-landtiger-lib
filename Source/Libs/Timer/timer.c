@@ -6,7 +6,7 @@
 
 // PRIVATE FUNCTIONS for MATCH REGISTERS
 
-_PRIVATE void set_match_reg(LPC_TIM_TypeDef *const timer, const TIMER_MatchReg match_reg)
+_PRIVATE void set_match_reg(LPC_TIM_TypeDef *const timer, const TIMER_MatchRegister match_reg)
 {
     switch (match_reg.which)
     {
@@ -27,7 +27,7 @@ _PRIVATE void set_match_reg(LPC_TIM_TypeDef *const timer, const TIMER_MatchReg m
     timer->MCR |= match_reg.actions << (3 * match_reg.which);
 }
 
-_PRIVATE void unset_match_reg(LPC_TIM_TypeDef *const timer, const TIMER_MatchReg match_reg)
+_PRIVATE void unset_match_reg(LPC_TIM_TypeDef *const timer, const TIMER_MatchRegister match_reg)
 {
     switch (match_reg.which)
     {
@@ -159,7 +159,7 @@ void TIMER_Deinit(TIMER timer)
     }
 }
 
-void TIMER_SetMatch(TIMER timer, TIMER_MatchReg match_reg)
+void TIMER_SetMatch(TIMER timer, TIMER_MatchRegister match_reg)
 {
     if (match_reg.which >= MR_COUNT || match_reg.which < 0)
         return;
@@ -181,7 +181,7 @@ void TIMER_SetMatch(TIMER timer, TIMER_MatchReg match_reg)
     }
 }
 
-void TIMER_UnsetMatch(TIMER timer, TIMER_MatchReg match_reg)
+void TIMER_UnsetMatch(TIMER timer, TIMER_MatchRegister match_reg)
 {
     switch (timer.which)
     {

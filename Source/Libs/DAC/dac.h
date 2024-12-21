@@ -1,6 +1,7 @@
 #ifndef __DAC_H
 #define __DAC_H
 
+#include "dac_types.h"
 #include "utils.h"
 
 #ifdef DAC_USE_DMA // DMA is not currently working due to "write permission error 65"
@@ -21,20 +22,25 @@ void DAC_StopDMA(void);
 
 #else
 
-#include "timer_types.h"
-
 /// @brief Initializes the DAC peripheral.
-/// @param sample_rate_hz The sample rate of the DAC.
-/// @param timer This implementation requires the use of a timer to feed the DAC with samples.
-///              Make sure you're not using that timer for other purposes. Take this value
-///              from the TIMER_Which enum.
-void DAC_Init(u8 timer, u32 sample_rate_hz);
+/// @param int_priority The interrupt priority of the timer. If set to INT_PRIO_DEF, the default
+///                     interrupt priority will be used.
+/// @note  This implementation requires the use of 2 timers to feed the DAC with samples
+///        and to play the note for the given duration. By giving these parameters to this
+///        function, you ensure that those timers are not and won't be used for other purposes.
+void DAC_BUZInit(u8 timer_a, u8 timer_b, u8 int_priority);
 
-void DAC_Deinit(void);
+void DAC_BUZDeinit(void);
 
-void DAC_Play(const u16 *const pcm_samples, u32 sample_count);
+/// @brief Plays the given note for the given duration.
+/// @param tone The tone to be played, belonging to the DAC_Note enum.
+/// @param octave The octave of the note to be played, belonging to the DAC_Octave enum.
+/// @param type The type of the note to be played, belonging to the DAC_NoteType enum.
+/// @param bpm The beats per minute of the note to be played.
+/// @param volume The volume of the note to be played (between 0 and 10);
+void DAC_BUZPlay(u16 tone, u8 octave, u8 type, u8 bpm, u8 volume);
 
-void DAC_Stop(void);
+void DAC_BUZStop(void);
 
 #endif
 
