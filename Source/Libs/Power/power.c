@@ -31,3 +31,8 @@ void POWER_TurnOffPeripheral(u8 bit)
 {
     CLR_BIT(LPC_SC->PCONP, bit);
 }
+
+void POWER_WaitForInterrupts(void)
+{
+    __asm volatile("wfi");
+}

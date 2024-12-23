@@ -20,19 +20,19 @@ int main(void)
     SystemInit();
     LED_Init();
 
-    RIT_Init(50, INT_PRIO_DEF);
+    RIT_Init(50, 0);
     RIT_Enable();
 
-    ADC_PMInit(ADC_PM_SAMPLE_WITH_RIT, 4, INT_PRIO_DEF);
+    ADC_PMInit(ADC_PM_SAMPLE_WITH_RIT, 4, 2);
     ADC_PMSetSampleReadyAction(led);
 
-    DAC_BUZInit(TIM_2, TIM_3, INT_PRIO_DEF);
+    DAC_BUZInit(TIM_2, TIM_3, 0);
     DAC_BUZSetVolume(10);
 
-    BUTTON_Init(BTN_DEBOUNCE_WITH_RIT, INT_PRIO_DEF, INT_PRIO_DEF, INT_PRIO_DEF);
+    BUTTON_Init(BTN_DEBOUNCE_WITH_RIT, 0, 0, 0);
     BUTTON_SetInterruptHandler(BTN_INT_SRC_EINT0, play);
 
     POWER_Init(POWR_CFG_SLEEP_ON_EXIT);
     POWER_PowerDownOnWFI();
-    WFI();
+    POWER_WaitForInterrupts();
 }

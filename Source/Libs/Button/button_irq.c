@@ -18,7 +18,7 @@ _PRIVATE u8 eint0_down, eint1_down, eint2_down;
 _DECL_EXTERNALLY bool debouncer_on;
 
 /// @brief RIT job for managing debouncing
-_PRIVATE void handle_debouncing(void)
+void handle_debouncing(void)
 {
     if (eint0_down)
     {
