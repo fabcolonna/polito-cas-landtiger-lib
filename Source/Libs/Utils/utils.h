@@ -17,8 +17,6 @@ typedef enum
 // MACROS
 
 #define IS_BETWEEN_EQ(value, low, hi) ((value) >= (low) && (value) <= (hi))
-#define IS_BETWEEN(value, low, hi) ((value) > (low) && (value) < (hi))
-
 #define IS_BIT_SET(reg, bit) (((reg) & (1 << bit)) == 1)
 
 #define SET_BIT(reg, bit) (reg |= (1 << bit))
@@ -28,16 +26,8 @@ typedef enum
 #define CLR_BITS(reg, value, bit) (reg &= ~((value) << bit))
 
 #define _USED_EXTERNALLY volatile
-
 #define _DECL_EXTERNALLY extern
 #define _PRIVATE static
-
-#define _INT_HANDLER extern void
-
-#define _INLINE __attribute__((always_inline)) inline
-#define _OUT
-
-#define _GENERIC void *
 
 #define NO_PRESCALER 0
 

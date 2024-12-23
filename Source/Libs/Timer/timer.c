@@ -1,6 +1,6 @@
 #include "timer.h"
-#include "LPC17xx.h"
 #include "power.h"
+#include <LPC17xx.h>
 
 #include <stdlib.h>
 
@@ -59,7 +59,7 @@ _PRIVATE void clear_match_regs(LPC_TIM_TypeDef *const timer)
 
 // FUNCTIONS
 
-void TIMER_Init(_OUT TIMER *timer, u8 which, u32 prescaler, u8 int_priority)
+void TIMER_Init(TIMER *timer, u8 which, u32 prescaler, u8 int_priority)
 {
     if (!timer)
         return;

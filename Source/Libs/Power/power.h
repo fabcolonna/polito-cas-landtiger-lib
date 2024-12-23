@@ -33,7 +33,7 @@ void POWER_TurnOffPeripheral(u8 bit);
 
 // WFI function
 
-_INLINE void WFI(void)
+inline void WFI(void)
 {
     __asm volatile("wfi");
 }

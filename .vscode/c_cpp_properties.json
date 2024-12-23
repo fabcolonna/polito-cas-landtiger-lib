@@ -10,10 +10,7 @@
                 "C:/Users/fabio/AppData/Local/Arm/Packs/Keil/LPC1700_DFP/2.7.2/Device/Include/**", // on Windows
                 "C:/Users/fabio/AppData/Local/Arm/Packs/Keil/LPC1700_DFP/2.7.2/RTE_Driver/**"
             ],
-            "cStandard": "c11",
-            "defines": [
-                "VSCODE"
-            ]
+            "cStandard": "c11"
         }
     ],
     "version": 4

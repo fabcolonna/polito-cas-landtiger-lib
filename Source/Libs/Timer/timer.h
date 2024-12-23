@@ -12,7 +12,7 @@
 /// @param prescaler Prescaler value. If set to NO_PRESCALER, prescaler won't be used.
 /// @param int_priority Timer interrupt priority (0 (highest), 15 (lowest)). If set to
 ///                     INT_PRIO_DEF, the default priority is set.
-void TIMER_Init(_OUT TIMER *timer, u8 which, u32 prescaler, u8 int_priority);
+void TIMER_Init(TIMER *timer, u8 which, u32 prescaler, u8 int_priority);
 
 /// @brief Deconfigures a TIMER peripheral (also match registers).
 /// @note In order to use the TIMER peripheral again, it must be initialized.

@@ -1,4 +1,6 @@
-#include "LPC17xx.h"
+#ifndef _WIN32
+#include <LPC17xx.h>
+#endif
 #include "includes.h"
 #include "timer.h"
 
@@ -7,7 +9,7 @@
 ///        and TIM_INT_SRC_COUNT is the number of interrupt sources (4 match registers and
 ///        2 capture channels, although the latter are not implemented in this library).
 /// @note This array is updated by TIMER_SetInterruptHandler() and TIMER_UnsetInterruptHandler().
-_PRIVATE TIMER_InterruptHandler TIMER_Handlers[TIM_COUNT * TIM_INT_SRC_COUNT] = {NULL};
+_PRIVATE TIMER_InterruptHandler handlers[TIM_COUNT * TIM_INT_SRC_COUNT] = {NULL};
 
 // PRIVATE FUNCTIONS
 
@@ -59,136 +61,136 @@ _PRIVATE void clear_interrupt(u8 which, u8 source)
 
 void TIMER_SetInterruptHandler(TIMER timer, u8 source, TIMER_InterruptHandler handler)
 {
-    TIMER_Handlers[timer.which * TIM_INT_SRC_COUNT + source] = handler;
+    handlers[timer.which * TIM_INT_SRC_COUNT + source] = handler;
 }
 
 void TIMER_UnsetInterruptHandler(TIMER timer, u8 source)
 {
-    TIMER_Handlers[timer.which * TIM_INT_SRC_COUNT + source] = NULL;
+    handlers[timer.which * TIM_INT_SRC_COUNT + source] = NULL;
 }
 
 // INTERRUPT HANDLERS.
 
-_INT_HANDLER TIMER0_IRQHandler(void)
+extern void TIMER0_IRQHandler(void)
 {
     if (who_did_interrupt(0, TIM_INT_SRC_MR0))
     {
         clear_interrupt(0, TIM_INT_SRC_MR0);
-        if (TIMER_Handlers[0])
-            TIMER_Handlers[0]();
+        if (handlers[0])
+            handlers[0]();
     }
 
     if (who_did_interrupt(0, TIM_INT_SRC_MR1))
     {
         clear_interrupt(0, TIM_INT_SRC_MR1);
-        if (TIMER_Handlers[1])
-            TIMER_Handlers[1]();
+        if (handlers[1])
+            handlers[1]();
     }
 
     if (who_did_interrupt(0, TIM_INT_SRC_MR2))
     {
         clear_interrupt(0, TIM_INT_SRC_MR2);
-        if (TIMER_Handlers[2])
-            TIMER_Handlers[2]();
+        if (handlers[2])
+            handlers[2]();
     }
 
     if (who_did_interrupt(0, TIM_INT_SRC_MR3))
     {
         clear_interrupt(0, TIM_INT_SRC_MR3);
-        if (TIMER_Handlers[3])
-            TIMER_Handlers[3]();
+        if (handlers[3])
+            handlers[3]();
     }
 }
 
-_INT_HANDLER TIMER1_IRQHandler(void)
+extern void TIMER1_IRQHandler(void)
 {
     if (who_did_interrupt(1, TIM_INT_SRC_MR0))
     {
         clear_interrupt(1, TIM_INT_SRC_MR0);
-        if (TIMER_Handlers[4])
-            TIMER_Handlers[4]();
+        if (handlers[4])
+            handlers[4]();
     }
 
     if (who_did_interrupt(1, TIM_INT_SRC_MR1))
     {
         clear_interrupt(1, TIM_INT_SRC_MR1);
-        if (TIMER_Handlers[5])
-            TIMER_Handlers[5]();
+        if (handlers[5])
+            handlers[5]();
     }
 
     if (who_did_interrupt(1, TIM_INT_SRC_MR2))
     {
         clear_interrupt(1, TIM_INT_SRC_MR2);
-        if (TIMER_Handlers[6])
-            TIMER_Handlers[6]();
+        if (handlers[6])
+            handlers[6]();
     }
 
     if (who_did_interrupt(1, TIM_INT_SRC_MR3))
     {
         clear_interrupt(1, TIM_INT_SRC_MR3);
-        if (TIMER_Handlers[7])
-            TIMER_Handlers[7]();
+        if (handlers[7])
+            handlers[7]();
     }
 }
 
-_INT_HANDLER TIMER2_IRQHandler(void)
+extern void TIMER2_IRQHandler(void)
 {
     if (who_did_interrupt(2, TIM_INT_SRC_MR0))
     {
         clear_interrupt(2, TIM_INT_SRC_MR0);
-        if (TIMER_Handlers[8])
-            TIMER_Handlers[8]();
+        if (handlers[8])
+            handlers[8]();
     }
 
     if (who_did_interrupt(2, TIM_INT_SRC_MR1))
     {
         clear_interrupt(2, TIM_INT_SRC_MR1);
-        if (TIMER_Handlers[9])
-            TIMER_Handlers[9]();
+        if (handlers[9])
+            handlers[9]();
     }
 
     if (who_did_interrupt(2, TIM_INT_SRC_MR2))
     {
         clear_interrupt(2, TIM_INT_SRC_MR2);
-        if (TIMER_Handlers[10])
-            TIMER_Handlers[10]();
+        if (handlers[10])
+            handlers[10]();
     }
 
     if (who_did_interrupt(2, TIM_INT_SRC_MR3))
     {
         clear_interrupt(2, TIM_INT_SRC_MR3);
-        if (TIMER_Handlers[11])
-            TIMER_Handlers[11]();
+        if (handlers[11])
+            handlers[11]();
     }
 }
 
-_INT_HANDLER TIMER3_IRQHandler(void)
+extern void TIMER3_IRQHandler(void)
 {
     if (who_did_interrupt(3, TIM_INT_SRC_MR0))
     {
         clear_interrupt(3, TIM_INT_SRC_MR0);
-        if (TIMER_Handlers[12])
-            TIMER_Handlers[12]();
+        if (handlers[12])
+            handlers[12]();
     }
 
     if (who_did_interrupt(3, TIM_INT_SRC_MR1))
     {
         clear_interrupt(3, TIM_INT_SRC_MR1);
-        if (TIMER_Handlers[13])
-            TIMER_Handlers[13]();
+        if (handlers[13])
+            handlers[13]();
     }
 
     if (who_did_interrupt(3, TIM_INT_SRC_MR2))
     {
         clear_interrupt(3, TIM_INT_SRC_MR2);
-        if (TIMER_Handlers[14])
-            TIMER_Handlers[14]();
+        if (handlers[14])
+            handlers[14]();
     }
 
     if (who_did_interrupt(3, TIM_INT_SRC_MR3))
     {
         clear_interrupt(3, TIM_INT_SRC_MR3);
-        if (TIMER_Handlers[15])
-            TIMER_Handlers[15]();
+        if (handlers[15])
+            handlers[15]();
     }
 }

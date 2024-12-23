@@ -1,6 +1,6 @@
 #include "dac.h"
-#include "LPC17xx.h"
 #include "timer.h"
+#include <LPC17xx.h>
 
 #define DAC_CLK_HZ 25000000
 #define DAC_SIN_TABLE_SZ 45

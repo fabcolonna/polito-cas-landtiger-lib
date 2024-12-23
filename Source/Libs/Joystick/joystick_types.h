@@ -3,6 +3,11 @@
 
 #include "utils.h"
 
+typedef enum
+{
+    JOY_POLL_WITH_RIT = 0x1
+} JOYSTICK_Config;
+
 /// @brief Joystick function handler function pointer
 typedef void (*JOYSTICK_Function)(void);
 

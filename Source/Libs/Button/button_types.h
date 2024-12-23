@@ -1,6 +1,11 @@
 #ifndef __BUTTON_TYPES_H
 #define __BUTTON_TYPES_H
 
+typedef enum
+{
+    BTN_DEBOUNCE_WITH_RIT = 0x1
+} BUTTON_Config;
+
 // INTERRUPTS
 
 typedef enum
@@ -16,9 +21,9 @@ typedef enum
 
     /// @brief Number of interrupt sources
     BTN_INT_SRC_COUNT
-} BUTTON_Interrupt_Source;
+} BUTTON_InterruptSource;
 
 // Interrupt handler function pointer
-typedef void (*BUTTON_Interrupt_Handler)(void);
+typedef void (*BUTTON_InterruptHandler)(void);
 
 #endif

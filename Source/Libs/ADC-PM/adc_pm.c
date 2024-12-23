@@ -1,12 +1,14 @@
 #include "adc_pm.h"
-#include "LPC17xx.h"
 #include "power.h"
+#include "rit.h"
+
+#include <LPC17xx.h>
 
 // Since channels are not handled, types are not needed
 #define ADC_CH5 (1 << 5)
 #define ADC_GLOBAL_INTEN (1 << 8)
 
-void ADC_PMInit(u8 clock_divider, u8 int_priority)
+void ADC_PMInit(u8 options, u8 clock_divider, u8 int_priority)
 {
     POWER_TurnOnPeripheral(POW_PCADC);
 
@@ -18,11 +20,15 @@ void ADC_PMInit(u8 clock_divider, u8 int_priority)
 
     if (!IS_DEF_PRIORITY(int_priority) && IS_BETWEEN_EQ(int_priority, 0, 15))
         NVIC_SetPriority(ADC_IRQn, int_priority);
+
+    if (options & ADC_PM_SAMPLE_WITH_RIT && RIT_IsEnabled())
+        RIT_AddJob(ADC_PMGetSample);
 }
 
 void ADC_PMDeinit(void)
 {
     POWER_TurnOffPeripheral(POW_PCADC);
+    RIT_RemoveJob(ADC_PMGetSample); // Won't do nothing if absent
 
     NVIC_DisableIRQ(ADC_IRQn);
     LPC_ADC->ADCR = 0;

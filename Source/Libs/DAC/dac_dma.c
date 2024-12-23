@@ -2,13 +2,12 @@
 
 #ifdef DAC_USE_DMA
 
-#include "GPDMA_LPC17xx.h"
-#include "LPC17xx.h"
+#include <GPDMA_LPC17xx.h>
+#include <LPC17xx.h>
 #include <stdbool.h>
 
-_PRIVATE u8 DAC_DMAChannel;
-
-_PRIVATE bool DAC_DMAWasSuccessful;
+_PRIVATE u8 dma_channel;
+_PRIVATE bool dma_ok;
 
 enum
 {
@@ -33,8 +32,8 @@ void DAC_InitDMA(u32 sample_rate_hz)
     LPC_DAC->DACCNTVAL = sample_rate_hz;
 
     GPDMA_Initialize();
-    DAC_DMAChannel = 1;
-    DAC_DMAWasSuccessful = false;
+    dma_channel = 1;
+    dma_ok = false;
 }
 
 void DAC_DeinitDMA(void)
@@ -49,7 +48,7 @@ void DAC_DeinitDMA(void)
 
 _PRIVATE void dma_transfer_complete_callback(u32 event)
 {
-    DAC_DMAWasSuccessful = (event & GPDMA_EVENT_TERMINAL_COUNT_REQUEST) != 0;
+    dma_ok = (event & GPDMA_EVENT_TERMINAL_COUNT_REQUEST) != 0;
     DAC_StopDMA();
 }
 
@@ -58,20 +57,20 @@ void DAC_PlayDMA(const u16 *const pcm_samples, u32 sample_count)
     if (!pcm_samples || sample_count == 0)
         return;
 
-    const u32 status = GPDMA_ChannelConfigure(DAC_DMAChannel, (u32)pcm_samples, (u32)&LPC_DAC->DACR, sample_count,
+    const u32 status = GPDMA_ChannelConfigure(dma_channel, (u32)pcm_samples, (u32)&LPC_DAC->DACR, sample_count,
                                               GPDMA_CH_CONTROL_SI | GPDMA_CH_CONTROL_DI | GPDMA_WIDTH_HALFWORD,
                                               GPDMA_CONFIG_E, dma_transfer_complete_callback);
 
     if (status != 0)
         return;
 
-    if (GPDMA_ChannelEnable(DAC_DMAChannel) != 0)
+    if (GPDMA_ChannelEnable(dma_channel) != 0)
         return;
 }
 
 void DAC_StopDMA(void)
 {
-    GPDMA_ChannelDisable(DAC_DMAChannel);
+    GPDMA_ChannelDisable(dma_channel);
 }
 
 #endif

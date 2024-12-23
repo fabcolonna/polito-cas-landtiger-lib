@@ -1,5 +1,5 @@
 #include "power.h"
-#include "LPC17xx.h"
+#include <LPC17xx.h>
 
 void POWER_Init(u8 config)
 {

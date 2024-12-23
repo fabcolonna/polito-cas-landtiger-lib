@@ -426,9 +426,14 @@
               <FilePath>.\Source\Libs\RIT\rit.h</FilePath>
             </File>
             <File>
-              <FileName>rit_irq.c</FileName>
+              <FileName>rit_job.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\Source\Libs\RIT\rit_irq.c</FilePath>
+              <FilePath>.\Source\Libs\RIT\rit_job.c</FilePath>
+            </File>
+            <File>
+              <FileName>rit_types.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Source\Libs\RIT\rit_types.h</FilePath>
             </File>
           </Files>
         </Group>
@@ -619,6 +624,11 @@
               <FileName>adc_pm_irq.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\Source\Libs\ADC-PM\adc_pm_irq.c</FilePath>
+            </File>
+            <File>
+              <FileName>adc_pm_types.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Source\Libs\ADC-PM\adc_pm_types.h</FilePath>
             </File>
           </Files>
         </Group>
@@ -1075,9 +1085,14 @@
               <FilePath>.\Source\Libs\RIT\rit.h</FilePath>
             </File>
             <File>
-              <FileName>rit_irq.c</FileName>
+              <FileName>rit_job.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\Source\Libs\RIT\rit_irq.c</FilePath>
+              <FilePath>.\Source\Libs\RIT\rit_job.c</FilePath>
+            </File>
+            <File>
+              <FileName>rit_types.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Source\Libs\RIT\rit_types.h</FilePath>
             </File>
           </Files>
         </Group>
@@ -1268,6 +1283,11 @@
               <FileName>adc_pm_irq.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\Source\Libs\ADC-PM\adc_pm_irq.c</FilePath>
+            </File>
+            <File>
+              <FileName>adc_pm_types.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Source\Libs\ADC-PM\adc_pm_types.h</FilePath>
             </File>
           </Files>
         </Group>

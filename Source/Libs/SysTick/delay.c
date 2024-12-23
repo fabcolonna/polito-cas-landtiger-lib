@@ -1,5 +1,6 @@
 #include "delay.h"
-#include "LPC17xx.h"
+
+#include <LPC17xx.h>
 
 /// @brief Ticks for a given number of milliseconds, and returns when done.
 _DECL_EXTERNALLY void Tick_Load(u32);
