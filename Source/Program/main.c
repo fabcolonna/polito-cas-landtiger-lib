@@ -1,38 +1,19 @@
 #include "includes.h"
 
-void led(u16 old, u16 new)
-{
-    LED_Clear();
-    const u8 led_index = new / 512; // (4096 / 8)
-    LED_On(1 << led_index);
-}
-
-void play(void)
-{
-    if (DAC_BUZIsPlaying())
-        DAC_BUZStop();
-    else
-        DAC_BUZPlay((DAC_Tone){.note = DAC_NOTE_A, .octave = DAC_OCT_4, .type = DAC_NOTE_WHOLE}, 60);
-}
-
 int main(void)
 {
     SystemInit();
-    LED_Init();
+    LCD_Init();
 
     RIT_Init(50, 0);
     RIT_Enable();
-
-    ADC_PMInit(ADC_PM_SAMPLE_WITH_RIT, 4, 2);
-    ADC_PMSetSampleReadyAction(led);
-
-    DAC_BUZInit(TIM_2, TIM_3, 0);
-    DAC_BUZSetVolume(10);
-
-    BUTTON_Init(BTN_DEBOUNCE_WITH_RIT, 0, 0, 0);
-    BUTTON_SetInterruptHandler(BTN_INT_SRC_EINT0, play);
+	
+		LCD_ClearWith(COL_GREEN);
+	
+		const char *string = "Hello!";
+		LCD_PrintString(string, COL_WHITE, LCD_FONT_MSGOTHIC, COL_RED, (LCD_Coordinate){0, 280});
 
     POWER_Init(POWR_CFG_SLEEP_ON_EXIT);
     POWER_PowerDownOnWFI();
     POWER_WaitForInterrupts();
-}
+} 

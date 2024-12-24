@@ -9,12 +9,12 @@
 #include "button.h"
 #include "dac.h"
 #include "delay.h"
+#include "glcd.h"
 #include "joystick.h"
 #include "led.h"
 #include "power.h"
 #include "rit.h"
 #include "timer.h"
-
 
 #ifdef SIMULATOR
 extern uint8_t ScaleFlag; // Needs to be visible in order to become visible by the simulator

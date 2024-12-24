@@ -438,31 +438,6 @@
           </Files>
         </Group>
         <Group>
-          <GroupName>Buttons</GroupName>
-          <Files>
-            <File>
-              <FileName>button.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\Source\Libs\Button\button.c</FilePath>
-            </File>
-            <File>
-              <FileName>button.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\Source\Libs\Button\button.h</FilePath>
-            </File>
-            <File>
-              <FileName>button_irq.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\Source\Libs\Button\button_irq.c</FilePath>
-            </File>
-            <File>
-              <FileName>button_types.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\Source\Libs\Button\button_types.h</FilePath>
-            </File>
-          </Files>
-        </Group>
-        <Group>
           <GroupName>LED</GroupName>
           <Files>
             <File>
@@ -553,26 +528,6 @@
           </Files>
         </Group>
         <Group>
-          <GroupName>SysTick</GroupName>
-          <Files>
-            <File>
-              <FileName>delay.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\Source\Libs\SysTick\delay.c</FilePath>
-            </File>
-            <File>
-              <FileName>delay.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\Source\Libs\SysTick\delay.h</FilePath>
-            </File>
-            <File>
-              <FileName>delay.s</FileName>
-              <FileType>2</FileType>
-              <FilePath>.\Source\Libs\SysTick\delay.s</FilePath>
-            </File>
-          </Files>
-        </Group>
-        <Group>
           <GroupName>Joystick</GroupName>
           <Files>
             <File>
@@ -654,6 +609,61 @@
               <FileName>dac_types.h</FileName>
               <FileType>5</FileType>
               <FilePath>.\Source\Libs\DAC\dac_types.h</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>GLCD</GroupName>
+          <Files>
+            <File>
+              <FileName>glcd.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Source\Libs\GLCD\glcd.c</FilePath>
+            </File>
+            <File>
+              <FileName>glcd.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Source\Libs\GLCD\glcd.h</FilePath>
+            </File>
+            <File>
+              <FileName>glcd_text_utils.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Source\Libs\GLCD\glcd_text_utils.c</FilePath>
+            </File>
+            <File>
+              <FileName>glcd_types.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Source\Libs\GLCD\glcd_types.h</FilePath>
+            </File>
+            <File>
+              <FileName>glcd_utils.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Source\Libs\GLCD\glcd_utils.h</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>Buttons</GroupName>
+          <Files>
+            <File>
+              <FileName>button.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Source\Libs\Button\button.c</FilePath>
+            </File>
+            <File>
+              <FileName>button.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Source\Libs\Button\button.h</FilePath>
+            </File>
+            <File>
+              <FileName>button_irq.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Source\Libs\Button\button_irq.c</FilePath>
+            </File>
+            <File>
+              <FileName>button_types.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Source\Libs\Button\button_types.h</FilePath>
             </File>
           </Files>
         </Group>
@@ -1000,7 +1010,7 @@
               <MiscControls></MiscControls>
               <Define>SIMULATOR</Define>
               <Undefine></Undefine>
-              <IncludePath>.\Source\Libs\Button;.\Source\CMSIS_core;.\Source;.\Source\Libs\RIT;.\Source\Libs\Timer;.\Source\Libs\LED;.\Source\Libs\Power;.\Source\Libs\Utils;.\Source\Program;.\Source\Startup;.\Source\Libs\SysTick;.\Source\Libs\Utils\DynamicArray;.\Source\Libs\Joystick;.\Source\Libs\ADC-PM;.\Source\Libs\DAC</IncludePath>
+              <IncludePath>.\Source\Libs\Button;.\Source\CMSIS_core;.\Source;.\Source\Libs\RIT;.\Source\Libs\Timer;.\Source\Libs\LED;.\Source\Libs\Power;.\Source\Libs\Utils;.\Source\Program;.\Source\Startup;.\Source\Libs\SysTick;.\Source\Libs\Utils\DynamicArray;.\Source\Libs\Joystick;.\Source\Libs\ADC-PM;.\Source\Libs\DAC;.\Source\Libs\GLCD</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -1097,31 +1107,6 @@
           </Files>
         </Group>
         <Group>
-          <GroupName>Buttons</GroupName>
-          <Files>
-            <File>
-              <FileName>button.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\Source\Libs\Button\button.c</FilePath>
-            </File>
-            <File>
-              <FileName>button.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\Source\Libs\Button\button.h</FilePath>
-            </File>
-            <File>
-              <FileName>button_irq.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\Source\Libs\Button\button_irq.c</FilePath>
-            </File>
-            <File>
-              <FileName>button_types.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\Source\Libs\Button\button_types.h</FilePath>
-            </File>
-          </Files>
-        </Group>
-        <Group>
           <GroupName>LED</GroupName>
           <Files>
             <File>
@@ -1212,26 +1197,6 @@
           </Files>
         </Group>
         <Group>
-          <GroupName>SysTick</GroupName>
-          <Files>
-            <File>
-              <FileName>delay.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\Source\Libs\SysTick\delay.c</FilePath>
-            </File>
-            <File>
-              <FileName>delay.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\Source\Libs\SysTick\delay.h</FilePath>
-            </File>
-            <File>
-              <FileName>delay.s</FileName>
-              <FileType>2</FileType>
-              <FilePath>.\Source\Libs\SysTick\delay.s</FilePath>
-            </File>
-          </Files>
-        </Group>
-        <Group>
           <GroupName>Joystick</GroupName>
           <Files>
             <File>
@@ -1313,6 +1278,61 @@
               <FileName>dac_types.h</FileName>
               <FileType>5</FileType>
               <FilePath>.\Source\Libs\DAC\dac_types.h</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>GLCD</GroupName>
+          <Files>
+            <File>
+              <FileName>glcd.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Source\Libs\GLCD\glcd.c</FilePath>
+            </File>
+            <File>
+              <FileName>glcd.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Source\Libs\GLCD\glcd.h</FilePath>
+            </File>
+            <File>
+              <FileName>glcd_text_utils.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Source\Libs\GLCD\glcd_text_utils.c</FilePath>
+            </File>
+            <File>
+              <FileName>glcd_types.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Source\Libs\GLCD\glcd_types.h</FilePath>
+            </File>
+            <File>
+              <FileName>glcd_utils.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Source\Libs\GLCD\glcd_utils.h</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>Buttons</GroupName>
+          <Files>
+            <File>
+              <FileName>button.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Source\Libs\Button\button.c</FilePath>
+            </File>
+            <File>
+              <FileName>button.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Source\Libs\Button\button.h</FilePath>
+            </File>
+            <File>
+              <FileName>button_irq.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Source\Libs\Button\button_irq.c</FilePath>
+            </File>
+            <File>
+              <FileName>button_types.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Source\Libs\Button\button_types.h</FilePath>
             </File>
           </Files>
         </Group>
