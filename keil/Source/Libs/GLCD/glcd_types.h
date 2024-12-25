@@ -42,6 +42,8 @@ typedef enum
 
 typedef u16 LCD_RGBColor;
 
+#define NO_FILL_COLOR (u16)(-1)
+
 /// @brief Converts RGB (24 bit) into RGB565 (16 bit):
 ///        - 5 bits for red (bits 11-15)
 ///        - 6 bits for green (bits 5-10)

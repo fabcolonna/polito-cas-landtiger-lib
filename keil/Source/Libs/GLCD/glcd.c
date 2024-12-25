@@ -1,5 +1,7 @@
 #include "glcd.h"
 #include <LPC17xx.h>
+#include <math.h>
+#include <stdbool.h>
 
 /// @brief Models.
 typedef enum
@@ -47,7 +49,7 @@ _PRIVATE u8 LCD_Code;
 ///       based on the specific protocol.
 /// @note DB[7..0] and DB[15..8] are connected to the same pins 2.[0..7].
 //        Low bits and high bits need to be sent separately, with specific timings.
-_PRIVATE inline __attribute ((always_inline)) void send(u16 halfw)
+_PRIVATE inline void send(u16 halfw)
 {
     LPC_GPIO2->FIODIR |= 0xFF; /* P2.0...P2.7 Output */
     LCD_DIR(1);                /* Interface A->B */
@@ -60,7 +62,7 @@ _PRIVATE inline __attribute ((always_inline)) void send(u16 halfw)
 
 /// @brief Reads an half-word (16 bits) from the LCD's DB port.
 /// @return The HW read.
-_PRIVATE inline __attribute((always_inline)) u16 recv(void)
+_PRIVATE inline u16 recv(void)
 {
     u16 value;
 
@@ -439,6 +441,114 @@ void LCD_DrawLine(LCD_Coordinate from, LCD_Coordinate to, u16 color)
     }
 }
 
+// SHAPES STUFF
+
+void LCD_DrawRectangle(LCD_Coordinate from, LCD_Coordinate to, u16 edge_color, u16 fill_color)
+{
+    // If the starting point is to the right of the ending point (both for x and/or y), swap.
+    u16 tmp;
+    if (from.x > to.x)
+    {
+        tmp = to.x;
+        to.x = from.x;
+        from.x = tmp;
+    }
+    if (from.y > to.y)
+    {
+        tmp = to.y;
+        to.y = from.y;
+        from.y = tmp;
+    }
+
+    // Drawing the edges of the rectangle
+    LCD_DrawLine(from, (LCD_Coordinate){to.x, from.y}, edge_color); // Top horizontal edge
+    LCD_DrawLine(from, (LCD_Coordinate){from.x, to.y}, edge_color); // Left vertical edge
+    LCD_DrawLine(to, (LCD_Coordinate){to.x, from.y}, edge_color);   // Right vertical edge
+    LCD_DrawLine(to, (LCD_Coordinate){from.x, to.y}, edge_color);   // Bottom horizontal edge
+
+    if (fill_color == NO_FILL_COLOR)
+        return;
+
+    // Filling the rectangle
+    for (u16 i = from.x + 1; i < to.x; i++)
+        for (u16 j = from.y + 1; j < to.y; j++)
+            set_point_internal(fill_color, i, j);
+}
+
+_PRIVATE inline bool is_inside_circle(u16 x, u16 y, u16 cx, u16 cy, u16 r)
+{
+    return pow((x - cx), 2) + pow((y - cx), 2) <= pow(r, 2);
+}
+
+void LCD_DrawCircle(LCD_Coordinate center, u16 radius, u16 border_color, u16 fill_color)
+{
+    if (radius == 0)
+        return;
+
+    // Printing 4 cardinal points of the circle: note that if the radius is subtracted from y,
+    // from the center, the pixel will be actually colored at the other side, because smaller
+    // numbers mean higher positions in the screen.
+    set_point_internal(border_color, center.x + radius, center.y); // Right side of the center
+    set_point_internal(border_color, center.x - radius, center.y); // Left side
+    set_point_internal(border_color, center.x, center.y + radius); // Top side, but since we +, it's actually the bottom
+    set_point_internal(border_color, center.x, center.y - radius); // Bottom side, but since we -, it's actually the top
+
+    u16 x = radius, y = 0; // Working on the first octant in the fourth quadrant
+    int p = 1 - radius;    // Initial value of the decision parameter
+
+    // Iterating till y (that is initially zero) becomes = x, meaning that
+    // we reached the end of the octant. That's because we're actually iterating
+    // over the points of that octant only. The other ones are printed using symmetry.
+    while (x > y++)
+    {
+        // The decision parameter is needed to figure out if the X position at which
+        // we're drawing needs to be decreased by 1, i.e. moved closer to the circle,
+        // so that a curved line is formed. Y is constanty incremented in the while
+        // loop, meaning that we're moving upwords in the octant, but really downward
+        // on the screen, since we get higher pixel values if we move to the bottom of it.
+        if (p <= 0)           // The midpoint is inside or on the border of the circle, x stays fixed.
+            p += (2 * y + 1); // 2y + 1 accounts for the distance increase due to Y++
+        else                  // Outside the circle
+        {
+            x--;                    // We move closer to the center
+            p += (2 * (y - x) + 1); // 2(y-x) + 1 accounts for the decreased X and increased Y
+        }
+
+        if (y >= x) // We reached the end of the octant (y=x)
+            break;
+
+        // Printing the points in the other octants using symmetry
+        set_point_internal(border_color, x + center.x, y + center.y);
+        set_point_internal(border_color, -x + center.x, y + center.y);
+        set_point_internal(border_color, x + center.x, -y + center.y);
+        set_point_internal(border_color, -x + center.x, -y + center.y);
+        set_point_internal(border_color, y + center.x, x + center.y);
+        set_point_internal(border_color, -y + center.x, x + center.y);
+        set_point_internal(border_color, y + center.x, -x + center.y);
+        set_point_internal(border_color, -y + center.x, -x + center.y);
+    }
+
+    if (fill_color == NO_FILL_COLOR)
+        return;
+
+    // Filling the circle
+    for (u16 i = center.x - radius + 1; i < center.x + radius; i++)
+        for (u16 j = center.y - radius + 1; j < center.y + radius; j++)
+            if (is_inside_circle(i, j, center.x, center.y, radius))
+                set_point_internal(fill_color, i, j);
+}
+
+void LCD_DrawSprite(const u16 *const bitmap, LCD_Coordinate where)
+{
+    if (!bitmap)
+        return;
+
+    u16 x = where.x, y = where.y;
+    for (u16 i = 0; i < MAX_X; i++)
+        for (u16 j = 0; j < MAX_Y; j++)
+            set_point_internal(bitmap[i + j * MAX_X], x + i, y + j);
+}
+
 // CHAR STUFF
 
 _DECL_EXTERNALLY void get_ascii_for(u8 ascii, u8 font, u8 *const out);
@@ -452,10 +562,10 @@ void LCD_PutChar(u8 chr, u16 chr_color, u8 font, u16 bg_color, LCD_Coordinate wh
         tmp_char = buffer[i];
         for (u16 j = 0; j < 8; j++)
         {
-            if (((tmp_char >> (7 - j)) & 0x01) == 0x01)
+            if (((tmp_char >> (7 - j)) & 0x01))
                 set_point_internal(chr_color, where.x + j, where.y + i);
             else
-                set_point_internal(chr_color, where.x + j, where.y + i);
+                set_point_internal(bg_color, where.x + j, where.y + i);
         }
     }
 }
