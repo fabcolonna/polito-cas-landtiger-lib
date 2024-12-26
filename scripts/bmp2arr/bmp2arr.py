@@ -1,5 +1,6 @@
 import sys
 import struct
+import argparse
 
 # Read the color table (CT) from the BMP file (only 1-4-8 bits/pixel)
 #? The color table contains the RGB values of the colors used in the image,
@@ -60,12 +61,15 @@ def write_to_c_header(h_file, bmp_name, pixel_colors, width, height):
 # Main function
 
 if __name__ == "__main__":
-    if len(sys.argv) != 3:
-        print("Usage: bmp2arr.py <input> <output>")
-        sys.exit(1)
+    parser = argparse.ArgumentParser(prog='bmp2arr', description='Convert BMP image to an RGB, C-style array')
+    parser.add_argument('bmp_file', type=str, help='BMP file to convert (only 1-4-8 BPP)')
+    parser.add_argument('out_file', type=str, help='Output file in which to write the C-style array')
+    parser.add_argument('--rgb565', action='store_false', help='Convert RGB888 to RGB565 for 16-bit displays')
+    parser.add_argument('--merge-rgb', action='store_false', help='Merge RGB values into a single 16-bit value')
 
-    bmp_file = sys.argv[1]
-    h_file = sys.argv[2]
+    args = parser.parse_args()
+    bmp_file = args.bmp_file
+    h_file = args.out_file
 
     with open(bmp_file, "rb") as bmp:
         pixel_colors = []
@@ -82,5 +86,10 @@ if __name__ == "__main__":
             pixel_colors = read_pixel_colors_ct(bmp, color_palette, w, h, bpp)
         else:
             raise ValueError("Unsupported BMP format (supported: 1, 4, 8 bits/pixel)")
+
+        if args.rgb565:
+            pixel_colors = rgb_to_rgb565(pixel_colors)
+        if args.merge_rgb:
+            pixel_colors
 
         write_to_c_header(h_file, bmp.name, pixel_colors, w, h)
