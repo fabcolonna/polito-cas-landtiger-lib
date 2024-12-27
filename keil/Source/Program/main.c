@@ -4,6 +4,7 @@ int main(void)
 {
     SystemInit();
     LCD_Init();
+    TP_Init();
 
     RIT_Init(50, 0);
     RIT_Enable();

@@ -209,6 +209,12 @@ _PRIVATE u16 bgr_to_rgb(u16 bgr)
     return (r << 11) | (g << 5) | b;
 }
 
+_PRIVATE inline void set_point_internal(LCD_RGBColor color, u16 x, u16 y)
+{
+    LCD_Coordinate c = {.x = x, .y = y};
+    LCD_SetPoint(color, c);
+}
+
 // PUBLIC FUNCTIONS
 
 void LCD_Init(void)
@@ -373,12 +379,6 @@ void LCD_SetPoint(LCD_RGBColor color, LCD_Coordinate where)
 
 // DRAW LINE STUFF
 
-_PRIVATE inline void set_point_internal(LCD_RGBColor color, u16 x, u16 y)
-{
-    LCD_Coordinate c = {.x = x, .y = y};
-    LCD_SetPoint(color, c);
-}
-
 void LCD_DrawLine(LCD_Coordinate from, LCD_Coordinate to, u16 color)
 {
     // If the starting point is to the right of the ending point (both for x and/or y), swap.
@@ -426,7 +426,7 @@ void LCD_DrawLine(LCD_Coordinate from, LCD_Coordinate to, u16 color)
     }
     else
     {
-        tmp = 2 * dx - dy; /* ¿¿½üYÖá */
+        tmp = 2 * dx - dy;
         while (from.y != to.y)
         {
             set_point_internal(color, from.x, from.y++);
@@ -467,13 +467,13 @@ void LCD_DrawRectangle(LCD_Coordinate from, LCD_Coordinate to, u16 edge_color, u
     LCD_DrawLine(to, (LCD_Coordinate){to.x, from.y}, edge_color);   // Right vertical edge
     LCD_DrawLine(to, (LCD_Coordinate){from.x, to.y}, edge_color);   // Bottom horizontal edge
 
-    if (fill_color == NO_FILL_COLOR)
-        return;
-
-    // Filling the rectangle
-    for (u16 i = from.x + 1; i < to.x; i++)
-        for (u16 j = from.y + 1; j < to.y; j++)
-            set_point_internal(fill_color, i, j);
+    if (fill_color != NO_FILL_COLOR)
+    {
+        // Filling the rectangle
+        for (u16 i = from.x + 1; i < to.x; i++)
+            for (u16 j = from.y + 1; j < to.y; j++)
+                set_point_internal(fill_color, i, j);
+    }
 }
 
 _PRIVATE inline bool is_inside_circle(u16 x, u16 y, u16 cx, u16 cy, u16 r)
@@ -611,20 +611,75 @@ void LCD_PrintString(const char *const str, u16 str_color, u8 font, u16 bg_color
         return;
 
     u8 tmp_char, *copy = (u8 *)str;
-    while ((tmp_char = *copy++))
+
+    u16 max_width = 0;     // Track the maximum width (for multi-line)
+    u16 start_x = where.x; // Saving the starting x position
+    u16 total_height = 16; // Minimum height is one line (font height)
+    bool no_more_space = false;
+    while ((tmp_char = *copy++) && !no_more_space)
     {
         LCD_PutChar(tmp_char, str_color, font, bg_color, where);
-        if (where.x < MAX_X - 8) // Continue on the same line
+
+        // Moving to the next char position
+        if (where.x + 8 < MAX_X) // Continue on the same line
             where.x += 8;
-        else if (where.y < MAX_Y - 16) // Go to the next line
+        else if (where.y + 16 < MAX_Y) // Go to the next line if there's space on the x axis
         {
             where.x = 0;
             where.y += 16;
+            total_height += 16; // Increment total height for each new line
         }
-        else // Wrap around to the top-left corner
-        {
-            where.x = 0;
-            where.y = 0;
-        }
+        else
+            no_more_space = true; // Stop printing if there's no more space
+
+        // Update the maximum width for the current line
+        u16 current_width = where.x - start_x;
+        if (current_width > max_width)
+            max_width = current_width;
     }
+
+    // If the string is short and doesn't wrap, set max_width correctly
+    if (max_width == 0)
+        max_width = where.x - start_x;
+}
+
+// PUBLIC DELETE FUNCTIONS
+
+void LCD_DeleteLine(LCD_Coordinate from, LCD_Coordinate to, u16 bg_color)
+{
+    LCD_DrawLine(from, to, bg_color);
+}
+
+void LCD_DeleteRectangle(LCD_Coordinate from, LCD_Coordinate to, u16 bg_color)
+{
+    LCD_DrawRectangle(from, to, bg_color, bg_color);
+}
+
+void LCD_DeleteCircle(LCD_Coordinate center, u16 radius, u16 bg_color)
+{
+    LCD_DrawCircle(center, radius, bg_color, bg_color);
+}
+
+void LCD_DeleteImage(LCD_Coordinate where, u16 width, u16 height, u16 bg_color)
+{
+    // Boundary check: if image is too big, stop earlier
+    if (where.x + width > MAX_X)
+        width = MAX_X - where.x;
+
+    if (where.y + height > MAX_Y)
+        height = MAX_Y - where.y;
+
+    for (u16 i = 0; i < height; i++)
+        for (u16 j = 0; j < width; j++)
+            set_point_internal(bg_color, where.x + j, where.y + i);
+}
+
+void LCD_DeleteChar(u8 chr, u16 font, u16 bg_color, LCD_Coordinate where)
+{
+    LCD_PutChar(chr, bg_color, font, bg_color, where);
+}
+
+void LCD_DeleteString(const char *const str, u16 font, u16 bg_color, LCD_Coordinate where)
+{
+    LCD_PrintString(str, bg_color, font, bg_color, where);
 }

@@ -13,6 +13,25 @@
 #define MAX_Y 320
 #endif
 
+// clang-format off
+
+// Top row positions
+#define LCD_POS_TOP_LEFT(pad_x, pad_y)                      (LCD_Coordinate){10 + (pad_x), 10 + (pad_y)}
+#define LCD_POS_TOP_CENTER(pad_x, pad_y, obj_width)         (LCD_Coordinate){(MAX_X - (obj_width)) / 2 + (pad_x), 10 + (pad_y)}
+#define LCD_POS_TOP_RIGHT(pad_x, pad_y, obj_width)          (LCD_Coordinate){MAX_X - 10 - (obj_width) + (pad_x), 10 + (pad_y)}
+
+// Middle row positions
+#define LCD_POS_MIDDLE_LEFT(pad_x, pad_y, obj_height)               (LCD_Coordinate){10 + (pad_x), (MAX_Y - (obj_height)) / 2 + (pad_y)}
+#define LCD_POS_MIDDLE_CENTER(pad_x, pad_y, obj_width, obj_height)  (LCD_Coordinate){(MAX_X - (obj_width)) / 2 + (pad_x), (MAX_Y - (obj_height)) / 2 + (pad_y)}
+#define LCD_POS_MIDDLE_RIGHT(pad_x, pad_y, obj_width, obj_height)   (LCD_Coordinate){MAX_X - 10 - (obj_width) + (pad_x), (MAX_Y - (obj_height)) / 2 + (pad_y)}
+
+// Bottom row positions
+#define LCD_POS_BOTTOM_LEFT(pad_x, pad_y, obj_height)               (LCD_Coordinate){10 + (pad_x), MAX_Y - 10 - (obj_height) + (pad_y)}
+#define LCD_POS_BOTTOM_CENTER(pad_x, pad_y, obj_width, obj_height)  (LCD_Coordinate){(MAX_X - (obj_width)) / 2 + (pad_x), MAX_Y - 10 - (obj_height) + (pad_y)}
+#define LCD_POS_BOTTOM_RIGHT(pad_x, pad_y, obj_width, obj_height)   (LCD_Coordinate){MAX_X - 10 - (obj_width) + (pad_x), MAX_Y - 10 - (obj_height) + (pad_y)}
+
+// clang-format on
+
 /// @brief Even though the LCD itself supports 260K colors, the bus interface
 ///        is only 16-bit, so we can only use 65K colors
 typedef enum

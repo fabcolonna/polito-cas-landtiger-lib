@@ -13,6 +13,7 @@ typedef enum
 {
     POW_PCTIM0 = 1,
     POW_PCTIM1 = 2,
+    POW_PCSSP1 = 10,
     POW_PCADC = 12,
     POW_PCCAN1 = 13,
     POW_PCCAN2 = 14,
