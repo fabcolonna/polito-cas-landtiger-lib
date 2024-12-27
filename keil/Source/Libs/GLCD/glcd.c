@@ -1,4 +1,5 @@
 #include "glcd.h"
+
 #include <LPC17xx.h>
 #include <math.h>
 #include <stdbool.h>
@@ -538,15 +539,49 @@ void LCD_DrawCircle(LCD_Coordinate center, u16 radius, u16 border_color, u16 fil
                 set_point_internal(fill_color, i, j);
 }
 
-void LCD_DrawSprite(const u16 *const bitmap, LCD_Coordinate where)
+void LCD_DrawImage16(const u16 *const bitmap, u16 width, u16 height, LCD_Coordinate where)
 {
     if (!bitmap)
         return;
 
-    u16 x = where.x, y = where.y;
-    for (u16 i = 0; i < MAX_X; i++)
-        for (u16 j = 0; j < MAX_Y; j++)
-            set_point_internal(bitmap[i + j * MAX_X], x + i, y + j);
+    // Boundary check: if image is too big, crop it
+    if (where.x + width > MAX_X)
+        width = MAX_X - where.x;
+
+    if (where.y + height > MAX_Y)
+        height = MAX_Y - where.y;
+
+    for (u16 i = 0; i < height; i++)
+        for (u16 j = 0; j < width; j++)
+            set_point_internal(bitmap[j + i * height], where.x + j, where.y + i);
+}
+
+void LCD_DrawImage32(const u32 *const bitmap_rgb8565, u16 width, u16 height, LCD_Coordinate where)
+{
+    if (!bitmap_rgb8565)
+        return;
+
+    // Boundary check: if image is too big, crop it
+    if (where.x + width > MAX_X)
+        width = MAX_X - where.x;
+
+    if (where.y + height > MAX_Y)
+        height = MAX_Y - where.y;
+
+    for (u16 i = 0; i < height; i++)
+    {
+        for (u16 j = 0; j < width; j++)
+        {
+            const u32 pixel = bitmap_rgb8565[j + i * width];
+            // Note: RGB8565 is 24 bits long: AAAAAAAARRRRRGGGGGGBBBBB
+            const u8 alpha = (pixel >> 16) & 0xFF;
+            if (alpha == 0)
+                continue; // Transparent pixel, skip
+
+            const u16 rgb565 = (u16)(pixel & 0x00FFFF);
+            set_point_internal(rgb565, where.x + j, where.y + i);
+        }
+    }
 }
 
 // CHAR STUFF

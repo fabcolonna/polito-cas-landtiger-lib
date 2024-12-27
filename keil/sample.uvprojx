@@ -1010,7 +1010,7 @@
               <MiscControls></MiscControls>
               <Define>SIMULATOR</Define>
               <Undefine></Undefine>
-              <IncludePath>.\Source\Libs\Button;.\Source\CMSIS_core;.\Source;.\Source\Libs\RIT;.\Source\Libs\Timer;.\Source\Libs\LED;.\Source\Libs\Power;.\Source\Libs\Utils;.\Source\Program;.\Source\Startup;.\Source\Libs\SysTick;.\Source\Libs\Utils\DynamicArray;.\Source\Libs\Joystick;.\Source\Libs\ADC-PM;.\Source\Libs\DAC;.\Source\Libs\GLCD</IncludePath>
+              <IncludePath>.\Source\Libs\Button;.\Source\CMSIS_core;.\Source;.\Source\Libs\RIT;.\Source\Libs\Timer;.\Source\Libs\LED;.\Source\Libs\Power;.\Source\Libs\Utils;.\Source\Program;.\Source\Startup;.\Source\Libs\SysTick;.\Source\Libs\Utils\DynamicArray;.\Source\Libs\Joystick;.\Source\Libs\ADC-PM;.\Source\Libs\DAC;.\Source\Libs\GLCD;.\Source\Program\Sprites</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
