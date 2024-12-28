@@ -45,8 +45,6 @@ The interface currently supports the following peripherals:
 
 This project is licensed under the MIT License. For more information, please refer to the LICENSE file.
 
-## Who am I?
-
-My name is **Fabio Colonna**, and I am currently an MSc student in Computer Engineering at Politecnico di Torino. I developed a deep passion for embedded systems and low-level programming, and that's what's driving me to develop this project. I hope you find it useful and that it can help you in your projects!
+## Contact me
 
 Feel free to reach me out at my [personal](mailto:fabcolonna@icloud.com) or [institutional](mailto:fabio.colonna@studenti.polito.it) email for any questions or suggestions about this repo.
