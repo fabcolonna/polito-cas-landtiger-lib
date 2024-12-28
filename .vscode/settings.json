@@ -10,5 +10,5 @@
         "power.h": "c",
         "adc.h": "c",
         "adc_pm.h": "c"
-    }
+    },
 }
