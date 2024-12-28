@@ -1,8 +1,8 @@
-# Keil + Custom Peripherals Interface for LPC1768
+# Keil + Custom Peripherals Interface for the LandTiger board
 
 ## What's this?
 
-This is a sample project for the ARM-based LPC1768 board that works on the ARM IDE Keil uVision 5. It includes a custom C interface for peripherals written for scratch by myself, mainly because I wanted to learn how things work under the hood, but also to experiment by introducin functionalities and introduce a more abstract interface.
+This is a sample project for the LandTiger, an ARM-based LPC1768 board, built for the ARM IDE Keil uVision 5. It includes a custom C interface for peripherals written for scratch by myself, mainly because I wanted to learn how things work under the hood, but also to experiment by introducin functionalities and introduce a more abstract interface.
 
 ## File Structure
 
