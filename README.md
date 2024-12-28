@@ -6,12 +6,13 @@ This is a sample project for the LandTiger, an ARM-based LPC1768 board, built fo
 
 ## File Structure
 
-- `keil/`: contains the Keil project file and the source code;
-  - `lib`: contains the custom C library for each peripheral
-  - `program`: contains the main program and other program-specific files
-  - `startup`: contains the startup code for the LPC1768
-  - `CMSIS_core`: contains the CMSIS core files
-- `scripts/`: contains the Python scripts useful to generate data readable by the library's functions.
+- `Keil/`: contains the Keil project;
+  - `Source`: contains the source code and the library itself
+    - `Libs`: the library, with a folder for each peripheral
+    - `Program`: contains the `main()` function and other program-specific files
+    - `Startup`: contains the startup code for the LPC1768
+    - `CMSIS_core`: CMSIS core files
+- `Scripts/`: contains the Python scripts useful to generate data readable by the library's functions.
 
 ## Status
 
