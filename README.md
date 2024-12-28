@@ -7,12 +7,41 @@ This is a sample project for the LandTiger, an ARM-based LPC1768 board, built fo
 ## File Structure
 
 - `Keil/`: contains the Keil project;
-  - `Source`: contains the source code and the library itself
-    - `Libs`: the library, with a folder for each peripheral
-    - `Program`: contains the `main()` function and other program-specific files
-    - `Startup`: contains the startup code for the LPC1768
-    - `CMSIS_core`: CMSIS core files
+  - `Source`: contains the source code and the library itself;
+    - `Libs`: the library, with a folder for each peripheral;
+    - `Program`: contains the `main()` function and other program-specific files;
+    - `Startup`: contains the startup code for the LPC1768;
+    - `CMSIS_core`: CMSIS core files;
 - `Scripts/`: contains the Python scripts useful to generate data readable by the library's functions.
+
+### Scripts
+
+The Python scripts are used to generate data that can be read by the library's functions. One example are the scripts that generate RGB data from images: since, as of now, the board has no FS from which to read files, the images are converted to C buffers of RGB8565 or RGB565 data, which can then be read by the `LCD_DrawImage16` and `LCD_DrawImage32` functions, respectively.
+
+> **Note**: **RGB8565** is a 24-bit color format that I made up out of necessity. It's basically an RGB565 format with an extra byte for the alpha channel (at the MSB, hence the 8). This is introduced in order to support transparency in images. As of now, the alpha channel is simply used as a *flag* to indicate whether a pixel is transparent or not. In future versions, though, I might implement a more sophisticated system that allows for proper alpha blending, that's why I decided to keep the extra byte, instead of just one bit.
+
+In order to use the scripts, you need to have Python installed on your machine. You can download it from the [official website](https://www.python.org/downloads/), or by using a package manager like `brew` on macOS or `winget` on Windows.
+
+Once you have Python installed, setup a virtual environment in the `Scripts/` folder by running:
+
+```bash
+python3 -m venv .venv
+```
+
+Then, activate it using:
+
+```bash
+source .venv/bin/activate # macOS/Linux
+.venv\Scripts\activate # Windows
+```
+
+Finally, install the required packages by running:
+
+```bash
+pip install -r requirements.txt
+```
+
+You're now good to go. Usage instructions for each script can be obtained by running them with the `-h` flag.
 
 ## Status
 
