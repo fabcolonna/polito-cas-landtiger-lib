@@ -1,4 +1,4 @@
-# Keil + Custom Peripherals Interface for the LandTiger board
+# Custom Peripherals Library for the LandTiger LPC1768 board
 
 ## What's this?
 
