@@ -626,19 +626,14 @@
               <FilePath>.\Source\Libs\GLCD\glcd.h</FilePath>
             </File>
             <File>
-              <FileName>glcd_text_utils.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\Source\Libs\GLCD\glcd_text_utils.c</FilePath>
-            </File>
-            <File>
               <FileName>glcd_types.h</FileName>
               <FileType>5</FileType>
               <FilePath>.\Source\Libs\GLCD\glcd_types.h</FilePath>
             </File>
             <File>
-              <FileName>glcd_utils.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\Source\Libs\GLCD\glcd_utils.h</FilePath>
+              <FileName>glcd_text.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Source\Libs\GLCD\glcd_text.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -999,7 +994,7 @@
           </ArmAdsMisc>
           <Cads>
             <interw>1</interw>
-            <Optim>1</Optim>
+            <Optim>4</Optim>
             <oTime>0</oTime>
             <SplitLS>0</SplitLS>
             <OneElfS>0</OneElfS>
@@ -1310,19 +1305,14 @@
               <FilePath>.\Source\Libs\GLCD\glcd.h</FilePath>
             </File>
             <File>
-              <FileName>glcd_text_utils.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\Source\Libs\GLCD\glcd_text_utils.c</FilePath>
-            </File>
-            <File>
               <FileName>glcd_types.h</FileName>
               <FileType>5</FileType>
               <FilePath>.\Source\Libs\GLCD\glcd_types.h</FilePath>
             </File>
             <File>
-              <FileName>glcd_utils.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\Source\Libs\GLCD\glcd_utils.h</FilePath>
+              <FileName>glcd_text.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Source\Libs\GLCD\glcd_text.c</FilePath>
             </File>
           </Files>
         </Group>

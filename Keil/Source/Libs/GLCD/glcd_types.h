@@ -2,51 +2,38 @@
 #define __GLCD_TYPES_H
 
 #include "utils.h"
+#include <stdbool.h>
 
-#define DISP_ORIENTATION 0
-
-#if (DISP_ORIENTATION == 90) || (DISP_ORIENTATION == 270)
-#define MAX_X 320
-#define MAX_Y 240
-#elif (DISP_ORIENTATION == 0) || (DISP_ORIENTATION == 180)
-#define MAX_X 240
-#define MAX_Y 320
-#endif
-
-// clang-format off
-
-// Top row positions
-#define LCD_POS_TOP_LEFT(pad_x, pad_y)                      (LCD_Coordinate){10 + (pad_x), 10 + (pad_y)}
-#define LCD_POS_TOP_CENTER(pad_x, pad_y, obj_width)         (LCD_Coordinate){(MAX_X - (obj_width)) / 2 + (pad_x), 10 + (pad_y)}
-#define LCD_POS_TOP_RIGHT(pad_x, pad_y, obj_width)          (LCD_Coordinate){MAX_X - 10 - (obj_width) + (pad_x), 10 + (pad_y)}
-
-// Middle row positions
-#define LCD_POS_MIDDLE_LEFT(pad_x, pad_y, obj_height)               (LCD_Coordinate){10 + (pad_x), (MAX_Y - (obj_height)) / 2 + (pad_y)}
-#define LCD_POS_MIDDLE_CENTER(pad_x, pad_y, obj_width, obj_height)  (LCD_Coordinate){(MAX_X - (obj_width)) / 2 + (pad_x), (MAX_Y - (obj_height)) / 2 + (pad_y)}
-#define LCD_POS_MIDDLE_RIGHT(pad_x, pad_y, obj_width, obj_height)   (LCD_Coordinate){MAX_X - 10 - (obj_width) + (pad_x), (MAX_Y - (obj_height)) / 2 + (pad_y)}
-
-// Bottom row positions
-#define LCD_POS_BOTTOM_LEFT(pad_x, pad_y, obj_height)               (LCD_Coordinate){10 + (pad_x), MAX_Y - 10 - (obj_height) + (pad_y)}
-#define LCD_POS_BOTTOM_CENTER(pad_x, pad_y, obj_width, obj_height)  (LCD_Coordinate){(MAX_X - (obj_width)) / 2 + (pad_x), MAX_Y - 10 - (obj_height) + (pad_y)}
-#define LCD_POS_BOTTOM_RIGHT(pad_x, pad_y, obj_width, obj_height)   (LCD_Coordinate){MAX_X - 10 - (obj_width) + (pad_x), MAX_Y - 10 - (obj_height) + (pad_y)}
-
-// clang-format on
+typedef enum
+{
+    LCD_ORIENT_VER = 0,
+    LCD_ORIENT_HOR = 90,
+    LCD_ORIENT_VER_INV = 180,
+    LCD_ORIENT_HOR_INV = 270
+} LCD_Orientation;
 
 /// @brief Even though the LCD itself supports 260K colors, the bus interface
 ///        is only 16-bit, so we can only use 65K colors
 typedef enum
 {
-    COL_WHITE = 0xFFFF,
-    COL_BLACK = 0x0000,
-    COL_GREY = 0xF7DE,
-    COL_BLUE = 0x001F,
-    COL_BLUE2 = 0x051F,
-    COL_RED = 0xF800,
-    COL_MAGENTA = 0xF81F,
-    COL_GREEN = 0x07E0,
-    COL_CYAN = 0x7FFF,
-    COL_YELLOW = 0xFFE0
-} LCD_Color;
+    LCD_COL_WHITE = 0xFFFF,
+    LCD_COL_BLACK = 0x0000,
+    LCD_COL_GREY = 0xF7DE,
+    LCD_COL_BLUE = 0x001F,
+    LCD_COL_BLUE2 = 0x051F,
+    LCD_COL_RED = 0xF800,
+    LCD_COL_MAGENTA = 0xF81F,
+    LCD_COL_GREEN = 0x07E0,
+    LCD_COL_CYAN = 0x7FFF,
+    LCD_COL_YELLOW = 0xFFE0,
+    LCD_COL_NONE = 0x10000
+} LCD_ColorPalette;
+
+/// @brief Represents a color in the RGB565 format.
+/// @note 32 bits are used to store the color, but only 17 are used:
+///        5 bits for red, 6 bits for green, and 5 bits for blue, and
+///        1 for the transparency bit.
+typedef u32 LCD_Color;
 
 typedef struct
 {
@@ -59,14 +46,65 @@ typedef enum
     LCD_FONT_SYSTEM
 } LCD_Font;
 
-typedef u16 LCD_RGBColor;
+// COMPONENTS
 
-#define NO_FILL_COLOR (u16)(-1)
+typedef struct
+{
+    LCD_Coordinate from, to;
+    LCD_Color color;
+} LCD_Line;
 
-/// @brief Converts RGB (24 bit) into RGB565 (16 bit):
-///        - 5 bits for red (bits 11-15)
-///        - 6 bits for green (bits 5-10)
-///        - 5 bits for blue (bits 0-4)
-#define RGB_TO_RGB565(r, g, b) (u16)(((r >> 3) << 11) | ((g >> 2) << 5) | (b >> 3))
+typedef struct
+{
+    LCD_Coordinate from, to;
+    LCD_Color edge_color, fill_color;
+} LCD_Rect;
+
+typedef struct
+{
+    LCD_Coordinate center;
+    u16 radius;
+    LCD_Color edge_color, fill_color;
+} LCD_Circle;
+
+typedef struct
+{
+    u32 *pixels;
+    u16 width, height;
+    bool has_alpha;
+    LCD_Coordinate pos;
+} LCD_Image;
+
+typedef struct
+{
+    char *text;
+    LCD_Color text_color, bg_color;
+    u8 font;
+    LCD_Coordinate pos;
+} LCD_Text;
+
+/// @brief Represents a drawable component that can be rendered on the screen.
+typedef enum
+{
+    LCD_COMP_LINE,
+    LCD_COMP_RECT,
+    LCD_COMP_CIRCLE,
+    LCD_COMP_IMAGE_RLE,
+    LCD_COMP_IMAGE,
+    LCD_COMP_TEXT
+} LCD_ComponentType;
+
+/// @brief Used to store a drawable component of any type.
+typedef struct
+{
+    LCD_ComponentType type;
+    union {
+        LCD_Line line;
+        LCD_Rect rect;
+        LCD_Circle circle;
+        LCD_Image image;
+        LCD_Text text;
+    } object;
+} LCD_Component;
 
 #endif
