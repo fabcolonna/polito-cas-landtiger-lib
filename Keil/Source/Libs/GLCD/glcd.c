@@ -1,9 +1,11 @@
 #include "glcd.h"
 
 #include <LPC17xx.h>
+#include <alloca.h>
 #include <math.h>
 #include <stdbool.h>
 #include <stdlib.h>
+#include <string.h>
 
 // PRIVATE DEFINES
 
@@ -69,7 +71,7 @@ typedef enum
 
 typedef struct
 {
-    u32 id;
+    LCD_ComponentID id;
     LCD_Component comp;
     bool visible, rendered;
 } LCD_RenderQueueItem;
@@ -84,13 +86,21 @@ _PRIVATE bool initialized = false;
 _PRIVATE u16 lcd_orientation;
 _PRIVATE u16 MAX_X, MAX_Y;
 
+/// @brief Current background color of the screen.
+_PRIVATE LCD_Color current_bg_color = LCD_COL_BLACK;
+
 /// @brief Maximum number of components that can be rendered on the screen.
 #define MAX_RENDER_QUEUE_COMPS 1024
 
 /// @brief The render queue, containing all the components to be rendered.
 _PRIVATE LCD_RenderQueueItem render_queue[MAX_RENDER_QUEUE_COMPS] = {0};
 _PRIVATE u32 render_queue_size = 0;
-_PRIVATE LCD_Color current_bg_color = LCD_COL_BLACK;
+
+/// @brief Maximum number of fonts that can be loaded into the LCD.
+#define MAX_FONTS 16
+
+_PRIVATE LCD_Font font_list[MAX_FONTS] = {0};
+_PRIVATE u8 font_list_size = 0;
 
 // PRIVATE LOW LEVEL FUNCTIONS
 
@@ -245,8 +255,6 @@ _PRIVATE void set_gram_cursor(u16 x, u16 y)
 
 #define SET_POINT_SIMPLER(color, x, y) LCD_SetPointColor(color, (LCD_Coordinate){x, y})
 
-_DECL_EXTERNALLY void get_ascii_for(u8 ascii, u8 font, u8 *const out);
-
 _PRIVATE void draw_line(const LCD_Line *const line)
 {
     if (!line)
@@ -305,12 +313,27 @@ _PRIVATE void draw_line(const LCD_Line *const line)
     }
 }
 
-_PRIVATE void draw_rect(const LCD_Rect *const rect)
+_PRIVATE void draw_rect(const LCD_Rect *const rect, LCD_Coordinate pos)
 {
     if (!rect)
         return;
 
-    LCD_Coordinate from = rect->from, to = rect->to;
+    // Rect object now contains width and height, not the start/end coordinates.
+    // This, to support the rendering of the rectangle at various positions on the
+    // screen, based on the pos parameter. pos is the top left corner of the rectangle.
+    if (rect->width == 0 || rect->height == 0)
+        return;
+
+    LCD_Coordinate from = pos;
+    LCD_Coordinate to = {from.x + rect->width, from.y + rect->height};
+    if (from.x >= MAX_X || from.y >= MAX_Y)
+        return; // Rectangle is completely outside the screen
+
+    // If the ending point is outside the screen, adjust it.
+    if (to.x >= MAX_X)
+        to.x = MAX_X - 1;
+    if (to.y >= MAX_Y)
+        to.y = MAX_Y - 1;
 
     // If the starting point is to the right of the ending point (both for x and/or y), swap.
     u16 tmp;
@@ -403,27 +426,30 @@ _PRIVATE void draw_circle(const LCD_Circle *const circle)
     }
 }
 
-_PRIVATE void draw_img_rle(const LCD_Image *const img)
+_PRIVATE void draw_img_rle(const LCD_Image *const img, LCD_Coordinate pos)
 {
-    if (!img)
+    if (!img || !img->pixels)
         return;
 
-    const LCD_Coordinate where = img->pos;
     u16 width = img->width, height = img->height;
-
-    if (!img->pixels || width == 0 || height == 0 || where.x > MAX_X || where.y > MAX_Y)
+    if (width == 0 || height == 0)
         return;
 
-    if (where.x + width > MAX_X)
-        width = MAX_X - where.x;
-    if (where.y + height > MAX_Y)
-        height = MAX_Y - where.y;
+    // Pos is the top-left corner of the image.
+    if (pos.x >= MAX_X || pos.y >= MAX_Y)
+        return; // Image is completely outside the screen
+
+    // If the image is partially outside the screen, adjust its width and height.
+    if (pos.x + width > MAX_X)
+        width = MAX_X - pos.x;
+    if (pos.y + height > MAX_Y)
+        height = MAX_Y - pos.y;
 
     const u32 *pixels_copy = img->pixels;
     u16 current_x, pixels_left, count, value, rgb;
     for (u16 i = 0; i < height; i++)
     {
-        current_x = where.x; // Start at the beginning of the row
+        current_x = pos.x;   // Start at the beginning of the row
         pixels_left = width; // Remaining pixels to draw in the row
 
         while (pixels_left > 0)
@@ -439,11 +465,11 @@ _PRIVATE void draw_img_rle(const LCD_Image *const img)
                     if ((value >> 16) & 0xFF) // Alpha is != 0
                     {
                         rgb = (u16)(value & 0x00FFFF);
-                        SET_POINT_SIMPLER(rgb, current_x++, where.y + i);
+                        SET_POINT_SIMPLER(rgb, current_x++, pos.y + i);
                     }
                 }
                 else
-                    SET_POINT_SIMPLER(value, current_x++, where.y + i);
+                    SET_POINT_SIMPLER(value, current_x++, pos.y + i);
 
                 pixels_left--;
             }
@@ -451,7 +477,8 @@ _PRIVATE void draw_img_rle(const LCD_Image *const img)
     }
 }
 
-_PRIVATE void draw_img(const LCD_Image *const img)
+/*
+_PRIVATE void draw_img(const LCD_Image *const img, const LCD_Coordinate *const pos)
 {
     if (!img)
         return;
@@ -487,62 +514,109 @@ _PRIVATE void draw_img(const LCD_Image *const img)
         }
     }
 }
+*/
 
-_PRIVATE void print_text(const LCD_Text *const text)
+// TEXT FUNCTIONS
+
+_PRIVATE bool print_char(u8 chr, const LCD_Font *const font, const LCD_Coordinate *const where, LCD_Color txt_col,
+                         LCD_Color bg_col)
+{
+    // We can't print non-ASCII printable chars, and other invalid values
+    if (!font || !where || chr < ASCII_FONT_MIN_VALUE || chr > ASCII_FONT_MAX_VALUE)
+        return false;
+
+    if (where->x >= MAX_X || where->y >= MAX_Y)
+        return false; // Char is completely outside the screen
+
+    // Each line of the array contains the char data, and chars are stored in ASCII order. Each line is
+    // made up of font->char_height different u32 values, each one representing a row of the given char.
+    // Hence, for every char, I need to retrieve font->char_height u32 values from the array line given
+    // by chr - ASCII_FONT_MIN_VALUE, since the first printable ASCII char is 32.
+    // For example: A (=65) - 32 = 33, so starting from the 33rd line of the array, I need to read
+    // font->char_height u32 values.
+    const u32 *font_data_copy = font->data;
+    font_data_copy += (chr - ASCII_FONT_MIN_VALUE) * font->char_height; // Move to the correct line
+
+    u32 *const chr_data = (u32 *)alloca(font->char_height * sizeof(u32));
+    memcpy(chr_data, font_data_copy, font->char_height * sizeof(u32)); // Copying the row
+
+    u32 value;
+    for (u16 i = 0; i < font->char_height; i++) // For each char row, we have font->char_width bits
+    {
+        for (u16 j = 0; j < font->char_width; j++)
+        {
+            // Since a char value is not necessarily 32 bits long, but its length depends on
+            // the char width, we mask the MSB that are not part of the char data.
+            // E.g. 8 bits, we & with 0xFFFFFFFF >> (32 - 8) = 0xFFFFFFFF >> 24 = 0x000000FF
+            value = chr_data[i] & (0xFFFFFFFF >> (32 - font->char_width));
+
+            // If the bit at position font->char_width - 1 - j is 1, print it with the text color.
+            if ((value >> (font->char_width - 1 - j)) & 0x1)
+                SET_POINT_SIMPLER(txt_col, where->x + j, where->y + i);
+            else // Otherwise, print the background color, because that pixel is not part of the chr.
+                SET_POINT_SIMPLER(bg_col, where->x + j, where->y + i);
+        }
+    }
+
+    return true;
+}
+
+_PRIVATE void print_text(const LCD_Text *const text, LCD_Coordinate pos)
 {
     if (!text || !text->text)
         return;
 
-    LCD_Coordinate where = text->pos;
-    u8 chr, *str = (u8 *)(text->text), ascii_buf[16];
+    const LCD_FontID font_id = text->font;
+    if (font_id >= font_list_size)
+        return;
 
-    u16 max_width = 0;     // Track the maximum width (for multi-line)
-    u16 start_x = where.x; // Saving the starting x position
-    u16 total_height = 16; // Minimum height is one line (font height)
+    const LCD_Font font = font_list[font_id];
+    if (!font.data)
+        return;
+
+    if (pos.x >= MAX_X || pos.y >= MAX_Y)
+        return; // Text is completely outside the screen
+
+    u8 chr, *str = (u8 *)(text->text);
+
+    u16 max_width = 0;                   // Track the maximum width (for multi-line)
+    u16 start_x = pos.x;              // Saving the starting x position
+    u16 total_height = font.char_height; // Minimum height is one line (font height)
 
     bool no_more_space = false;
     while ((chr = *str++) && !no_more_space)
     {
-        get_ascii_for(chr, text->font, ascii_buf);
-        for (u16 i = 0; i < 16; i++)
-        {
-            for (u16 j = 0; j < 8; j++)
-            {
-                if ((ascii_buf[i] >> (7 - j)) & 0x1)
-                    SET_POINT_SIMPLER(text->text_color, where.x + j, where.y + i);
-                else
-                    SET_POINT_SIMPLER(text->bg_color, where.x + j, where.y + i);
-            }
-        }
+        if (!print_char(chr, &font, &pos, text->text_color, text->bg_color))
+            return; // Something went wrong, should not happen!
 
         // Moving to the next char position
-        if (where.x + 8 < MAX_X) // Continue on the same line
-            where.x += 8;
-        else if (where.y + 16 < MAX_Y) // Go to the next line if there's space on the x axis
+        if (pos.x + font.char_width < MAX_X) // Continue on the same line
+            pos.x += font.char_width;
+        else if (pos.y + font.char_height < MAX_Y) // Go to the next line if there's space on the x axis
         {
-            where.x = 0;
-            where.y += 16;
-            total_height += 16; // Increment total height for each new line
+            pos.x = 0;
+            pos.y += font.char_height;
+            total_height += font.char_height; // Increment total height for each new line
         }
         else
             no_more_space = true; // Stop printing if there's no more space
 
         // Update the maximum width for the current line
-        u16 current_width = where.x - start_x;
+        u16 current_width = pos.x - start_x;
         if (current_width > max_width)
             max_width = current_width;
     }
 
     // If the string is short and doesn't wrap, set max_width correctly
     if (max_width == 0)
-        max_width = where.x - start_x;
+        max_width = pos.x - start_x;
 }
 
 // PRIVATE RENDER QUEUE FUNCTIONS
 
-_PRIVATE void render_comp(u32 id)
+_PRIVATE void render_comp(LCD_ComponentID id)
 {
-    if (id >= render_queue_size)
+    if (id >= render_queue_size || id < 0)
         return;
 
     LCD_RenderQueueItem *const item = &render_queue[id];
@@ -555,19 +629,16 @@ _PRIVATE void render_comp(u32 id)
         draw_line(&item->comp.object.line);
         break;
     case LCD_COMP_RECT:
-        draw_rect(&item->comp.object.rect);
+        draw_rect(&item->comp.object.rect, item->comp.pos);
         break;
     case LCD_COMP_CIRCLE:
         draw_circle(&item->comp.object.circle);
         break;
-    case LCD_COMP_IMAGE_RLE:
-        draw_img_rle(&item->comp.object.image);
-        break;
     case LCD_COMP_IMAGE:
-        draw_img(&item->comp.object.image);
+        draw_img_rle(&item->comp.object.image, item->comp.pos);
         break;
     case LCD_COMP_TEXT:
-        print_text(&item->comp.object.text);
+        print_text(&item->comp.object.text, item->comp.pos);
         break;
     }
 
@@ -579,9 +650,9 @@ _PRIVATE void render_comp(u32 id)
 ///        components in order to refill the gap left by the removed one.
 /// @param id Id of the component to remove.
 /// @param redraw_lower_layers If true, the components at lower layers will be redrawn.
-_PRIVATE void remove_comp(u32 id, bool redraw_lower_layers)
+_PRIVATE void remove_comp(LCD_ComponentID id, bool redraw_lower_layers)
 {
-    if (id >= render_queue_size)
+    if (id >= render_queue_size || id < 0)
         return;
 
     LCD_RenderQueueItem *const item = &render_queue[id];
@@ -589,7 +660,6 @@ _PRIVATE void remove_comp(u32 id, bool redraw_lower_layers)
         return; // Item is not rendered
 
     const LCD_ComponentType type = item->comp.type;
-    ;
     if (type == LCD_COMP_LINE)
     {
         LCD_Line line = item->comp.object.line;
@@ -602,7 +672,7 @@ _PRIVATE void remove_comp(u32 id, bool redraw_lower_layers)
         rect.edge_color = current_bg_color;
         if (rect.fill_color != LCD_COL_NONE)
             rect.fill_color = current_bg_color;
-        draw_rect(&rect);
+        draw_rect(&rect, item->comp.pos);
     }
     else if (type == LCD_COMP_CIRCLE)
     {
@@ -612,20 +682,18 @@ _PRIVATE void remove_comp(u32 id, bool redraw_lower_layers)
             circle.fill_color = current_bg_color;
         draw_circle(&circle);
     }
-    else if (type == LCD_COMP_IMAGE_RLE || type == LCD_COMP_IMAGE)
+    else if (type == LCD_COMP_IMAGE)
     {
-        const LCD_Image image = item->comp.object.image;
-        const LCD_Coordinate from = image.pos, to = {from.x + image.width, from.y + image.height};
-
-        LCD_Rect rect = {from, to, current_bg_color, current_bg_color};
-        draw_rect(&rect);
+        const LCD_Image *image = &item->comp.object.image;
+        const LCD_Rect rect = {image->width, image->height, current_bg_color, current_bg_color};
+        draw_rect(&rect, item->comp.pos);
     }
     else if (type == LCD_COMP_TEXT)
     {
         LCD_Text text = item->comp.object.text;
         text.text_color = current_bg_color;
         text.bg_color = current_bg_color;
-        print_text(&text);
+        print_text(&text, item->comp.pos);
     }
 
     item->visible = false;
@@ -642,7 +710,10 @@ _PRIVATE void remove_comp(u32 id, bool redraw_lower_layers)
 
 // PUBLIC FUNCTIONS
 
-void LCD_Init(u16 orientation)
+#include "font_msgothic.h"
+#include "font_system.h"
+
+void LCD_Init(LCD_Orientation orientation)
 {
     // Setting PINS as 00 (GPIO) in PINSEL0 (bit 6 to 25) for P0.19 to P0.25
     // 0000 0011 1111 1111 1111 1111 1100 0000
@@ -747,6 +818,11 @@ void LCD_Init(u16 orientation)
 
     DELAY_MS(50);
     initialized = true;
+
+    // Loading the two default fonts: MS Gothic & System
+    font_list[0] = Font_MSGothic;
+    font_list[1] = Font_System;
+    font_list_size = 2;
 }
 
 bool LCD_IsInitialized(void)
@@ -788,12 +864,12 @@ LCD_Color LCD_GetPointColor(LCD_Coordinate point)
     }
 }
 
-void LCD_SetPointColor(LCD_Color color, LCD_Coordinate where)
+void LCD_SetPointColor(LCD_Color color, LCD_Coordinate point)
 {
-    if (where.x >= MAX_X || where.y >= MAX_Y)
+    if (point.x >= MAX_X || point.y >= MAX_Y)
         return;
 
-    set_gram_cursor(where.x, where.y);
+    set_gram_cursor(point.x, point.y);
     if (color != LCD_COL_NONE)
         write_to(0x0022, color & 0xFFFF);
 }
@@ -825,13 +901,13 @@ void LCD_SetBackgroundColor(LCD_Color color)
         do_write(color & 0xFFFF);
 }
 
-i32 LCD_RendererAdd(LCD_Component *const component, bool update)
+LCD_ComponentID LCD_CMAddComp(LCD_Component component, bool update)
 {
-    if (!component || render_queue_size >= MAX_RENDER_QUEUE_COMPS)
+    if (render_queue_size >= MAX_RENDER_QUEUE_COMPS)
         return -1;
 
-    const u32 id = render_queue_size;
-    render_queue[id] = (LCD_RenderQueueItem){id, *component, true, false};
+    const LCD_ComponentID id = render_queue_size;
+    render_queue[id] = (LCD_RenderQueueItem){id, component, true, false};
     render_queue_size++;
 
     if (update)
@@ -840,7 +916,7 @@ i32 LCD_RendererAdd(LCD_Component *const component, bool update)
     return id;
 }
 
-void LCD_RendererUpdate(void)
+void LCD_CMRender(void)
 {
     for (u32 i = 0; i < render_queue_size; i++)
     {
@@ -849,9 +925,9 @@ void LCD_RendererUpdate(void)
     }
 }
 
-void LCD_RendererRemoveById(u32 id, bool redraw_lower_layers)
+void LCD_CMRemoveComp(LCD_ComponentID id, bool redraw_lower_layers)
 {
-    if (id >= render_queue_size)
+    if (id >= render_queue_size || id < 0)
         return;
 
     // id is the index of the component in the render queue
@@ -863,9 +939,9 @@ void LCD_RendererRemoveById(u32 id, bool redraw_lower_layers)
     render_queue_size--;
 }
 
-void LCD_SetComponentVisibility(u32 id, bool visible, bool redraw_lower_layers)
+void LCD_CMSetCompVisibility(LCD_ComponentID id, bool visible, bool redraw_lower_layers)
 {
-    if (id >= render_queue_size)
+    if (id >= render_queue_size || id < 0)
         return;
 
     render_queue[id].visible = visible;
@@ -875,13 +951,34 @@ void LCD_SetComponentVisibility(u32 id, bool visible, bool redraw_lower_layers)
         remove_comp(id, redraw_lower_layers);
 }
 
-void LCD_RendererRemoveAll(void)
+void LCD_CMRemoveAllComps(void)
 {
     for (u32 i = 0; i < render_queue_size; i++)
         render_queue[i] = (LCD_RenderQueueItem){0, NULL, false, false};
 
     render_queue_size = 0;
     LCD_SetBackgroundColor(current_bg_color);
+}
+
+LCD_FontID LCD_FMAddFont(LCD_Font font)
+{
+    if (font_list_size >= MAX_FONTS)
+        return -1;
+
+    LCD_FontID id = font_list_size;
+    font_list[id] = font;
+    font_list_size++;
+    return id;
+}
+
+void LCD_FMRemoveFont(LCD_FontID id)
+{
+    if (id >= font_list_size || id <= 1) // Cannot remove the default fonts
+        return;
+
+    for (u32 i = id; i < font_list_size - 1; i++)
+        font_list[i] = font_list[i + 1];
+    font_list_size--;
 }
 
 /*

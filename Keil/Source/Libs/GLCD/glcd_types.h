@@ -12,6 +12,20 @@ typedef enum
     LCD_ORIENT_HOR_INV = 270
 } LCD_Orientation;
 
+// TODO: Implement alignment!
+typedef enum
+{
+    LCD_ALIGN_TOP_LEFT,
+    LCD_ALIGN_TOP_CENTER,
+    LCD_ALIGN_TOP_RIGHT,
+    LCD_ALIGN_CENTER_LEFT,
+    LCD_ALIGN_CENTER,
+    LCD_ALIGN_CENTER_RIGHT,
+    LCD_ALIGN_BOTTOM_LEFT,
+    LCD_ALIGN_BOTTOM_CENTER,
+    LCD_ALIGN_BOTTOM_RIGHT
+} LCD_Alignment;
+
 /// @brief Even though the LCD itself supports 260K colors, the bus interface
 ///        is only 16-bit, so we can only use 65K colors
 typedef enum
@@ -40,11 +54,24 @@ typedef struct
     u16 x, y;
 } LCD_Coordinate;
 
+// FONT
+
 typedef enum
 {
-    LCD_FONT_MSGOTHIC,
-    LCD_FONT_SYSTEM
+    LCD_DEF_FONT_MSGOTHIC = 0,
+    LCD_DEF_FONT_SYSTEM = 1
+} LCD_DefaultFont;
+
+typedef struct
+{
+    const u32 *data;
+    u16 data_size, char_width, char_height;
 } LCD_Font;
+
+typedef i8 LCD_FontID;
+
+#define ASCII_FONT_MIN_VALUE 32
+#define ASCII_FONT_MAX_VALUE 126
 
 // COMPONENTS
 
@@ -56,7 +83,7 @@ typedef struct
 
 typedef struct
 {
-    LCD_Coordinate from, to;
+    u16 width, height;
     LCD_Color edge_color, fill_color;
 } LCD_Rect;
 
@@ -72,15 +99,13 @@ typedef struct
     u32 *pixels;
     u16 width, height;
     bool has_alpha;
-    LCD_Coordinate pos;
 } LCD_Image;
 
 typedef struct
 {
     char *text;
     LCD_Color text_color, bg_color;
-    u8 font;
-    LCD_Coordinate pos;
+    LCD_FontID font;
 } LCD_Text;
 
 /// @brief Represents a drawable component that can be rendered on the screen.
@@ -89,7 +114,7 @@ typedef enum
     LCD_COMP_LINE,
     LCD_COMP_RECT,
     LCD_COMP_CIRCLE,
-    LCD_COMP_IMAGE_RLE,
+    // LCD_COMP_IMAGE_RLE,
     LCD_COMP_IMAGE,
     LCD_COMP_TEXT
 } LCD_ComponentType;
@@ -98,6 +123,7 @@ typedef enum
 typedef struct
 {
     LCD_ComponentType type;
+    LCD_Coordinate pos;
     union {
         LCD_Line line;
         LCD_Rect rect;
@@ -106,5 +132,15 @@ typedef struct
         LCD_Text text;
     } object;
 } LCD_Component;
+
+/// @brief Used to store a complex drawable component, i.e. made up of multiple heterogeneous components,
+///        that are assigned to a single ID.
+typedef struct
+{
+    LCD_Component *comps;
+    u8 comps_size;
+} LCD_ComplexComponent;
+
+typedef i16 LCD_ComponentID;
 
 #endif

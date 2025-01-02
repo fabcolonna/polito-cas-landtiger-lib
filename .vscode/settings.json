@@ -9,6 +9,7 @@
         "system_lpc17xx.h": "c",
         "power.h": "c",
         "adc.h": "c",
-        "adc_pm.h": "c"
+        "adc_pm.h": "c",
+        "font_msgothic.h": "c"
     },
 }

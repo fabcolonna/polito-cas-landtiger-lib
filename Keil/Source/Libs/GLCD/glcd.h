@@ -1,6 +1,7 @@
 #ifndef __GLCD_H
 #define __GLCD_H
 
+#include "glcd_macros.h"
 #include "glcd_types.h"
 
 /// @brief Converts RGB (24 bit) into RGB565 (16 bit):
@@ -13,7 +14,7 @@
 
 /// @brief Initializes TFT LCD Controller.
 /// @param orientation The orientation of the screen, from the LCD_Orientation enum
-void LCD_Init(u16 orientation);
+void LCD_Init(LCD_Orientation orientation);
 
 /// @brief Checks if the LCD has been initialized.
 /// @return Whether the LCD has been initialized
@@ -26,8 +27,8 @@ LCD_Color LCD_GetPointColor(LCD_Coordinate point);
 
 /// @brief Sets the color of the pixel at the specified coordinates.
 /// @param color The RGB565 color to set
-/// @param where The coordinates of the pixel to color
-void LCD_SetPointColor(LCD_Color color, LCD_Coordinate where);
+/// @param point The coordinates of the pixel to color
+void LCD_SetPointColor(LCD_Color color, LCD_Coordinate point);
 
 /// @brief Sets the background color of the screen.
 /// @param color The RGB565 color to set
@@ -41,24 +42,30 @@ void LCD_SetBackgroundColor(LCD_Color color);
 /// @param component The component to add
 /// @param update Whether to trigger an update after adding the component
 /// @return -1 if the component is NULL or the render queue is full, the ID of the component otherwise
-i32 LCD_RendererAdd(LCD_Component *const component, bool update);
+LCD_ComponentID LCD_CMAddComp(LCD_Component component, bool update);
 
 /// @brief Manually triggers an update of the screen. Useful when you want to
 ///        add multiple components at once, and only update the screen at the end.
-void LCD_RendererUpdate(void);
+void LCD_CMRender(void);
 
 /// @brief Removes a component from the render queue by its ID.
 /// @param id The ID of the component to remove
 /// @param redraw_lower_layers Whether to redraw the components at lower layers
-void LCD_RendererRemoveById(u32 id, bool redraw_lower_layers);
+void LCD_CMRemoveComp(LCD_ComponentID id, bool redraw_lower_layers);
 
 /// @brief Hides a component from the screen without removing it from the render queue.
 /// @param id The ID of the component to hide
 /// @param visible Whether the component should be visible
 /// @param redraw_lower_layers Whether to redraw the components at lower layers
-void LCD_SetComponentVisibility(u32 id, bool visible, bool redraw_lower_layers);
+void LCD_CMSetCompVisibility(LCD_ComponentID id, bool visible, bool redraw_lower_layers);
 
 /// @brief Removes all components from the screen.
-void LCD_RendererRemoveAll(void);
+void LCD_CMRemoveAllComps(void);
+
+// FONT MANAGER
+
+LCD_FontID LCD_FMAddFont(LCD_Font font);
+
+void LCD_FMRemoveFont(LCD_FontID id);
 
 #endif
