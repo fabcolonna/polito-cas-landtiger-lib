@@ -125,7 +125,8 @@ const u32 Font_MSGothicData[] = {
 const LCD_Font Font_MSGothic = {
     .data = Font_MSGothicData,
     .data_size = Font_MSGothicDataSize,
-    .char_width = Font_MSGothicCharWidth,
+    .char_widths = NULL,
+    .max_char_width = Font_MSGothicCharWidth,
     .char_height = Font_MSGothicCharHeight,
 };
 

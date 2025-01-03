@@ -6,11 +6,6 @@
 #include "glcd_types.h"
 
 // Font size: 16 px
-// Char dimension: 14x14
-
-#define Font_Pixellari16CharWidth 14
-#define Font_Pixellari16CharHeight 14
-#define Font_Pixellari16DataSize 95
 
 // clang-format off
 
@@ -111,14 +106,19 @@ const u32 Font_Pixellari16Data[] = {
 	0x00000000, 0x00003800, 0x00003800, 0x00000C00, 0x00000C00, 0x00000C00, 0x00000600, 0x00000600, 0x00000C00, 0x00000C00, 0x00000C00, 0x00003800, 0x00003800, 0x00000000, /* } */
 	0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000E60, 0x00001FE0, 0x000019C0, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, /* ~ */
 };
-        
+
+const u16 Font_Pixellari16CharWidths[] = {
+    5, 4, 7, 9, 9, 14, 10, 4, 5, 6, 7, 8, 4, 8, 4, 7, 9, 9, 8, 8, 9, 8, 8, 9, 8, 8, 4, 4, 11, 8, 11, 8, 14, 10, 10, 10, 11, 9, 9, 10, 10, 6, 8, 10, 8, 12, 11, 11, 9, 12, 10, 10, 10, 11, 11, 12, 10, 10, 11, 5, 7, 6, 8, 9, 5, 8, 9, 8, 9, 8, 6, 9, 9, 4, 5, 8, 4, 12, 8, 8, 9, 9, 8, 8, 5, 8, 8, 12, 8, 8, 8, 6, 4, 6, 10
+};
+
 // clang-format on
 
 const LCD_Font Font_Pixellari16 = {
-    .data = Font_Pixellari16Data,
-    .data_size = Font_Pixellari16DataSize,
-    .char_width = Font_Pixellari16CharWidth,
-    .char_height = Font_Pixellari16CharHeight,
+	.data = Font_Pixellari16Data,
+	.data_size = 95,
+	.char_widths = Font_Pixellari16CharWidths,
+	.max_char_width = 14,
+	.char_height = 14,
 };
 
 #endif

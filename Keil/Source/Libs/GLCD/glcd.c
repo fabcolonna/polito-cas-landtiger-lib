@@ -526,15 +526,16 @@ _PRIVATE void draw_img(const LCD_Image *const img, const LCD_Coordinate *const p
 
 // TEXT FUNCTIONS
 
-_PRIVATE bool print_char(u8 chr, const LCD_Font *const font, const LCD_Coordinate *const where, LCD_Color txt_col,
-                         LCD_Color bg_col)
+// Prints the char and returns the width of the char printed, or -1 if something went wrong.
+_PRIVATE i16 print_char(u8 chr, const LCD_Font *const font, const LCD_Coordinate *const where, LCD_Color txt_col,
+                        LCD_Color bg_col)
 {
     // We can't print non-ASCII printable chars, and other invalid values
     if (!font || !where || chr < ASCII_FONT_MIN_VALUE || chr > ASCII_FONT_MAX_VALUE)
-        return false;
+        return -1;
 
     if (where->x >= MAX_X || where->y >= MAX_Y)
-        return false; // Char is completely outside the screen
+        return -1; // Char is completely outside the screen
 
     // Each line of the array contains the char data, and chars are stored in ASCII order. Each line is
     // made up of font->char_height different u32 values, each one representing a row of the given char.
@@ -551,22 +552,28 @@ _PRIVATE bool print_char(u8 chr, const LCD_Font *const font, const LCD_Coordinat
     u32 value;
     for (u16 i = 0; i < font->char_height; i++) // For each char row, we have font->char_width bits
     {
-        for (u16 j = 0; j < font->char_width; j++)
+        for (u16 j = 0; j < font->max_char_width; j++)
         {
             // Since a char value is not necessarily 32 bits long, but its length depends on
             // the char width, we mask the MSB that are not part of the char data.
             // E.g. 8 bits, we & with 0xFFFFFFFF >> (32 - 8) = 0xFFFFFFFF >> 24 = 0x000000FF
-            value = chr_data[i] & (0xFFFFFFFF >> (32 - font->char_width));
+            value = chr_data[i] & (0xFFFFFFFF >> (32 - font->max_char_width));
 
-            // If the bit at position font->char_width - 1 - j is 1, print it with the text color.
-            if ((value >> (font->char_width - 1 - j)) & 0x1)
+            // If the bit at position width - 1 - j is 1, print it with the text color.
+            if ((value >> (font->max_char_width - 1 - j)) & 0x1)
                 SET_POINT_SIMPLER(txt_col, where->x + j, where->y + i);
             else // Otherwise, print the background color, because that pixel is not part of the chr.
                 SET_POINT_SIMPLER(bg_col, where->x + j, where->y + i);
         }
     }
 
-    return true;
+    // We need to determine the width of the selected char, so we can move forward to the next char
+    // leaving just the right amount of space between them. If the font data has been created with
+    // the ttf2c script, chances are that the width of the char is stored in the char_widths array.
+    // The array is also ordered by ASCII value, so we can directly access the width of the char
+    // using the char itself as index. If the array is NULL, we don't have info about the individual
+    // char widths, so we can just use the max_char_width property, which is always defined.
+    return (font->char_widths) ? font->char_widths[chr - ASCII_FONT_MIN_VALUE] : font->max_char_width;
 }
 
 _PRIVATE void print_text(const LCD_Text *const text, LCD_Coordinate pos)
@@ -591,15 +598,16 @@ _PRIVATE void print_text(const LCD_Text *const text, LCD_Coordinate pos)
     u16 start_x = pos.x;                 // Saving the starting x position
     u16 total_height = font.char_height; // Minimum height is one line (font height)
 
+    i16 current_char_width;
     bool no_more_space = false;
     while ((chr = *str++) && !no_more_space)
     {
-        if (!print_char(chr, &font, &pos, text->text_color, text->bg_color))
+        if ((current_char_width = print_char(chr, &font, &pos, text->text_color, text->bg_color)) < 0)
             return; // Something went wrong, should not happen!
 
         // Moving to the next char position
-        if (pos.x + font.char_width < MAX_X) // Continue on the same line
-            pos.x += 8;
+        if (pos.x + current_char_width < MAX_X) // Continue on the same line
+            pos.x += current_char_width;
         else if (pos.y + font.char_height < MAX_Y) // Go to the next line if there's space on the x axis
         {
             pos.x = 0;

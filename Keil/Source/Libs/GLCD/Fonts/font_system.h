@@ -117,7 +117,8 @@ const u32 Font_SystemData[] = {
 const LCD_Font Font_System = {
     .data = Font_SystemData,
     .data_size = Font_SystemDataSize,
-    .char_width = Font_SystemCharWidth,
+    .char_widths = NULL,
+    .max_char_width = Font_SystemCharWidth,
     .char_height = Font_SystemCharHeight,
 };
 

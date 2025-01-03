@@ -65,7 +65,11 @@ typedef enum
 typedef struct
 {
     const u32 *data;
-    u16 data_size, char_width, char_height;
+    u16 data_size, max_char_width, char_height;
+    // Stores the width of each individual char, so we can move forward to the next char leaving just the right amount
+    // of space between them. It's optional, e.g. system font & msgothic font don't have this info. In this case, the
+    // spacing between chars is the same as the max_char_width.
+    const u16 *char_widths;
 } LCD_Font;
 
 typedef i8 LCD_FontID;
