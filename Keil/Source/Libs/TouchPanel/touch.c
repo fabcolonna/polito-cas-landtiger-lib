@@ -253,23 +253,37 @@ _PRIVATE bool poll_touch(TP_Coordinate *out_tp_coords)
 
 // PRIVATE CALIBRATION FUNCTIONS
 
-_PRIVATE inline void draw_line_primitive(u16 from_x, u16 from_y, u16 to_x, u16 to_y, u16 color)
-{
-    LCD_DrawLine((LCD_Coordinate){from_x, from_y}, (LCD_Coordinate){to_x, to_y}, color);
-}
+_PRIVATE LCD_ObjID calib_cross_obj_id;
 
 _PRIVATE inline void draw_calibration_cross(u16 x, u16 y)
 {
-    LCD_DrawRectangle((LCD_Coordinate){x - 15, y - 15}, (LCD_Coordinate){x + 15, y + 15}, COL_WHITE, NO_FILL_COLOR);
-    draw_line_primitive(x, y - 7, x, y + 7, COL_WHITE);
-    draw_line_primitive(x - 7, y, x + 7, y, COL_WHITE);
+    // clang-format off
+
+    LCD_BEGIN_DRAWING;
+    calib_cross_obj_id = LCD_OBJECT(calib_cross, 3, {
+        LCD_RECT(x - 15, y - 15, {
+            .width = 30,
+            .height = 30,
+            .edge_color = LCD_COL_WHITE,
+            .fill_color = LCD_COL_NONE,
+        }),
+        LCD_LINE({
+            .from = {x, y - 7},
+            .to = {x, y + 7},
+            .color = LCD_COL_WHITE,
+        }),
+        LCD_LINE({
+            .from = {x - 7, y},
+            .to = {x + 7, y},
+            .color = LCD_COL_WHITE
+        }),
+    });
+    LCD_END_DRAWING;
 }
 
 _PRIVATE inline void delete_calibration_cross(u16 x, u16 y)
 {
-    LCD_DrawRectangle((LCD_Coordinate){x - 15, y - 15}, (LCD_Coordinate){x + 15, y + 15}, COL_BLACK, NO_FILL_COLOR);
-    draw_line_primitive(x, y - 7, x, y + 7, COL_BLACK);
-    draw_line_primitive(x - 7, y, x + 7, y, COL_BLACK);
+    LCD_RQRemoveObject(calib_cross_obj_id, false);
 }
 
 _PRIVATE bool calc_calibration_matrix(TP_CalibrationMatrix *out_matrix, const LCD_Coordinate *const lcd_3points,
@@ -309,10 +323,26 @@ bool calibrate(void)
     const LCD_Coordinate lcd_crosses[3] = {{45, 45}, {45, 270}, {190, 190}};
     TP_Coordinate tp_crosses[3] = {{0}, {0}, {0}};
 
-    LCD_ClearWith(COL_BLACK);
+    if (!LCD_IsInitialized())
+        return false;
 
-    char *calibration_text = "Touch crosshair to calibrate";
-    LCD_PrintString(calibration_text, COL_BLACK, LCD_FONT_SYSTEM, COL_WHITE, (LCD_Coordinate){10, 10});
+    LCD_SetBackgroundColor(LCD_COL_BLACK);
+
+    // clang-format off
+
+    LCD_ObjID text;
+    LCD_BEGIN_DRAWING;
+    text = LCD_OBJECT(text, 1, {
+        LCD_TEXT(10, 10, {
+            .text = "Touch crosshair to calibrate",
+            .font = LCD_DEF_FONT_SYSTEM,
+            .text_color = LCD_COL_WHITE,
+            .bg_color = LCD_COL_NONE,
+        }),
+    });
+    LCD_END_DRAWING;
+
+    // clang-format on
 
     for (u8 i = 0; i < 3; i++)
     {
@@ -332,10 +362,25 @@ bool calibrate(void)
     if (!calc_calibration_matrix(&current_calib_matrix, lcd_crosses, tp_crosses))
         return false;
 
-    LCD_DeleteString(calibration_text, LCD_FONT_SYSTEM, COL_BLACK, (LCD_Coordinate){10, 10});
-    LCD_PrintString("Touch is ready!", COL_BLACK, LCD_FONT_SYSTEM, COL_WHITE, LCD_POS_MIDDLE_CENTER(0, 0, 110, 10));
+    LCD_RQRemoveObject(text, false);
+
+    // clang-format off
+
+    LCD_BEGIN_DRAWING;
+    text = LCD_OBJECT(text, 1, {
+        LCD_TEXT(40, 40, {
+            .text = "Calibration complete!",
+            .font = LCD_DEF_FONT_SYSTEM,
+            .text_color = LCD_COL_WHITE,
+            .bg_color = LCD_COL_NONE,
+        })
+    });
+    LCD_END_DRAWING;
+
+    // clang-format on
+
     TP_WaitForTouch();
-    LCD_ClearWith(COL_BLACK);
+    LCD_RQRemoveObject(text, false);
     return true;
 }
 

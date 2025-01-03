@@ -36,31 +36,28 @@ void LCD_SetPointColor(LCD_Color color, LCD_Coordinate point);
 ///       on the screen, they will be deleted and the screen will be cleared.
 void LCD_SetBackgroundColor(LCD_Color color);
 
-// COMPONENT MANAGER
-
-/// @brief Adds a new component to the render queue, and (optionally) triggers an update.
-/// @param component The component to add
-/// @param update Whether to trigger an update after adding the component
-/// @return -1 if the component is NULL or the render queue is full, the ID of the component otherwise
-LCD_ComponentID LCD_CMAddComp(LCD_Component component, bool update);
+/// @brief Adds a new object to the render queue, and (optionally) triggers an update.
+/// @param obj The object to add
+/// @return -1 if the object is NULL or the render queue is full, the ID of the object otherwise
+LCD_ObjID LCD_RQAddObject(const LCD_Obj *const obj);
 
 /// @brief Manually triggers an update of the screen. Useful when you want to
-///        add multiple components at once, and only update the screen at the end.
-void LCD_CMRender(void);
+///        add multiple objects at once, and only update the screen at the end.
+void LCD_RQRender(void);
 
-/// @brief Removes a component from the render queue by its ID.
-/// @param id The ID of the component to remove
-/// @param redraw_lower_layers Whether to redraw the components at lower layers
-void LCD_CMRemoveComp(LCD_ComponentID id, bool redraw_lower_layers);
+/// @brief Removes an object from the render queue by its ID.
+/// @param id The ID of the object to remove
+/// @param redraw_screen Whether to redraw the other objects
+void LCD_RQRemoveObject(LCD_ObjID id, bool redraw_screen);
 
-/// @brief Hides a component from the screen without removing it from the render queue.
-/// @param id The ID of the component to hide
-/// @param visible Whether the component should be visible
-/// @param redraw_lower_layers Whether to redraw the components at lower layers
-void LCD_CMSetCompVisibility(LCD_ComponentID id, bool visible, bool redraw_lower_layers);
+/// @brief Shows/hides an object on/from the screen without modifying the render queue.
+/// @param id The ID of the object to hide
+/// @param visible Whether the object should be visible or not
+/// @param redraw_lower_layers Whether to redraw the other objects (if removed)
+void LCD_RQSetObjectVisibility(LCD_ObjID id, bool visible, bool redraw_screen);
 
-/// @brief Removes all components from the screen.
-void LCD_CMRemoveAllComps(void);
+/// @brief Removes all visible and non-visible objects from the screen.
+void LCD_RQClear(void);
 
 // FONT MANAGER
 

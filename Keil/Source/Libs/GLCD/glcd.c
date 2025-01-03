@@ -47,8 +47,6 @@
         dst = tmp;                                                                                                     \
     }
 
-// PRIVATE TYPES
-
 /// @brief Models.
 typedef enum
 {
@@ -69,13 +67,6 @@ typedef enum
     SSD2119    // 3.5 LCD 0x9919
 } LCD_Model;
 
-typedef struct
-{
-    LCD_ComponentID id;
-    LCD_Component comp;
-    bool visible, rendered;
-} LCD_RenderQueueItem;
-
 // VARIABLES
 
 /// @brief Code for the current LCD peripheral.
@@ -89,12 +80,29 @@ _PRIVATE u16 MAX_X, MAX_Y;
 /// @brief Current background color of the screen.
 _PRIVATE LCD_Color current_bg_color = LCD_COL_BLACK;
 
+// RENDER QUEUE
+
+typedef struct
+{
+    LCD_ObjID id; // -1 if the object has been removed
+    LCD_Obj *obj; // Can be NULL if the object has been removed
+    bool visible, rendered;
+} LCD_RQItem;
+
 /// @brief Maximum number of components that can be rendered on the screen.
-#define MAX_RENDER_QUEUE_COMPS 1024
+#define MAX_RQ_ITEMS 1024
 
 /// @brief The render queue, containing all the components to be rendered.
-_PRIVATE LCD_RenderQueueItem render_queue[MAX_RENDER_QUEUE_COMPS] = {0};
-_PRIVATE u32 render_queue_size = 0;
+///        It also contains info about the visibility and rendering status
+///        of each component. The queue is also paired with a free list of
+///        the same size, to keep track of the free slots in the queue.
+_PRIVATE LCD_RQItem render_queue[MAX_RQ_ITEMS] = {0};
+_PRIVATE u32 render_queue_free_list[MAX_RQ_ITEMS] = {0};
+
+/// @brief Keeps track of the number of free slots in the render queue.
+///        A slot is free if the index = -1 and the obj pointer is NULL.
+_PRIVATE u32 render_queue_free_list_count;
+_PRIVATE u32 render_queue_size;
 
 /// @brief Maximum number of fonts that can be loaded into the LCD.
 #define MAX_FONTS 16
@@ -580,7 +588,7 @@ _PRIVATE void print_text(const LCD_Text *const text, LCD_Coordinate pos)
     u8 chr, *str = (u8 *)(text->text);
 
     u16 max_width = 0;                   // Track the maximum width (for multi-line)
-    u16 start_x = pos.x;              // Saving the starting x position
+    u16 start_x = pos.x;                 // Saving the starting x position
     u16 total_height = font.char_height; // Minimum height is one line (font height)
 
     bool no_more_space = false;
@@ -591,7 +599,7 @@ _PRIVATE void print_text(const LCD_Text *const text, LCD_Coordinate pos)
 
         // Moving to the next char position
         if (pos.x + font.char_width < MAX_X) // Continue on the same line
-            pos.x += font.char_width;
+            pos.x += 8;
         else if (pos.y + font.char_height < MAX_Y) // Go to the next line if there's space on the x axis
         {
             pos.x = 0;
@@ -614,98 +622,101 @@ _PRIVATE void print_text(const LCD_Text *const text, LCD_Coordinate pos)
 
 // PRIVATE RENDER QUEUE FUNCTIONS
 
-_PRIVATE void render_comp(LCD_ComponentID id)
+_PRIVATE void render_item(LCD_RQItem *const item)
 {
-    if (id >= render_queue_size || id < 0)
+    if (!item || !item->obj || item->id < 0 || !item->obj->comps || item->obj->comps_size == 0)
         return;
 
-    LCD_RenderQueueItem *const item = &render_queue[id];
-    if (!item->visible || item->rendered)
-        return; // Item is already rendered or not visible
+    // If the object is already rendered or not visible, skip it
+    if (item->rendered || !item->visible)
+        return;
 
-    switch (item->comp.type)
+    LCD_Component *comp;
+    for (u16 i = 0; i < item->obj->comps_size; i++)
     {
-    case LCD_COMP_LINE:
-        draw_line(&item->comp.object.line);
-        break;
-    case LCD_COMP_RECT:
-        draw_rect(&item->comp.object.rect, item->comp.pos);
-        break;
-    case LCD_COMP_CIRCLE:
-        draw_circle(&item->comp.object.circle);
-        break;
-    case LCD_COMP_IMAGE:
-        draw_img_rle(&item->comp.object.image, item->comp.pos);
-        break;
-    case LCD_COMP_TEXT:
-        print_text(&item->comp.object.text, item->comp.pos);
-        break;
+        comp = &item->obj->comps[i];
+        switch (comp->type)
+        {
+        case LCD_COMP_LINE:
+            draw_line(&comp->object.line);
+            break;
+        case LCD_COMP_RECT:
+            draw_rect(&comp->object.rect, comp->pos);
+            break;
+        case LCD_COMP_CIRCLE:
+            draw_circle(&comp->object.circle);
+            break;
+        case LCD_COMP_IMAGE:
+            draw_img_rle(&comp->object.image, comp->pos);
+            break;
+        case LCD_COMP_TEXT:
+            print_text(&comp->object.text, comp->pos);
+            break;
+        }
     }
 
-    item->visible = true;
     item->rendered = true;
 }
 
-/// @brief Removes the component from the screen, and redraws the other
-///        components in order to refill the gap left by the removed one.
-/// @param id Id of the component to remove.
-/// @param redraw_lower_layers If true, the components at lower layers will be redrawn.
-_PRIVATE void remove_comp(LCD_ComponentID id, bool redraw_lower_layers)
+_PRIVATE void unrender_item(LCD_RQItem *const item)
 {
-    if (id >= render_queue_size || id < 0)
+    if (!item || !item->obj || item->id < 0 || !item->obj->comps || item->obj->comps_size == 0)
         return;
 
-    LCD_RenderQueueItem *const item = &render_queue[id];
+    // If the object is not rendered, skip it
     if (!item->rendered)
-        return; // Item is not rendered
+        return;
 
-    const LCD_ComponentType type = item->comp.type;
-    if (type == LCD_COMP_LINE)
+    LCD_Component *comp;
+    for (u16 i = 0; i < item->obj->comps_size; i++)
     {
-        LCD_Line line = item->comp.object.line;
-        line.color = current_bg_color;
-        draw_line(&line);
-    }
-    else if (type == LCD_COMP_RECT)
-    {
-        LCD_Rect rect = item->comp.object.rect;
-        rect.edge_color = current_bg_color;
-        if (rect.fill_color != LCD_COL_NONE)
-            rect.fill_color = current_bg_color;
-        draw_rect(&rect, item->comp.pos);
-    }
-    else if (type == LCD_COMP_CIRCLE)
-    {
-        LCD_Circle circle = item->comp.object.circle;
-        circle.edge_color = current_bg_color;
-        if (circle.fill_color != LCD_COL_NONE)
-            circle.fill_color = current_bg_color;
-        draw_circle(&circle);
-    }
-    else if (type == LCD_COMP_IMAGE)
-    {
-        const LCD_Image *image = &item->comp.object.image;
-        const LCD_Rect rect = {image->width, image->height, current_bg_color, current_bg_color};
-        draw_rect(&rect, item->comp.pos);
-    }
-    else if (type == LCD_COMP_TEXT)
-    {
-        LCD_Text text = item->comp.object.text;
-        text.text_color = current_bg_color;
-        text.bg_color = current_bg_color;
-        print_text(&text, item->comp.pos);
+        comp = &item->obj->comps[i];
+        if (comp->type == LCD_COMP_LINE)
+        {
+            LCD_Line line = comp->object.line;
+            line.color = current_bg_color;
+            draw_line(&line);
+        }
+        else if (comp->type == LCD_COMP_RECT)
+        {
+            LCD_Rect rect = comp->object.rect;
+            rect.edge_color = current_bg_color;
+            if (rect.fill_color != LCD_COL_NONE)
+                rect.fill_color = current_bg_color;
+
+            draw_rect(&rect, comp->pos);
+        }
+        else if (comp->type == LCD_COMP_CIRCLE)
+        {
+            LCD_Circle circle = comp->object.circle;
+            circle.edge_color = current_bg_color;
+            if (circle.fill_color != LCD_COL_NONE)
+                circle.fill_color = current_bg_color;
+
+            draw_circle(&circle);
+        }
+        else if (comp->type == LCD_COMP_IMAGE)
+        {
+            const LCD_Rect rect = {
+                .width = comp->object.image.width,
+                .height = comp->object.image.height,
+                .fill_color = current_bg_color,
+                .edge_color = current_bg_color,
+            };
+
+            draw_rect(&rect, comp->pos);
+        }
+        else if (comp->type == LCD_COMP_TEXT)
+        {
+            LCD_Text text = comp->object.text;
+            text.text_color = current_bg_color;
+            text.bg_color = current_bg_color;
+
+            print_text(&text, comp->pos);
+        }
     }
 
-    item->visible = false;
     item->rendered = false;
-
-    // Redraw the components at lower layers
-    if (redraw_lower_layers)
-    {
-        for (u32 i = 0; i < render_queue_size; i++)
-            if (i != id && render_queue[i].visible && render_queue[i].rendered)
-                render_comp(i);
-    }
 }
 
 // PUBLIC FUNCTIONS
@@ -817,12 +828,27 @@ void LCD_Init(LCD_Orientation orientation)
     }
 
     DELAY_MS(50);
-    initialized = true;
 
     // Loading the two default fonts: MS Gothic & System
     font_list[0] = Font_MSGothic;
     font_list[1] = Font_System;
     font_list_size = 2;
+
+    // Initializing the RQ and the free list
+    render_queue_free_list_count = MAX_RQ_ITEMS;
+    render_queue_size = 0;
+
+    // Each element in the free list is an index in the RQ. The free list is
+    // initialized with the indexes of the RQ elements, in reverse order. This
+    // is because, when adding new objects, the free slot will be retrieved by
+    // accessing the last element in the free list, and then decrementing the
+    // free list count. When removing an object, the slot will be added back to
+    // the free list at the cell currently pointed by the free list count, which
+    // will be then incremented.
+    for (u32 i = 0; i < MAX_RQ_ITEMS; i++)
+        render_queue_free_list[i] = MAX_RQ_ITEMS - 1 - i;
+
+    initialized = true;
 }
 
 bool LCD_IsInitialized(void)
@@ -901,63 +927,119 @@ void LCD_SetBackgroundColor(LCD_Color color)
         do_write(color & 0xFFFF);
 }
 
-LCD_ComponentID LCD_CMAddComp(LCD_Component component, bool update)
+// RENDERING
+
+LCD_ObjID LCD_RQAddObject(const LCD_Obj *const obj)
 {
-    if (render_queue_size >= MAX_RENDER_QUEUE_COMPS)
+    if (!obj || !obj->comps || obj->comps_size <= 0)
         return -1;
 
-    const LCD_ComponentID id = render_queue_size;
-    render_queue[id] = (LCD_RenderQueueItem){id, component, true, false};
+    // No more space in the render queue
+    if (render_queue_free_list_count <= 0)
+        return -1;
+
+    const u32 rq_slot = render_queue_free_list[--render_queue_free_list_count];
+    LCD_RQItem *item = &render_queue[rq_slot];
+
+    item->id = rq_slot;
+    item->obj = (LCD_Obj *)obj;
+    item->visible = true; // Object needs to be rendered, eventually
+    item->rendered = false;
+
     render_queue_size++;
-
-    if (update)
-        render_comp(id);
-
-    return id;
+    return rq_slot;
 }
 
-void LCD_CMRender(void)
+void LCD_RQRender(void)
 {
-    for (u32 i = 0; i < render_queue_size; i++)
+    // Visiting the render queue and rendering the visible objects.
+    // The render queue size tells us how many objects are in the queue, but
+    // there may be empty slots in the middle of the queue, so we need to
+    // iterate over the whole queue, and stop when we reach <render_queue_size>
+    // actual objects (i.e. not NULL objs). We could simply iterate over
+    // MAX_RQ_ITEMS, but that would be surely more inefficient.
+
+    LCD_RQItem *item;
+    for (u32 i = 0, count = 0; i < MAX_RQ_ITEMS && count != render_queue_size; i++)
     {
-        if (render_queue[i].visible && !render_queue[i].rendered)
-            render_comp(i);
+        item = &render_queue[i];
+        if (item->id == -1 && !item->obj)
+            continue;
+
+        count++; // Found actual object, incrementing count.
+        if (item->visible && !item->rendered)
+            render_item(item);
     }
 }
 
-void LCD_CMRemoveComp(LCD_ComponentID id, bool redraw_lower_layers)
+void LCD_RQRemoveObject(LCD_ObjID id, bool redraw_screen)
 {
-    if (id >= render_queue_size || id < 0)
+    if (id < 0 || id >= MAX_RQ_ITEMS)
         return;
 
     // id is the index of the component in the render queue
-    render_queue[id].visible = false;
-    remove_comp(id, redraw_lower_layers);
-
-    for (u32 i = id; i < render_queue_size - 1; i++)
-        render_queue[i] = render_queue[i + 1];
-    render_queue_size--;
-}
-
-void LCD_CMSetCompVisibility(LCD_ComponentID id, bool visible, bool redraw_lower_layers)
-{
-    if (id >= render_queue_size || id < 0)
+    LCD_RQItem *const item = &render_queue[id];
+    if (!item || item->id == -1 || !item->obj)
         return;
 
-    render_queue[id].visible = visible;
-    if (visible)
-        render_comp(id);
-    else
-        remove_comp(id, redraw_lower_layers);
+    item->visible = false;
+    unrender_item(item);
+
+    // Freeing the RQ_Item
+    item->id = -1;
+    item->obj = NULL;
+
+    // Adding the slod index to the free list
+    render_queue_free_list[render_queue_free_list_count++] = id;
+    render_queue_size--;
+
+    if (redraw_screen)
+        LCD_RQRender();
 }
 
-void LCD_CMRemoveAllComps(void)
+void LCD_RQSetObjectVisibility(LCD_ObjID id, bool visible, bool redraw_screen)
 {
-    for (u32 i = 0; i < render_queue_size; i++)
-        render_queue[i] = (LCD_RenderQueueItem){0, NULL, false, false};
+    if (id < 0 || id >= MAX_RQ_ITEMS)
+        return;
+
+    LCD_RQItem *const item = &render_queue[id];
+    if (!item || item->id == -1 || !item->obj)
+        return;
+
+    item->visible = visible;
+    if (visible && !item->rendered)
+        render_item(item);
+    else if (!visible && item->rendered)
+    {
+        unrender_item(item);
+        if (redraw_screen)
+            LCD_RQRender();
+    }
+}
+
+void LCD_RQClear(void)
+{
+    // Iterating over MAX_ITEMS, and stopping til we NULL'd render_queue_size
+    // objects. This is because, although render_queue_size tells us how many
+    // objects are in the queue, there may be empty slots in the queue.
+    LCD_RQItem *item;
+    for (u32 i = 0, count = 0; i < MAX_RQ_ITEMS && count != render_queue_size; i++)
+    {
+        item = &render_queue[i];
+        if (item->id == -1 || !item->obj)
+            continue;
+
+        item->id = -1;
+        item->obj = NULL;
+        item->rendered = false;
+        item->visible = false;
+
+        count++;                                                    // Found actual object, incrementing count.
+        render_queue_free_list[render_queue_free_list_count++] = i; // Adding index into the FL.
+    }
 
     render_queue_size = 0;
-    LCD_SetBackgroundColor(current_bg_color);
+    LCD_SetBackgroundColor(current_bg_color); // Deleting everything
 }
 
 LCD_FontID LCD_FMAddFont(LCD_Font font)

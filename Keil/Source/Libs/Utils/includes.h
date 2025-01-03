@@ -15,7 +15,7 @@
 #include "power.h"
 #include "rit.h"
 #include "timer.h"
-// #include "touch.h"
+#include "touch.h"
 
 #ifdef SIMULATOR
 extern uint8_t ScaleFlag; // Needs to be visible in order to become visible by the simulator

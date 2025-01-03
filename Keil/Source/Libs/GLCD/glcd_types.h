@@ -133,14 +133,16 @@ typedef struct
     } object;
 } LCD_Component;
 
-/// @brief Used to store a complex drawable component, i.e. made up of multiple heterogeneous components,
-///        that are assigned to a single ID.
+/// @brief Represents a generic object, made up of 1 or more basic
+///        components, that are rendered on the screen.
+/// @note This type is the one that the user should use to create
+///       the objects that he wants to represent.
 typedef struct
 {
-    LCD_Component *comps;
+    LCD_Component *comps; // Array of components, or just one.
     u8 comps_size;
-} LCD_ComplexComponent;
+} LCD_Obj;
 
-typedef i16 LCD_ComponentID;
+typedef i16 LCD_ObjID;
 
 #endif
