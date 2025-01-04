@@ -1,208 +1,0 @@
-Dependencies for Project 'sample', Target 'SW_Debug': (DO NOT MODIFY !)
-CompilerVersion: 6220000::V6.22::ARMCLANG
-F (.\Source\CMSIS_core\cmsis_armclang.h)(0x677087CB)()
-F (.\Source\CMSIS_core\cmsis_compiler.h)(0x677087CB)()
-F (.\Source\CMSIS_core\cmsis_version.h)(0x677087CB)()
-F (.\Source\CMSIS_core\core_cm3.h)(0x677087CB)()
-F (.\Source\CMSIS_core\mpu_armv7.h)(0x677087CB)()
-F (.\Source\Libs\RIT\rit.c)(0x677087CB)(-xc -std=c11 --target=arm-arm-none-eabi -mcpu=cortex-m3 -c-fno-rtti -funsigned-char -fshort-enums -fshort-wchar-gdwarf-4 -Ofast -fno-function-sections -I ./Source/Libs/Button -I ./Source/CMSIS_core -I ./Source -I ./Source/Libs/RIT -I ./Source/Libs/Timer -I ./Source/Libs/LED -I ./Source/Libs/Power -I ./Source/Libs/Utils -I ./Source/Program -I ./Source/Startup -I ./Source/Libs/SysTick -I ./Source/Libs/Utils/DynamicArray -I ./Source/Libs/Joystick -I ./Source/Libs/ADC-PM -I ./Source/Libs/DAC -I ./Source/Libs/GLCD -I ./Source/Program/Assets -I ./Source/Program/Fonts -I ./Source/Libs/GLCD/Fonts -I ./Source/Libs/TouchPanel-I./RTE/_SW_Debug-I"C:/Program Files/Arm/Packs/ARM/CMSIS/6.1.0/CMSIS/Core/Include"-I"C:/Program Files/Arm/Packs/Keil/LPC1700_DFP/2.7.2/Device/Include"-I"C:/Program Files/Arm/Packs/Keil/LPC1700_DFP/2.7.2/RTE_Driver"-D__UVISION_VERSION="541" -DLPC175x_6x -D_RTE_ -DSIMULATOR-o ./objects/rit.o -MMD)
-I (Source\Libs\RIT\rit.h)(0x677087CB)
-I (Source\Libs\RIT\rit_types.h)(0x677087CB)
-I (Source\Libs\Utils\utils.h)(0x6779492F)
-I (Source\Libs\Power\power.h)(0x677087CB)
-I (Source\Libs\Power\power_types.h)(0x677087CB)
-I (C:\Program Files\Arm\Packs\Keil\LPC1700_DFP\2.7.2\Device\Include\LPC17xx.h)(0x67581345)
-I (Source\CMSIS_core\core_cm3.h)(0x677087CB)
-I (C:\Program Files\Arm\Packs\Keil\LPC1700_DFP\2.7.2\Device\Include\system_LPC17xx.h)(0x67581345)
-F (.\Source\Libs\RIT\rit.h)(0x677087CB)()
-F (.\Source\Libs\RIT\rit_job.c)(0x677087CB)(-xc -std=c11 --target=arm-arm-none-eabi -mcpu=cortex-m3 -c-fno-rtti -funsigned-char -fshort-enums -fshort-wchar-gdwarf-4 -Ofast -fno-function-sections -I ./Source/Libs/Button -I ./Source/CMSIS_core -I ./Source -I ./Source/Libs/RIT -I ./Source/Libs/Timer -I ./Source/Libs/LED -I ./Source/Libs/Power -I ./Source/Libs/Utils -I ./Source/Program -I ./Source/Startup -I ./Source/Libs/SysTick -I ./Source/Libs/Utils/DynamicArray -I ./Source/Libs/Joystick -I ./Source/Libs/ADC-PM -I ./Source/Libs/DAC -I ./Source/Libs/GLCD -I ./Source/Program/Assets -I ./Source/Program/Fonts -I ./Source/Libs/GLCD/Fonts -I ./Source/Libs/TouchPanel-I./RTE/_SW_Debug-I"C:/Program Files/Arm/Packs/ARM/CMSIS/6.1.0/CMSIS/Core/Include"-I"C:/Program Files/Arm/Packs/Keil/LPC1700_DFP/2.7.2/Device/Include"-I"C:/Program Files/Arm/Packs/Keil/LPC1700_DFP/2.7.2/RTE_Driver"-D__UVISION_VERSION="541" -DLPC175x_6x -D_RTE_ -DSIMULATOR-o ./objects/rit_job.o -MMD)
-I (Source\Libs\RIT\rit.h)(0x677087CB)
-I (Source\Libs\RIT\rit_types.h)(0x677087CB)
-I (Source\Libs\Utils\utils.h)(0x6779492F)
-I (C:\Program Files\Arm\Packs\Keil\LPC1700_DFP\2.7.2\Device\Include\LPC17xx.h)(0x67581345)
-I (Source\CMSIS_core\core_cm3.h)(0x677087CB)
-I (C:\Program Files\Arm\Packs\Keil\LPC1700_DFP\2.7.2\Device\Include\system_LPC17xx.h)(0x67581345)
-F (.\Source\Libs\RIT\rit_types.h)(0x677087CB)()
-F (.\Source\Libs\LED\led.c)(0x677087CB)(-xc -std=c11 --target=arm-arm-none-eabi -mcpu=cortex-m3 -c-fno-rtti -funsigned-char -fshort-enums -fshort-wchar-gdwarf-4 -Ofast -fno-function-sections -I ./Source/Libs/Button -I ./Source/CMSIS_core -I ./Source -I ./Source/Libs/RIT -I ./Source/Libs/Timer -I ./Source/Libs/LED -I ./Source/Libs/Power -I ./Source/Libs/Utils -I ./Source/Program -I ./Source/Startup -I ./Source/Libs/SysTick -I ./Source/Libs/Utils/DynamicArray -I ./Source/Libs/Joystick -I ./Source/Libs/ADC-PM -I ./Source/Libs/DAC -I ./Source/Libs/GLCD -I ./Source/Program/Assets -I ./Source/Program/Fonts -I ./Source/Libs/GLCD/Fonts -I ./Source/Libs/TouchPanel-I./RTE/_SW_Debug-I"C:/Program Files/Arm/Packs/ARM/CMSIS/6.1.0/CMSIS/Core/Include"-I"C:/Program Files/Arm/Packs/Keil/LPC1700_DFP/2.7.2/Device/Include"-I"C:/Program Files/Arm/Packs/Keil/LPC1700_DFP/2.7.2/RTE_Driver"-D__UVISION_VERSION="541" -DLPC175x_6x -D_RTE_ -DSIMULATOR-o ./objects/led.o -MMD)
-I (Source\Libs\LED\led.h)(0x677087CB)
-I (Source\Libs\Utils\utils.h)(0x6779492F)
-I (Source\Libs\LED\led_types.h)(0x677087CB)
-I (C:\Program Files\Arm\Packs\Keil\LPC1700_DFP\2.7.2\Device\Include\LPC17xx.h)(0x67581345)
-I (Source\CMSIS_core\core_cm3.h)(0x677087CB)
-I (C:\Program Files\Arm\Packs\Keil\LPC1700_DFP\2.7.2\Device\Include\system_LPC17xx.h)(0x67581345)
-F (.\Source\Libs\LED\led.h)(0x677087CB)()
-F (.\Source\Libs\LED\led_types.h)(0x677087CB)()
-F (.\Source\Libs\Timer\timer.c)(0x677087CB)(-xc -std=c11 --target=arm-arm-none-eabi -mcpu=cortex-m3 -c-fno-rtti -funsigned-char -fshort-enums -fshort-wchar-gdwarf-4 -Ofast -fno-function-sections -I ./Source/Libs/Button -I ./Source/CMSIS_core -I ./Source -I ./Source/Libs/RIT -I ./Source/Libs/Timer -I ./Source/Libs/LED -I ./Source/Libs/Power -I ./Source/Libs/Utils -I ./Source/Program -I ./Source/Startup -I ./Source/Libs/SysTick -I ./Source/Libs/Utils/DynamicArray -I ./Source/Libs/Joystick -I ./Source/Libs/ADC-PM -I ./Source/Libs/DAC -I ./Source/Libs/GLCD -I ./Source/Program/Assets -I ./Source/Program/Fonts -I ./Source/Libs/GLCD/Fonts -I ./Source/Libs/TouchPanel-I./RTE/_SW_Debug-I"C:/Program Files/Arm/Packs/ARM/CMSIS/6.1.0/CMSIS/Core/Include"-I"C:/Program Files/Arm/Packs/Keil/LPC1700_DFP/2.7.2/Device/Include"-I"C:/Program Files/Arm/Packs/Keil/LPC1700_DFP/2.7.2/RTE_Driver"-D__UVISION_VERSION="541" -DLPC175x_6x -D_RTE_ -DSIMULATOR-o ./objects/timer.o -MMD)
-I (Source\Libs\Timer\timer.h)(0x677087CB)
-I (Source\Libs\Timer\timer_types.h)(0x677087CB)
-I (Source\Libs\Utils\utils.h)(0x6779492F)
-I (Source\Libs\Power\power.h)(0x677087CB)
-I (Source\Libs\Power\power_types.h)(0x677087CB)
-I (C:\Program Files\Arm\Packs\Keil\LPC1700_DFP\2.7.2\Device\Include\LPC17xx.h)(0x67581345)
-I (Source\CMSIS_core\core_cm3.h)(0x677087CB)
-I (C:\Program Files\Arm\Packs\Keil\LPC1700_DFP\2.7.2\Device\Include\system_LPC17xx.h)(0x67581345)
-F (.\Source\Libs\Timer\timer.h)(0x677087CB)()
-F (.\Source\Libs\Timer\timer_types.h)(0x677087CB)()
-F (.\Source\Libs\Timer\timer_irq.c)(0x677087CB)(-xc -std=c11 --target=arm-arm-none-eabi -mcpu=cortex-m3 -c-fno-rtti -funsigned-char -fshort-enums -fshort-wchar-gdwarf-4 -Ofast -fno-function-sections -I ./Source/Libs/Button -I ./Source/CMSIS_core -I ./Source -I ./Source/Libs/RIT -I ./Source/Libs/Timer -I ./Source/Libs/LED -I ./Source/Libs/Power -I ./Source/Libs/Utils -I ./Source/Program -I ./Source/Startup -I ./Source/Libs/SysTick -I ./Source/Libs/Utils/DynamicArray -I ./Source/Libs/Joystick -I ./Source/Libs/ADC-PM -I ./Source/Libs/DAC -I ./Source/Libs/GLCD -I ./Source/Program/Assets -I ./Source/Program/Fonts -I ./Source/Libs/GLCD/Fonts -I ./Source/Libs/TouchPanel-I./RTE/_SW_Debug-I"C:/Program Files/Arm/Packs/ARM/CMSIS/6.1.0/CMSIS/Core/Include"-I"C:/Program Files/Arm/Packs/Keil/LPC1700_DFP/2.7.2/Device/Include"-I"C:/Program Files/Arm/Packs/Keil/LPC1700_DFP/2.7.2/RTE_Driver"-D__UVISION_VERSION="541" -DLPC175x_6x -D_RTE_ -DSIMULATOR-o ./objects/timer_irq.o -MMD)
-I (C:\Program Files\Arm\Packs\Keil\LPC1700_DFP\2.7.2\Device\Include\LPC17xx.h)(0x67581345)
-I (Source\CMSIS_core\core_cm3.h)(0x677087CB)
-I (C:\Program Files\Arm\Packs\Keil\LPC1700_DFP\2.7.2\Device\Include\system_LPC17xx.h)(0x67581345)
-I (Source\Libs\Utils\includes.h)(0x6777E90A)
-I (Source\Libs\ADC-PM\adc_pm.h)(0x677087CB)
-I (Source\Libs\ADC-PM\adc_pm_types.h)(0x677087CB)
-I (Source\Libs\Utils\utils.h)(0x6779492F)
-I (Source\Libs\Button\button.h)(0x677087CB)
-I (Source\Libs\Button\button_types.h)(0x677087CB)
-I (Source\Libs\DAC\dac.h)(0x677087CB)
-I (Source\Libs\DAC\dac_types.h)(0x677087CB)
-I (Source\Libs\SysTick\delay.h)(0x677087CB)
-I (Source\Libs\GLCD\glcd.h)(0x67794921)
-I (Source\Libs\GLCD\glcd_macros.h)(0x67793146)
-I (Source\Libs\GLCD\glcd_types.h)(0x6778FCCF)
-I (Source\Libs\Joystick\joystick.h)(0x677087CB)
-I (Source\Libs\Joystick\joystick_types.h)(0x677087CB)
-I (Source\Libs\LED\led.h)(0x677087CB)
-I (Source\Libs\LED\led_types.h)(0x677087CB)
-I (Source\Libs\Power\power.h)(0x677087CB)
-I (Source\Libs\Power\power_types.h)(0x677087CB)
-I (Source\Libs\RIT\rit.h)(0x677087CB)
-I (Source\Libs\RIT\rit_types.h)(0x677087CB)
-I (Source\Libs\Timer\timer.h)(0x677087CB)
-I (Source\Libs\Timer\timer_types.h)(0x677087CB)
-I (Source\Libs\TouchPanel\touch.h)(0x677087CB)
-F (.\Source\Libs\Power\power.c)(0x677087CB)(-xc -std=c11 --target=arm-arm-none-eabi -mcpu=cortex-m3 -c-fno-rtti -funsigned-char -fshort-enums -fshort-wchar-gdwarf-4 -Ofast -fno-function-sections -I ./Source/Libs/Button -I ./Source/CMSIS_core -I ./Source -I ./Source/Libs/RIT -I ./Source/Libs/Timer -I ./Source/Libs/LED -I ./Source/Libs/Power -I ./Source/Libs/Utils -I ./Source/Program -I ./Source/Startup -I ./Source/Libs/SysTick -I ./Source/Libs/Utils/DynamicArray -I ./Source/Libs/Joystick -I ./Source/Libs/ADC-PM -I ./Source/Libs/DAC -I ./Source/Libs/GLCD -I ./Source/Program/Assets -I ./Source/Program/Fonts -I ./Source/Libs/GLCD/Fonts -I ./Source/Libs/TouchPanel-I./RTE/_SW_Debug-I"C:/Program Files/Arm/Packs/ARM/CMSIS/6.1.0/CMSIS/Core/Include"-I"C:/Program Files/Arm/Packs/Keil/LPC1700_DFP/2.7.2/Device/Include"-I"C:/Program Files/Arm/Packs/Keil/LPC1700_DFP/2.7.2/RTE_Driver"-D__UVISION_VERSION="541" -DLPC175x_6x -D_RTE_ -DSIMULATOR-o ./objects/power.o -MMD)
-I (Source\Libs\Power\power.h)(0x677087CB)
-I (Source\Libs\Power\power_types.h)(0x677087CB)
-I (Source\Libs\Utils\utils.h)(0x6779492F)
-I (C:\Program Files\Arm\Packs\Keil\LPC1700_DFP\2.7.2\Device\Include\LPC17xx.h)(0x67581345)
-I (Source\CMSIS_core\core_cm3.h)(0x677087CB)
-I (C:\Program Files\Arm\Packs\Keil\LPC1700_DFP\2.7.2\Device\Include\system_LPC17xx.h)(0x67581345)
-F (.\Source\Libs\Power\power.h)(0x677087CB)()
-F (.\Source\Libs\Power\power_types.h)(0x677087CB)()
-F (.\Source\Program\main.c)(0x67794937)(-xc -std=c11 --target=arm-arm-none-eabi -mcpu=cortex-m3 -c-fno-rtti -funsigned-char -fshort-enums -fshort-wchar-gdwarf-4 -Ofast -fno-function-sections -I ./Source/Libs/Button -I ./Source/CMSIS_core -I ./Source -I ./Source/Libs/RIT -I ./Source/Libs/Timer -I ./Source/Libs/LED -I ./Source/Libs/Power -I ./Source/Libs/Utils -I ./Source/Program -I ./Source/Startup -I ./Source/Libs/SysTick -I ./Source/Libs/Utils/DynamicArray -I ./Source/Libs/Joystick -I ./Source/Libs/ADC-PM -I ./Source/Libs/DAC -I ./Source/Libs/GLCD -I ./Source/Program/Assets -I ./Source/Program/Fonts -I ./Source/Libs/GLCD/Fonts -I ./Source/Libs/TouchPanel-I./RTE/_SW_Debug-I"C:/Program Files/Arm/Packs/ARM/CMSIS/6.1.0/CMSIS/Core/Include"-I"C:/Program Files/Arm/Packs/Keil/LPC1700_DFP/2.7.2/Device/Include"-I"C:/Program Files/Arm/Packs/Keil/LPC1700_DFP/2.7.2/RTE_Driver"-D__UVISION_VERSION="541" -DLPC175x_6x -D_RTE_ -DSIMULATOR-o ./objects/main.o -MMD)
-I (Source\Libs\Utils\includes.h)(0x6777E90A)
-I (Source\Libs\ADC-PM\adc_pm.h)(0x677087CB)
-I (Source\Libs\ADC-PM\adc_pm_types.h)(0x677087CB)
-I (Source\Libs\Utils\utils.h)(0x6779492F)
-I (Source\Libs\Button\button.h)(0x677087CB)
-I (Source\Libs\Button\button_types.h)(0x677087CB)
-I (Source\Libs\DAC\dac.h)(0x677087CB)
-I (Source\Libs\DAC\dac_types.h)(0x677087CB)
-I (Source\Libs\SysTick\delay.h)(0x677087CB)
-I (Source\Libs\GLCD\glcd.h)(0x67794921)
-I (Source\Libs\GLCD\glcd_macros.h)(0x67793146)
-I (Source\Libs\GLCD\glcd_types.h)(0x6778FCCF)
-I (Source\Libs\Joystick\joystick.h)(0x677087CB)
-I (Source\Libs\Joystick\joystick_types.h)(0x677087CB)
-I (Source\Libs\LED\led.h)(0x677087CB)
-I (Source\Libs\LED\led_types.h)(0x677087CB)
-I (Source\Libs\Power\power.h)(0x677087CB)
-I (Source\Libs\Power\power_types.h)(0x677087CB)
-I (Source\Libs\RIT\rit.h)(0x677087CB)
-I (Source\Libs\RIT\rit_types.h)(0x677087CB)
-I (Source\Libs\Timer\timer.h)(0x677087CB)
-I (Source\Libs\Timer\timer_types.h)(0x677087CB)
-I (Source\Libs\TouchPanel\touch.h)(0x677087CB)
-I (Source\Program\Assets\image_hello.h)(0x67794B4B)
-F (.\Source\Libs\Utils\includes.h)(0x6777E90A)()
-F (.\Source\Libs\Utils\utils.h)(0x6779492F)()
-F (.\Source\Libs\Joystick\joystick.c)(0x677087CB)(-xc -std=c11 --target=arm-arm-none-eabi -mcpu=cortex-m3 -c-fno-rtti -funsigned-char -fshort-enums -fshort-wchar-gdwarf-4 -Ofast -fno-function-sections -I ./Source/Libs/Button -I ./Source/CMSIS_core -I ./Source -I ./Source/Libs/RIT -I ./Source/Libs/Timer -I ./Source/Libs/LED -I ./Source/Libs/Power -I ./Source/Libs/Utils -I ./Source/Program -I ./Source/Startup -I ./Source/Libs/SysTick -I ./Source/Libs/Utils/DynamicArray -I ./Source/Libs/Joystick -I ./Source/Libs/ADC-PM -I ./Source/Libs/DAC -I ./Source/Libs/GLCD -I ./Source/Program/Assets -I ./Source/Program/Fonts -I ./Source/Libs/GLCD/Fonts -I ./Source/Libs/TouchPanel-I./RTE/_SW_Debug-I"C:/Program Files/Arm/Packs/ARM/CMSIS/6.1.0/CMSIS/Core/Include"-I"C:/Program Files/Arm/Packs/Keil/LPC1700_DFP/2.7.2/Device/Include"-I"C:/Program Files/Arm/Packs/Keil/LPC1700_DFP/2.7.2/RTE_Driver"-D__UVISION_VERSION="541" -DLPC175x_6x -D_RTE_ -DSIMULATOR-o ./objects/joystick.o -MMD)
-I (Source\Libs\Joystick\joystick.h)(0x677087CB)
-I (Source\Libs\Joystick\joystick_types.h)(0x677087CB)
-I (Source\Libs\Utils\utils.h)(0x6779492F)
-I (Source\Libs\RIT\rit.h)(0x677087CB)
-I (Source\Libs\RIT\rit_types.h)(0x677087CB)
-I (C:\Program Files\Arm\Packs\Keil\LPC1700_DFP\2.7.2\Device\Include\LPC17xx.h)(0x67581345)
-I (Source\CMSIS_core\core_cm3.h)(0x677087CB)
-I (C:\Program Files\Arm\Packs\Keil\LPC1700_DFP\2.7.2\Device\Include\system_LPC17xx.h)(0x67581345)
-F (.\Source\Libs\Joystick\joystick.h)(0x677087CB)()
-F (.\Source\Libs\Joystick\joystick_types.h)(0x677087CB)()
-F (.\Source\System\startup_LPC17xx.s)(0x677807A2)(--cpu Cortex-M3 -g --diag_suppress=A1950W -I .\Source\button_EXINT -I .\Source\CMSIS_core -I .\Source\led -I .\Source\RIT -I .\Source-I.\RTE\_SW_Debug-I"C:\Program Files\Arm\Packs\ARM\CMSIS\6.1.0\CMSIS\Core\Include"-I"C:\Program Files\Arm\Packs\Keil\LPC1700_DFP\2.7.2\Device\Include"-I"C:\Program Files\Arm\Packs\Keil\LPC1700_DFP\2.7.2\RTE_Driver"--pd "__UVISION_VERSION SETA 541"--pd "LPC175x_6x SETA 1"--pd "_RTE_ SETA 1"--list .\listings\startup_lpc17xx.lst--xref -o .\objects\startup_lpc17xx.o--depend .\objects\startup_lpc17xx.d)
-F (.\Source\System\system_LPC17xx.c)(0x677087CB)(-xc -std=c11 --target=arm-arm-none-eabi -mcpu=cortex-m3 -c-fno-rtti -funsigned-char -fshort-enums -fshort-wchar-gdwarf-4 -Ofast -fno-function-sections -I ./Source/Libs/Button -I ./Source/CMSIS_core -I ./Source -I ./Source/Libs/RIT -I ./Source/Libs/Timer -I ./Source/Libs/LED -I ./Source/Libs/Power -I ./Source/Libs/Utils -I ./Source/Program -I ./Source/Startup -I ./Source/Libs/SysTick -I ./Source/Libs/Utils/DynamicArray -I ./Source/Libs/Joystick -I ./Source/Libs/ADC-PM -I ./Source/Libs/DAC -I ./Source/Libs/GLCD -I ./Source/Program/Assets -I ./Source/Program/Fonts -I ./Source/Libs/GLCD/Fonts -I ./Source/Libs/TouchPanel-I./RTE/_SW_Debug-I"C:/Program Files/Arm/Packs/ARM/CMSIS/6.1.0/CMSIS/Core/Include"-I"C:/Program Files/Arm/Packs/Keil/LPC1700_DFP/2.7.2/Device/Include"-I"C:/Program Files/Arm/Packs/Keil/LPC1700_DFP/2.7.2/RTE_Driver"-D__UVISION_VERSION="541" -DLPC175x_6x -D_RTE_ -DSIMULATOR-o ./objects/system_lpc17xx.o -MMD)
-I (C:\Program Files\Arm\Packs\Keil\LPC1700_DFP\2.7.2\Device\Include\LPC17xx.h)(0x67581345)
-I (Source\CMSIS_core\core_cm3.h)(0x677087CB)
-I (C:\Program Files\Arm\Packs\Keil\LPC1700_DFP\2.7.2\Device\Include\system_LPC17xx.h)(0x67581345)
-F (.\Source\Libs\ADC-PM\adc_pm.c)(0x677087CB)(-xc -std=c11 --target=arm-arm-none-eabi -mcpu=cortex-m3 -c-fno-rtti -funsigned-char -fshort-enums -fshort-wchar-gdwarf-4 -Ofast -fno-function-sections -I ./Source/Libs/Button -I ./Source/CMSIS_core -I ./Source -I ./Source/Libs/RIT -I ./Source/Libs/Timer -I ./Source/Libs/LED -I ./Source/Libs/Power -I ./Source/Libs/Utils -I ./Source/Program -I ./Source/Startup -I ./Source/Libs/SysTick -I ./Source/Libs/Utils/DynamicArray -I ./Source/Libs/Joystick -I ./Source/Libs/ADC-PM -I ./Source/Libs/DAC -I ./Source/Libs/GLCD -I ./Source/Program/Assets -I ./Source/Program/Fonts -I ./Source/Libs/GLCD/Fonts -I ./Source/Libs/TouchPanel-I./RTE/_SW_Debug-I"C:/Program Files/Arm/Packs/ARM/CMSIS/6.1.0/CMSIS/Core/Include"-I"C:/Program Files/Arm/Packs/Keil/LPC1700_DFP/2.7.2/Device/Include"-I"C:/Program Files/Arm/Packs/Keil/LPC1700_DFP/2.7.2/RTE_Driver"-D__UVISION_VERSION="541" -DLPC175x_6x -D_RTE_ -DSIMULATOR-o ./objects/adc_pm.o -MMD)
-I (Source\Libs\ADC-PM\adc_pm.h)(0x677087CB)
-I (Source\Libs\ADC-PM\adc_pm_types.h)(0x677087CB)
-I (Source\Libs\Utils\utils.h)(0x6779492F)
-I (Source\Libs\Power\power.h)(0x677087CB)
-I (Source\Libs\Power\power_types.h)(0x677087CB)
-I (Source\Libs\RIT\rit.h)(0x677087CB)
-I (Source\Libs\RIT\rit_types.h)(0x677087CB)
-I (C:\Program Files\Arm\Packs\Keil\LPC1700_DFP\2.7.2\Device\Include\LPC17xx.h)(0x67581345)
-I (Source\CMSIS_core\core_cm3.h)(0x677087CB)
-I (C:\Program Files\Arm\Packs\Keil\LPC1700_DFP\2.7.2\Device\Include\system_LPC17xx.h)(0x67581345)
-F (.\Source\Libs\ADC-PM\adc_pm.h)(0x677087CB)()
-F (.\Source\Libs\ADC-PM\adc_pm_irq.c)(0x677087CB)(-xc -std=c11 --target=arm-arm-none-eabi -mcpu=cortex-m3 -c-fno-rtti -funsigned-char -fshort-enums -fshort-wchar-gdwarf-4 -Ofast -fno-function-sections -I ./Source/Libs/Button -I ./Source/CMSIS_core -I ./Source -I ./Source/Libs/RIT -I ./Source/Libs/Timer -I ./Source/Libs/LED -I ./Source/Libs/Power -I ./Source/Libs/Utils -I ./Source/Program -I ./Source/Startup -I ./Source/Libs/SysTick -I ./Source/Libs/Utils/DynamicArray -I ./Source/Libs/Joystick -I ./Source/Libs/ADC-PM -I ./Source/Libs/DAC -I ./Source/Libs/GLCD -I ./Source/Program/Assets -I ./Source/Program/Fonts -I ./Source/Libs/GLCD/Fonts -I ./Source/Libs/TouchPanel-I./RTE/_SW_Debug-I"C:/Program Files/Arm/Packs/ARM/CMSIS/6.1.0/CMSIS/Core/Include"-I"C:/Program Files/Arm/Packs/Keil/LPC1700_DFP/2.7.2/Device/Include"-I"C:/Program Files/Arm/Packs/Keil/LPC1700_DFP/2.7.2/RTE_Driver"-D__UVISION_VERSION="541" -DLPC175x_6x -D_RTE_ -DSIMULATOR-o ./objects/adc_pm_irq.o -MMD)
-I (Source\Libs\ADC-PM\adc_pm.h)(0x677087CB)
-I (Source\Libs\ADC-PM\adc_pm_types.h)(0x677087CB)
-I (Source\Libs\Utils\utils.h)(0x6779492F)
-I (C:\Program Files\Arm\Packs\Keil\LPC1700_DFP\2.7.2\Device\Include\LPC17xx.h)(0x67581345)
-I (Source\CMSIS_core\core_cm3.h)(0x677087CB)
-I (C:\Program Files\Arm\Packs\Keil\LPC1700_DFP\2.7.2\Device\Include\system_LPC17xx.h)(0x67581345)
-F (.\Source\Libs\ADC-PM\adc_pm_types.h)(0x677087CB)()
-F (.\Source\Libs\DAC\dac.c)(0x677087CB)(-xc -std=c11 --target=arm-arm-none-eabi -mcpu=cortex-m3 -c-fno-rtti -funsigned-char -fshort-enums -fshort-wchar-gdwarf-4 -Ofast -fno-function-sections -I ./Source/Libs/Button -I ./Source/CMSIS_core -I ./Source -I ./Source/Libs/RIT -I ./Source/Libs/Timer -I ./Source/Libs/LED -I ./Source/Libs/Power -I ./Source/Libs/Utils -I ./Source/Program -I ./Source/Startup -I ./Source/Libs/SysTick -I ./Source/Libs/Utils/DynamicArray -I ./Source/Libs/Joystick -I ./Source/Libs/ADC-PM -I ./Source/Libs/DAC -I ./Source/Libs/GLCD -I ./Source/Program/Assets -I ./Source/Program/Fonts -I ./Source/Libs/GLCD/Fonts -I ./Source/Libs/TouchPanel-I./RTE/_SW_Debug-I"C:/Program Files/Arm/Packs/ARM/CMSIS/6.1.0/CMSIS/Core/Include"-I"C:/Program Files/Arm/Packs/Keil/LPC1700_DFP/2.7.2/Device/Include"-I"C:/Program Files/Arm/Packs/Keil/LPC1700_DFP/2.7.2/RTE_Driver"-D__UVISION_VERSION="541" -DLPC175x_6x -D_RTE_ -DSIMULATOR-o ./objects/dac.o -MMD)
-I (Source\Libs\DAC\dac.h)(0x677087CB)
-I (Source\Libs\DAC\dac_types.h)(0x677087CB)
-I (Source\Libs\Utils\utils.h)(0x6779492F)
-I (Source\Libs\Timer\timer.h)(0x677087CB)
-I (Source\Libs\Timer\timer_types.h)(0x677087CB)
-I (C:\Program Files\Arm\Packs\Keil\LPC1700_DFP\2.7.2\Device\Include\LPC17xx.h)(0x67581345)
-I (Source\CMSIS_core\core_cm3.h)(0x677087CB)
-I (C:\Program Files\Arm\Packs\Keil\LPC1700_DFP\2.7.2\Device\Include\system_LPC17xx.h)(0x67581345)
-F (.\Source\Libs\DAC\dac.h)(0x677087CB)()
-F (.\Source\Libs\DAC\dac_dma.c)(0x677087CB)(-xc -std=c11 --target=arm-arm-none-eabi -mcpu=cortex-m3 -c-fno-rtti -funsigned-char -fshort-enums -fshort-wchar-gdwarf-4 -Ofast -fno-function-sections -I ./Source/Libs/Button -I ./Source/CMSIS_core -I ./Source -I ./Source/Libs/RIT -I ./Source/Libs/Timer -I ./Source/Libs/LED -I ./Source/Libs/Power -I ./Source/Libs/Utils -I ./Source/Program -I ./Source/Startup -I ./Source/Libs/SysTick -I ./Source/Libs/Utils/DynamicArray -I ./Source/Libs/Joystick -I ./Source/Libs/ADC-PM -I ./Source/Libs/DAC -I ./Source/Libs/GLCD -I ./Source/Program/Assets -I ./Source/Program/Fonts -I ./Source/Libs/GLCD/Fonts -I ./Source/Libs/TouchPanel-I./RTE/_SW_Debug-I"C:/Program Files/Arm/Packs/ARM/CMSIS/6.1.0/CMSIS/Core/Include"-I"C:/Program Files/Arm/Packs/Keil/LPC1700_DFP/2.7.2/Device/Include"-I"C:/Program Files/Arm/Packs/Keil/LPC1700_DFP/2.7.2/RTE_Driver"-D__UVISION_VERSION="541" -DLPC175x_6x -D_RTE_ -DSIMULATOR-o ./objects/dac_dma.o -MMD)
-I (Source\Libs\DAC\dac.h)(0x677087CB)
-I (Source\Libs\DAC\dac_types.h)(0x677087CB)
-I (Source\Libs\Utils\utils.h)(0x6779492F)
-F (.\Source\Libs\DAC\dac_types.h)(0x677087CB)()
-F (.\Source\Libs\GLCD\glcd.c)(0x677948D3)(-xc -std=c11 --target=arm-arm-none-eabi -mcpu=cortex-m3 -c-fno-rtti -funsigned-char -fshort-enums -fshort-wchar-gdwarf-4 -Ofast -fno-function-sections -I ./Source/Libs/Button -I ./Source/CMSIS_core -I ./Source -I ./Source/Libs/RIT -I ./Source/Libs/Timer -I ./Source/Libs/LED -I ./Source/Libs/Power -I ./Source/Libs/Utils -I ./Source/Program -I ./Source/Startup -I ./Source/Libs/SysTick -I ./Source/Libs/Utils/DynamicArray -I ./Source/Libs/Joystick -I ./Source/Libs/ADC-PM -I ./Source/Libs/DAC -I ./Source/Libs/GLCD -I ./Source/Program/Assets -I ./Source/Program/Fonts -I ./Source/Libs/GLCD/Fonts -I ./Source/Libs/TouchPanel-I./RTE/_SW_Debug-I"C:/Program Files/Arm/Packs/ARM/CMSIS/6.1.0/CMSIS/Core/Include"-I"C:/Program Files/Arm/Packs/Keil/LPC1700_DFP/2.7.2/Device/Include"-I"C:/Program Files/Arm/Packs/Keil/LPC1700_DFP/2.7.2/RTE_Driver"-D__UVISION_VERSION="541" -DLPC175x_6x -D_RTE_ -DSIMULATOR-o ./objects/glcd.o -MMD)
-I (Source\Libs\GLCD\glcd.h)(0x67794921)
-I (Source\Libs\GLCD\glcd_macros.h)(0x67793146)
-I (Source\Libs\GLCD\glcd_types.h)(0x6778FCCF)
-I (Source\Libs\Utils\utils.h)(0x6779492F)
-I (C:\Program Files\Arm\Packs\Keil\LPC1700_DFP\2.7.2\Device\Include\LPC17xx.h)(0x67581345)
-I (Source\CMSIS_core\core_cm3.h)(0x677087CB)
-I (C:\Program Files\Arm\Packs\Keil\LPC1700_DFP\2.7.2\Device\Include\system_LPC17xx.h)(0x67581345)
-I (Source\Libs\GLCD\Fonts\font_msgothic.h)(0x67780B28)
-I (Source\Libs\GLCD\Fonts\font_system.h)(0x67780B0D)
-F (.\Source\Libs\GLCD\glcd.h)(0x67794921)()
-F (.\Source\Libs\GLCD\glcd_types.h)(0x6778FCCF)()
-F (.\Source\Libs\Button\button.c)(0x677087CB)(-xc -std=c11 --target=arm-arm-none-eabi -mcpu=cortex-m3 -c-fno-rtti -funsigned-char -fshort-enums -fshort-wchar-gdwarf-4 -Ofast -fno-function-sections -I ./Source/Libs/Button -I ./Source/CMSIS_core -I ./Source -I ./Source/Libs/RIT -I ./Source/Libs/Timer -I ./Source/Libs/LED -I ./Source/Libs/Power -I ./Source/Libs/Utils -I ./Source/Program -I ./Source/Startup -I ./Source/Libs/SysTick -I ./Source/Libs/Utils/DynamicArray -I ./Source/Libs/Joystick -I ./Source/Libs/ADC-PM -I ./Source/Libs/DAC -I ./Source/Libs/GLCD -I ./Source/Program/Assets -I ./Source/Program/Fonts -I ./Source/Libs/GLCD/Fonts -I ./Source/Libs/TouchPanel-I./RTE/_SW_Debug-I"C:/Program Files/Arm/Packs/ARM/CMSIS/6.1.0/CMSIS/Core/Include"-I"C:/Program Files/Arm/Packs/Keil/LPC1700_DFP/2.7.2/Device/Include"-I"C:/Program Files/Arm/Packs/Keil/LPC1700_DFP/2.7.2/RTE_Driver"-D__UVISION_VERSION="541" -DLPC175x_6x -D_RTE_ -DSIMULATOR-o ./objects/button.o -MMD)
-I (Source\Libs\Button\button.h)(0x677087CB)
-I (Source\Libs\Button\button_types.h)(0x677087CB)
-I (Source\Libs\Utils\utils.h)(0x6779492F)
-I (Source\Libs\RIT\rit.h)(0x677087CB)
-I (Source\Libs\RIT\rit_types.h)(0x677087CB)
-I (C:\Program Files\Arm\Packs\Keil\LPC1700_DFP\2.7.2\Device\Include\LPC17xx.h)(0x67581345)
-I (Source\CMSIS_core\core_cm3.h)(0x677087CB)
-I (C:\Program Files\Arm\Packs\Keil\LPC1700_DFP\2.7.2\Device\Include\system_LPC17xx.h)(0x67581345)
-F (.\Source\Libs\Button\button.h)(0x677087CB)()
-F (.\Source\Libs\Button\button_irq.c)(0x677087CB)(-xc -std=c11 --target=arm-arm-none-eabi -mcpu=cortex-m3 -c-fno-rtti -funsigned-char -fshort-enums -fshort-wchar-gdwarf-4 -Ofast -fno-function-sections -I ./Source/Libs/Button -I ./Source/CMSIS_core -I ./Source -I ./Source/Libs/RIT -I ./Source/Libs/Timer -I ./Source/Libs/LED -I ./Source/Libs/Power -I ./Source/Libs/Utils -I ./Source/Program -I ./Source/Startup -I ./Source/Libs/SysTick -I ./Source/Libs/Utils/DynamicArray -I ./Source/Libs/Joystick -I ./Source/Libs/ADC-PM -I ./Source/Libs/DAC -I ./Source/Libs/GLCD -I ./Source/Program/Assets -I ./Source/Program/Fonts -I ./Source/Libs/GLCD/Fonts -I ./Source/Libs/TouchPanel-I./RTE/_SW_Debug-I"C:/Program Files/Arm/Packs/ARM/CMSIS/6.1.0/CMSIS/Core/Include"-I"C:/Program Files/Arm/Packs/Keil/LPC1700_DFP/2.7.2/Device/Include"-I"C:/Program Files/Arm/Packs/Keil/LPC1700_DFP/2.7.2/RTE_Driver"-D__UVISION_VERSION="541" -DLPC175x_6x -D_RTE_ -DSIMULATOR-o ./objects/button_irq.o -MMD)
-I (Source\Libs\Button\button.h)(0x677087CB)
-I (Source\Libs\Button\button_types.h)(0x677087CB)
-I (Source\Libs\Utils\utils.h)(0x6779492F)
-I (Source\Libs\RIT\rit.h)(0x677087CB)
-I (Source\Libs\RIT\rit_types.h)(0x677087CB)
-I (C:\Program Files\Arm\Packs\Keil\LPC1700_DFP\2.7.2\Device\Include\LPC17xx.h)(0x67581345)
-I (Source\CMSIS_core\core_cm3.h)(0x677087CB)
-I (C:\Program Files\Arm\Packs\Keil\LPC1700_DFP\2.7.2\Device\Include\system_LPC17xx.h)(0x67581345)
-F (.\Source\Libs\Button\button_types.h)(0x677087CB)()
-F (.\Source\Libs\TouchPanel\touch.c)(0x6777FE63)(-xc -std=c11 --target=arm-arm-none-eabi -mcpu=cortex-m3 -c-fno-rtti -funsigned-char -fshort-enums -fshort-wchar-gdwarf-4 -Ofast -fno-function-sections -I ./Source/Libs/Button -I ./Source/CMSIS_core -I ./Source -I ./Source/Libs/RIT -I ./Source/Libs/Timer -I ./Source/Libs/LED -I ./Source/Libs/Power -I ./Source/Libs/Utils -I ./Source/Program -I ./Source/Startup -I ./Source/Libs/SysTick -I ./Source/Libs/Utils/DynamicArray -I ./Source/Libs/Joystick -I ./Source/Libs/ADC-PM -I ./Source/Libs/DAC -I ./Source/Libs/GLCD -I ./Source/Program/Assets -I ./Source/Program/Fonts -I ./Source/Libs/GLCD/Fonts -I ./Source/Libs/TouchPanel-I./RTE/_SW_Debug-I"C:/Program Files/Arm/Packs/ARM/CMSIS/6.1.0/CMSIS/Core/Include"-I"C:/Program Files/Arm/Packs/Keil/LPC1700_DFP/2.7.2/Device/Include"-I"C:/Program Files/Arm/Packs/Keil/LPC1700_DFP/2.7.2/RTE_Driver"-D__UVISION_VERSION="541" -DLPC175x_6x -D_RTE_ -DSIMULATOR-o ./objects/touch.o -MMD)
-I (Source\Libs\TouchPanel\touch.h)(0x677087CB)
-I (Source\Libs\GLCD\glcd_types.h)(0x6778FCCF)
-I (Source\Libs\Utils\utils.h)(0x6779492F)
-I (Source\Libs\GLCD\glcd.h)(0x67794921)
-I (Source\Libs\GLCD\glcd_macros.h)(0x67793146)
-I (Source\Libs\Power\power.h)(0x677087CB)
-I (Source\Libs\Power\power_types.h)(0x677087CB)
-I (C:\Program Files\Arm\Packs\Keil\LPC1700_DFP\2.7.2\Device\Include\LPC17xx.h)(0x67581345)
-I (Source\CMSIS_core\core_cm3.h)(0x677087CB)
-I (C:\Program Files\Arm\Packs\Keil\LPC1700_DFP\2.7.2\Device\Include\system_LPC17xx.h)(0x67581345)
-F (.\Source\Libs\TouchPanel\touch.h)(0x677087CB)()
-F (C:/Program Files/Arm/Packs/Keil/LPC1700_DFP/2.7.2/RTE_Driver/GPDMA_LPC17xx.c)(0x67581345)(-xc -std=c11 --target=arm-arm-none-eabi -mcpu=cortex-m3 -c-fno-rtti -funsigned-char -fshort-enums -fshort-wchar-gdwarf-4 -Ofast -fno-function-sections -I ./Source/Libs/Button -I ./Source/CMSIS_core -I ./Source -I ./Source/Libs/RIT -I ./Source/Libs/Timer -I ./Source/Libs/LED -I ./Source/Libs/Power -I ./Source/Libs/Utils -I ./Source/Program -I ./Source/Startup -I ./Source/Libs/SysTick -I ./Source/Libs/Utils/DynamicArray -I ./Source/Libs/Joystick -I ./Source/Libs/ADC-PM -I ./Source/Libs/DAC -I ./Source/Libs/GLCD -I ./Source/Program/Assets -I ./Source/Program/Fonts -I ./Source/Libs/GLCD/Fonts -I ./Source/Libs/TouchPanel-I./RTE/_SW_Debug-I"C:/Program Files/Arm/Packs/ARM/CMSIS/6.1.0/CMSIS/Core/Include"-I"C:/Program Files/Arm/Packs/Keil/LPC1700_DFP/2.7.2/Device/Include"-I"C:/Program Files/Arm/Packs/Keil/LPC1700_DFP/2.7.2/RTE_Driver"-D__UVISION_VERSION="541" -DLPC175x_6x -D_RTE_ -DSIMULATOR-o ./objects/gpdma_lpc17xx.o -MMD)
-I (C:\Program Files\Arm\Packs\Keil\LPC1700_DFP\2.7.2\RTE_Driver\GPDMA_LPC17xx.h)(0x67581345)
-I (C:\Program Files\Arm\Packs\Keil\LPC1700_DFP\2.7.2\Device\Include\LPC17xx.h)(0x67581345)
-I (Source\CMSIS_core\core_cm3.h)(0x677087CB)
-I (C:\Program Files\Arm\Packs\Keil\LPC1700_DFP\2.7.2\Device\Include\system_LPC17xx.h)(0x67581345)
