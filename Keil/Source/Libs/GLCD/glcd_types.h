@@ -100,7 +100,7 @@ typedef struct
 
 typedef struct
 {
-    u32 *pixels;
+    const u32 *pixels; // RGB or ARGB data
     u16 width, height;
     bool has_alpha;
 } LCD_Image;

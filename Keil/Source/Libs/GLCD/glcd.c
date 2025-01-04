@@ -454,7 +454,10 @@ _PRIVATE void draw_img_rle(const LCD_Image *const img, LCD_Coordinate pos)
         height = MAX_Y - pos.y;
 
     const u32 *pixels_copy = img->pixels;
-    u16 current_x, pixels_left, count, value, rgb;
+    u32 pixel_data, rgb888; // Pixel is a 32-bit or 24-bit value: 0xAARRGGBB if alpha is present, 0x00RRGGBB otherwise
+
+    u8 alpha_data;
+    u16 current_x, pixels_left, count;
     for (u16 i = 0; i < height; i++)
     {
         current_x = pos.x;   // Start at the beginning of the row
@@ -463,66 +466,34 @@ _PRIVATE void draw_img_rle(const LCD_Image *const img, LCD_Coordinate pos)
         while (pixels_left > 0)
         {
             count = *pixels_copy++;
-            value = *pixels_copy++;
+            pixel_data = *pixels_copy++;
 
             // Draw pixels, ensuring we stay within the row
             for (u16 j = 0; j < count && pixels_left > 0; j++)
             {
                 if (img->has_alpha)
                 {
-                    if ((value >> 16) & 0xFF) // Alpha is != 0
-                    {
-                        rgb = (u16)(value & 0x00FFFF);
-                        SET_POINT_SIMPLER(rgb, current_x++, pos.y + i);
-                    }
+                    // If the alpha is present, then pixel_data is of type 0xAARRGGBB.
+                    alpha_data = (u8)(pixel_data >> 24);
+                    rgb888 = (u32)(pixel_data & 0x00FFFFFF);
+
+                    if (alpha_data) // Alpha is != 0
+                        SET_POINT_SIMPLER(rgb888_to_rgb565(rgb888), current_x, pos.y + i);
+                    
+                    current_x++; // Move to the next pixel, regardless of the alpha value
                 }
                 else
-                    SET_POINT_SIMPLER(value, current_x++, pos.y + i);
+                {
+                    // No alpha, pixel_data is of type 0x00RRGGBB
+                    rgb888 = (u32)(pixel_data & 0x00FFFFFF);
+                    SET_POINT_SIMPLER(rgb888_to_rgb565(rgb888), current_x++, pos.y + i);
+                }
 
                 pixels_left--;
             }
         }
     }
 }
-
-/*
-_PRIVATE void draw_img(const LCD_Image *const img, const LCD_Coordinate *const pos)
-{
-    if (!img)
-        return;
-
-    LCD_Coordinate where = img->pos;
-    u16 width = img->width, height = img->height;
-
-    if (!img->pixels || width == 0 || height == 0 || where.x > MAX_X || where.y > MAX_Y)
-        return;
-
-    if (where.x + width > MAX_X)
-        width = MAX_X - where.x;
-    if (where.y + height > MAX_Y)
-        height = MAX_Y - where.y;
-
-    u32 pixel;
-    u16 rgb;
-    for (u16 i = 0; i < height; i++)
-    {
-        for (u16 j = 0; j < width; j++)
-        {
-            pixel = img->pixels[j + i * width];
-            if (img->has_alpha)
-            {
-                if ((pixel >> 16) & 0xFF) // Alpha != 0
-                {
-                    rgb = (u16)(pixel & 0x00FFFF);
-                    SET_POINT_SIMPLER(rgb, where.x + j, where.y + i);
-                }
-            }
-            else
-                SET_POINT_SIMPLER(pixel, where.x + j, where.y + i);
-        }
-    }
-}
-*/
 
 // TEXT FUNCTIONS
 
@@ -864,6 +835,26 @@ bool LCD_IsInitialized(void)
     return initialized;
 }
 
+u16 LCD_GetWidth(void)
+{
+    return MAX_X;
+}
+
+u16 LCD_GetHeight(void)
+{
+    return MAX_Y;
+}
+
+LCD_Coordinate LCD_GetSize(void)
+{
+    return (LCD_Coordinate){MAX_X, MAX_Y};
+}
+
+LCD_Coordinate LCD_GetCenter(void)
+{
+    return (LCD_Coordinate){MAX_X / 2, MAX_Y / 2};
+}
+
 LCD_Color LCD_GetPointColor(LCD_Coordinate point)
 {
     LCD_Color dummy;
@@ -933,6 +924,23 @@ void LCD_SetBackgroundColor(LCD_Color color)
     init_rw_operation_at(0x0022); // Write GRAM
     for (u32 index = 0; index < MAX_X * MAX_Y; index++)
         do_write(color & 0xFFFF);
+
+    // No object is displayed anymore, so we need to change the rendered
+    // property of each object in the render queue to false, so that after
+    // calling LCD_RQRender(), they will be re-rendered with the new background.
+    LCD_RQItem *item;
+    for (u32 i = 0, count = 0; i < MAX_RQ_ITEMS && count != render_queue_size; i++)
+    {
+        item = &render_queue[i];
+        if (item->id == -1 && !item->obj)
+            continue;
+
+        count++; // Found actual object, incrementing count.
+        item->rendered = false;
+    }
+
+    // Re-rendering everything on top of the new background color.
+    LCD_RQRender();
 }
 
 // RENDERING
@@ -1070,31 +1078,3 @@ void LCD_FMRemoveFont(LCD_FontID id)
         font_list[i] = font_list[i + 1];
     font_list_size--;
 }
-
-/*
-LCD_Dimension LCD_GetStringDimension(const char *const str, u8 font)
-{
-    if (!str)
-        return (LCD_Dimension){0, 0}; // Return (0, 0) if the string is null
-
-    u16 cur_line_width = 0, max_width = 0;
-    u16 total_height = 16; // Minimum height 1 line
-
-    const u8 *copy = (u8 *)str;
-    while (*copy++)
-    {
-        cur_line_width += 8;         // If you're using a fixed-width font (each char is 8px wide)
-        if (cur_line_width >= MAX_X) // When line width exceeds the screen width, it wraps
-        {
-            total_height += 16; // Add height for the new line
-            cur_line_width = 0; // Reset line width for the new line
-        }
-
-        // Update max width based on current line
-        if (cur_line_width > max_width)
-            max_width = cur_line_width;
-    }
-
-    return (LCD_Dimension){max_width, total_height};
-}
-*/

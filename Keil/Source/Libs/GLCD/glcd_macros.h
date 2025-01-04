@@ -45,10 +45,10 @@
         .type = LCD_COMP_CIRCLE, .object.circle = (LCD_Circle)__VA_ARGS__                                              \
     }
 
-#define LCD_IMAGE(x, y, ...)                                                                                           \
+#define LCD_IMAGE(x, y, img)                                                                                           \
     (LCD_Component)                                                                                                    \
     {                                                                                                                  \
-        .type = LCD_COMP_IMAGE, .pos = (LCD_Coordinate){x, y}, .object.image = (LCD_Image)__VA_ARGS__                  \
+        .type = LCD_COMP_IMAGE, .pos = (LCD_Coordinate){x, y}, .object.image = img                                     \
     }
 
 #define LCD_TEXT(x, y, ...)                                                                                            \

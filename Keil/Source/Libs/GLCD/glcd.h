@@ -8,7 +8,13 @@
 ///        - 5 bits for red (bits 11-15)
 ///        - 6 bits for green (bits 5-10)
 ///        - 5 bits for blue (bits 0-4)
-#define RGB_TO_RGB565(r, g, b) (u16)(((r >> 3) << 11) | ((g >> 2) << 5) | (b >> 3))
+_FORCE_INLINE u16 rgb888_to_rgb565(u32 rgb888)
+{
+    const u8 r = (rgb888 >> 16) & 0xFF;
+    const u8 g = (rgb888 >> 8) & 0xFF;
+    const u8 b = rgb888 & 0xFF;
+    return (u16)((r >> 3) << 11 | (g >> 2) << 5 | (b >> 3));
+}
 
 #define BGR_TO_RGB565(bgr) (u16)(((bgr >> 11) & 0x1F) | ((bgr >> 5) & 0x3F) | (bgr & 0x1F))
 
@@ -19,6 +25,24 @@ void LCD_Init(LCD_Orientation orientation);
 /// @brief Checks if the LCD has been initialized.
 /// @return Whether the LCD has been initialized
 bool LCD_IsInitialized(void);
+
+/// @brief Returns the width of the screen at the current orientation.
+u16 LCD_GetWidth(void);
+
+/// @brief Returns the height of the screen at the current orientation.
+u16 LCD_GetHeight(void);
+
+/// @brief Returns the size of the screen at the current orientation.
+LCD_Coordinate LCD_GetSize(void);
+
+/// @brief Returns the center of the screen at the current orientation.
+LCD_Coordinate LCD_GetCenter(void);
+
+// TODO: Maybe in the future!
+/// @brief Returns the coordinates at which the object should be drawn to be centered.
+/// @param obj The object to center
+/// @return The coordinates at which the object should be drawn
+// LCD_Coordinate LCD_GetCenterForObject(const LCD_Obj *const obj);
 
 /// @brief Returns the RGB565 color of the pixel at the specified coordinates.
 /// @param point The coordinates of the pixel
@@ -32,11 +56,11 @@ void LCD_SetPointColor(LCD_Color color, LCD_Coordinate point);
 
 /// @brief Sets the background color of the screen.
 /// @param color The RGB565 color to set
-/// @note If this function is called after components have been rendered
-///       on the screen, they will be deleted and the screen will be cleared.
+/// @note This function clears the screen, then re-renders all the objects
+///       in the render queue with the new background color.
 void LCD_SetBackgroundColor(LCD_Color color);
 
-/// @brief Adds a new object to the render queue, and (optionally) triggers an update.
+/// @brief Adds a new object to the render queue.
 /// @param obj The object to add
 /// @return -1 if the object is NULL or the render queue is full, the ID of the object otherwise
 LCD_ObjID LCD_RQAddObject(const LCD_Obj *const obj);
@@ -61,8 +85,12 @@ void LCD_RQClear(void);
 
 // FONT MANAGER
 
+/// @brief Adds a new font to the font manager.
+/// @param font The font to add
+/// @return -1 if the font is NULL or the font manager is full, the ID of the font otherwise
 LCD_FontID LCD_FMAddFont(LCD_Font font);
 
+/// @brief Removes a font from the font manager by its ID.
 void LCD_FMRemoveFont(LCD_FontID id);
 
 #endif
