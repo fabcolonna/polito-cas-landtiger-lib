@@ -7,14 +7,15 @@
 
 TEMP_DOCS=$(mktemp -d)
 echo "Generating Doxygen docs in ${TEMP_DOCS}..."
-doxygen ../Doxyfile
-mv docs/html/* "$TEMP_DOCS"
-rm -rf docs/
+doxygen Doxyfile >/dev/null 2>&1
+mv Docs/html/* "$TEMP_DOCS"
+rm -rf Docs/
 
 echo "Moving html/ to gh-pages branch..."
 git checkout gh-pages
 rm -rf *
-cp -r "$TEMP_DOCS"/* .
+mv "$TEMP_DOCS"/* .
+rm -rf "$TEMP_DOCS"
 
 echo "Committing on gh-pages branch..."
 git add .
@@ -23,6 +24,4 @@ git push origin gh-pages
 
 echo "Switching back to main branch..."
 git checkout main
-rm -rf "$TEMP_DOCS"
-
 echo "Done!"
