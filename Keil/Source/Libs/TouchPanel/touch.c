@@ -115,9 +115,8 @@ _PRIVATE inline void spi_init(void)
     WAIT_IF_BUSY;
 
     // Consume eventual data in RX FIFO, so that we can start fresh.
-    volatile uint32_t dummy;
     while (LPC_SSP1->SR & (1 << SSP_SR_RECV_FIFO_NOT_EMPTY))
-        dummy = LPC_SSP1->DR;
+        LPC_SSP1->DR;
 }
 
 // TOUCH CONTROLLER PRIVATE FUNCTIONS
@@ -281,7 +280,7 @@ _PRIVATE inline void draw_calibration_cross(u16 x, u16 y)
     LCD_END_DRAWING;
 }
 
-_PRIVATE inline void delete_calibration_cross(u16 x, u16 y)
+_PRIVATE inline void delete_calibration_cross(void)
 {
     LCD_RQRemoveObject(calib_cross_obj_id, false);
 }
@@ -356,7 +355,7 @@ bool calibrate(void)
         const TP_Coordinate *calib_coords = TP_WaitForTouch();
         tp_crosses[i].x = calib_coords->x;
         tp_crosses[i].y = calib_coords->y;
-        delete_calibration_cross(lcd_crosses[i].x, lcd_crosses[i].y);
+        delete_calibration_cross();
     }
 
     if (!calc_calibration_matrix(&current_calib_matrix, lcd_crosses, tp_crosses))

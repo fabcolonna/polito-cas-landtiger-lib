@@ -1,62 +1,45 @@
-# Custom Peripherals Library for the LandTiger LPC1768 board
+# Custom Peripherals Library for the LandTiger LPC1768 Board
+
+[![Documentation](https://img.shields.io/badge/docs-GitHub%20Pages-blue)](https://fabcolonna.github.io/polito-cas-landtiger-lib/)
 
 ![screenshot](./Assets/README/screenshot.png)
 
 ## What's this?
 
-This is a sample project for the LandTiger, an ARM-based LPC1768 board, built for the ARM IDE Keil uVision 5. It includes a **custom C interface for every peripheral** studied in the course of **Computer Architectures**, in the MSc Computer Engineering program at Politecnico di Torino. Why did I do this? Mainly because I wanted to learn how things like drawing on the screen, and playing audio worked under the hood, but also to experiment by introducing lots of additional functionality while also providing a more abstract and powerful interface.
+This is a Keil uVision 5 project for developing a **custom C interface for every peripheral of the LandTiger LPC1768** board, introduced during the course of **Computer Architectures**, taught in the MSc Computer Engineering program at Politecnico di Torino. Why did I create this? Mainly because I wanted to deeply understand how complex things that we take for granted, such as drawing on the screen or playing audio, work at the bare metal level. At the same time, I wanted to provide a more abstract and powerful interface for the user, so that they can focus on the application logic, rather than on the low-level details.
 
-## File Structure
+The interface is distributed as a **library** and it's available in the *Releases* section of this repository. It's meant to be included in your Keil projects (see below for instructions on how to do this). It's still in development, and I'm the only one working on it, so you may encounter bugs or unexpected behavior. I'm doing my best to keep the code clean and well-documented, so that you can understand how it works and how to use it.
 
-I used Visual Studio Code for developing everything, and Keil to test. The project is structured as follows:
+### Repo structure
 
 - `Keil/`: contains the Keil project;
-  - `Source`: contains the source code and the library itself;
+  - `Objects`: contains the compiled library, in the form of a `.lib` file;
+  - `Tests`: contains the test programs used to test the library's functions during development;
+  - `Source`: contains the source code:
+    - `CMSIS_Core`: CMSIS (Cortex Microcontroller Software Interface Standard) core files;
     - `Libs`: the library, with a folder for each peripheral;
-    - `Program`: contains the `main()` function and other program-specific files;
-    - `Startup`: contains the startup code for the LPC1768;
-    - `CMSIS_core`: CMSIS core files;
-- `Scripts/`: contains the Python scripts useful to generate data readable by the library's functions.
+    - `System`: contains the system startup code for the LPC1768, alongside the `system.h` file, which is required when building programs as it defines both the SystemInit() function for initializing the controller, and some other necessary define directives.
+- `Scripts/`: contains the Python scripts used to generate C buffers from displaying images and rendering fonts (more on this later).
 
-Every folder, except for the `Scripts/` one - which is meant to be used externally - is already included in the `.uvprojx` file.
+### Software
 
-### Program directory
+I developed the library using both Visual Studio Code and Keil uVision 5. The former was used for writing code, while the latter  to run tests and debug the it. The `peripheral.uvprojx` file is the Keil project file, and it defines three targets:
 
-This is where your program will reside. It also includes additional directories for storing fonts and assets (`Fonts/` and `Assets/`, respectively). Additional information on what goes inside these folder is provided in the next sections of this file.
-
-> **Note**: While the `Program/` directory is already included in the Keil Source Group, source files stored inside are not. You'll need to add them manually while developing your application.
-
-As soon as you open the project in Keil, you may notice that they're not visible in the Keil Project Explorer: that's because I did not add them in the Source Group, but are only present in the *include path* of the C/C++ compiler. The reason for this is that the content of the sources belonging to these directories is usually generated, and not meant to be changed manually.
+- `library`: compiles the library without the testing folders, and produces a `.lib` file in the `Keil/Objects/` directory;
+- `test-sim`: produces an executable from every source file in the Source Group, and runs it using the simulator;
+- `test-dev`: produces an executable from every source file in the Source Group, and runs it on the physical board.
 
 ### Scripts
 
-I developed two Python scripts to overcome the limitations caused by the absence of a file system in the current implementation of the drivers. This limitation is particularly evident when dealing with **images**, **fonts**, and **music** files. The culprit peripherals are the GLCD (screen) and the DAC (Digital to Analog Converter).
+There are some bash/batch scripts in the root directory that I use to automate some tasks. Here's a list of them:
 
-In order to use the scripts, you need to have Python installed on your machine. You can download it from the [official website](https://www.python.org/downloads/), or by using a package manager like `brew` on macOS or `winget` on Windows. Once you have everything setup, setup a virtual environment wherever you want, by running:
+- `lib-mk.sh`: moves the `.lib` file created by Keil into a directory alongside the `Include/` directory, in which every header file is copied. This is necessary, otherwise users won't be able to use the library in their projects;
+- `lib-rel.sh`: sets up a new Release on GitHub, by creating a new tag, pushing it to the remote repository, and uploading the `.lib`, which is then deleted from the local machine.
+- `doxy-up.sh`: generates the Doxygen documentation and pushes it to the `gh-pages` branch, which is automatically deployed as a GitHub Page. The documentation is available by clicking on the badge at the top of this README.
 
-```bash
-cd <wherever-you-want>
-python3 -m venv .venv
-```
+## Current status of the project
 
-Then, activate it using:
-
-```bash
-source .venv/bin/activate # macOS/Linux
-.venv\Scripts\activate # Windows
-```
-
-Finally, install the required packages by running:
-
-```bash
-pip3 install pillow
-```
-
-You're now good to go. Usage instructions for each script can be obtained by running them with the `-h` flag.
-
-## Status
-
-The interface currently supports the following peripherals:
+The library currently supports the following peripherals. More complex interfaces will be described more in depth in the dedicated sections below.
 
 - [X] Buttons (with optional debouncing)
 - [X] Timers
@@ -70,11 +53,7 @@ The interface currently supports the following peripherals:
 - [X] GLCD & TouchScreen for the ADS7843 controller
 - [ ] CAN Bus
 
-Below is a more detailed description of some interesting features itroduced for the more interesting peripherals, the GLCD and the DAC. Bear in mind that the library is still in development (and I'm alone in this!), hence you may encounter bugs or unexpected behavior.
-
-## GLCD Features
-
-### Object Rendering
+### GLCD in depth: rendering objects
 
 I put *a lot* of effort into the GLCD interface, as it's certainly one of the most complex peripherals to interface with. In fact, it must be flexible enough to support different actions that the user could find useful (like drawing images, text, etc.), but also simple enough to be used without too much hassle.
 
@@ -82,22 +61,21 @@ The current status of the interface is already quite enough: it supports basic c
 
 #### How to render stuff
 
-First of all, you need to initialize the GLCD by calling the `LCD_Init(LCD_Orientation)` function in the `main()` function. The LCD must be initialized before doing anything else (even the touch controller requires it, as it uses the LCD to draw the calibration interface!).
+First of all, you need to initialize the GLCD by calling the `LCD_Init(LCD_Orientation)` function in your `main()`. The LCD must be initialized before doing anything else (even the touch controller requires it, as it uses the LCD to draw the calibration interface!).
 
 To display objects on the GLCD, you can use the various functions and macros provided. Here are some of the key functions and macros that you'll use:
 
-**Basic functions**:
+**Functions**:
 
 - `LCD_SetPointColor(LCD_Color color, LCD_Coordinate point)`: Sets the color of a specific pixel;
 - `LCD_SetBackgroundColor(LCD_Color color)`: Tells the interface the color of the background that will be rendered *upon* clearing the screen, then clears the screen and redraws the object with the new background color.
+- Other functions for retrieving information about the screen, like `LCD_GetWidth()`, `LCD_GetHeight()`, `LCD_GetCenter()`, etc.
 
-**Rendering management functions**:
+Here are some functions related to rendering:
 
 - `LCD_RQAddObject(const LCD_Obj *const obj)`: Adds an object to the render queue and returns its ID. If you use the `LCD_BEGIN_DRAWING` and `LCD_END_DRAWING` macros when building drawable components, you don't need to call this function manually;
 - `LCD_RQRemoveObject(LCD_ObjID id, bool redraw_screen)`: Removes an object from the render queue using its ID;
 - `LCD_RQSetObjectVisibility(LCD_ObjID id, bool visible, bool redraw_screen)`: Shows or hides an object.
-
-> **Note:** Refer to the Doxygen documentation for more information on the functions and macros provided by the library.
 
 **Drawing components**:
 
@@ -117,9 +95,9 @@ A component cannot be rendered on the screen by itself. It must be part of an **
 
 - `LCD_BEGIN_DRAWING` and `LCD_END_DRAWING`: These macros are used to wrap the drawing code. The `LCD_END_DRAWING` macro automatically triggers a screen update, effectively rendering the object(s) that they contain.
 
-#### A final example of usage
+#### `main()` example: drawing a cross
 
-Here's an example of how to use the library to draw a simple cross on the screen:
+This is the code for drawing a simple cross on the screen:
 
   ```c
 #include "includes.h"
@@ -130,12 +108,12 @@ int main(void)
     LCD_Init(LCD_ORIENT_VER);
     LCD_SetBackgroundColor(LCD_COL_BLACK);
 
-    LCD_ObjID cross;
+    LCD_ObjID cross_id;
     u16 x = LCD_GetWidth() / 2;
     u16 y = LCD_GetHeight() / 2;
 
     LCD_BEGIN_DRAWING;
-    cross = LCD_OBJECT(calib_cross, 3, {
+    cross_id = LCD_OBJECT(cross, 3, {
         LCD_RECT(x - 15, y - 15, {
             .width = 30,
             .height = 30,
@@ -165,7 +143,7 @@ This produces the following output:
 
 ![Calibration Cross](./Assets/README/cross.png)
 
-### Custom Fonts
+### GLCD in depth: custom fonts
 
 The GLCD has 2 built-in fonts that can be used to render text, `LCD_DEF_FONT_SYSTEM` and `LCD_DEF_FONT_MSGOTHIC`. The problem with these fonts is that the user has no control over the characters' size, and there might be cases where it's necessary to draw smaller or bigger text. That's why I introduced the possibility to load **custom fonts**, with **custom sizes**!
 
@@ -201,7 +179,7 @@ You don't need to worry about any of this stuff, because loading the font is as 
 
 The function returns the font's ID, which you can use to render text with that font (the `.font` field of the `LCD_Text` structure), and to unload it when you don't need it anymore, with the `LCD_FMRemoveFont(<font_id>)` function.
 
-#### A final example of usage
+#### `main()` example: `pixellari.ttf`
 
 Below is an example of how to load a bitmap font (Pixellari) downloaded from [DaFont](https://www.dafont.com/) and use it to display a string:
 
@@ -246,11 +224,14 @@ This produces the following output:
 
 ![Pixellari 16](./Assets/README/fonts.png)
 
-### Images
+### GLCD in depth: image rendering
 
-Just like fonts, the GLCD interface also supports the drawing of images, in the form of C buffers generated by the Python script `img2c.py`. The script accepts any kind of image as input, and generates a C buffer of RLE-encoded 32 bit values for RGB(A) information, alongside a structure of type `LCD_Image`. This structure is the only thing that the user needs to use explicitly in the project, and contains image metadata, like the width and height of the image, and a pointer to the array containing the pixel data.
+Just like fonts, the GLCD interface also supports drawing images, in the form of C buffers generated by the Python script `img2c.py`. The script accepts any kind of image as input, and generates:
 
-The scripts outputs data in either RGB (24-bit) or ARGB (32-bit) format, depending on the input image. In case of the latter, the alpha channel is used to choose whether to draw the pixel or not. As of now, alpha blending is not supported: the alpha channel is used only to decide whether to draw the pixel or not (so, it's either **fully opaque or fully transparent**). I plan to implement a more sophisticated system in the future though, with the goal of supporting background & foreground blending.
+- C buffer of **RLE-encoded** 32 bit values for (A)RGB information (A is optional, it's included only if the image has *meaningful* alpha data, i.e. it's not constant at `0xFF`);
+- a structure of type `LCD_Image`, which is the only thing that the user needs to use explicitly in the project, and contains image metadata, like the width and height of the image, and a pointer to the array containing the pixel data.
+
+In the current implementation, the alpha channel is only used to choose whether to draw the pixel or not. In other words, alpha blending is not supported: any given pixel is either **fully opaque or fully transparent**. I plan to implement a more sophisticated system in the future though, with the goal of supporting background & foreground blending.
 
 > **Note**: Keep in mind that the GLCD driver can only handle **16 bits per pixel**. This means that the image will be **downsampled** from 24/32 bits to 16 bits. This can potentially lead to a loss of color information.
 
@@ -277,7 +258,11 @@ You can then display the image by:
 
 - Moving the output file to the `Program/Assets/` directory;
 - Including it in the `main.c` file;
-- Creating an object with an `LCD_IMAGE` component inside (and something else, if you want), just like we saw in the Rendering section:
+- Creating an object with an `LCD_IMAGE` component inside (and something else, if you want), just like we saw in the Rendering section.
+
+Just like any other component, you'll get an ID that you can use to remove the image from the render queue, or to change its visilibity.
+
+#### `main()` example: displaying the *Hello* image
 
 ```c
 #include "includes.h"
@@ -311,7 +296,7 @@ This produces the following output:
 
 Amazing, isn't it? 😁 Well, as you can see there are some artifacts due to unoptimal alpha handling, but I look forward to improving it very soon!
 
-### What's next?
+### GLCD roadmap
 
 The GLCD interface is still in development, and there are a lot of features that I'd like to implement, eventually. Here's a list of what I have in mind:
 
@@ -322,24 +307,18 @@ The GLCD interface is still in development, and there are a lot of features that
 - [ ] Support for object alignment (e.g. centering text, images), to avoid having to calculate the position manually;
 - [ ] Memory arena for the render queue, to let the user decide how much memory to allocate for the GLCD based on the application's needs and the available memory, thus removing the static limitation of 1024 components and the need to statically allocated memory for the objects and components to avoid dangling pointers;
 
-## DAC Features
+### DAC in depth
 
-Nothing too fancy here, for now! TTYL when I'll figure out how to play music with this thing. 😁
+Nothing too fancy here, but not for long! TTYL when I'll figure out how to play music with this thing. 😁
 
-## Roadmap
-
-Here's a list of features that I'd like to implement in the future, in order of priority:
-
-**GLCD**:
-
-- [ ] GLCD stuff (see its roadmap in the dedicated section above)
-
-**DAC**:
+### DAC roadmap
 
 - [ ] A way to play music through the DAC, like PCM data from a WAV file, instead of just pure sinusoidal tones;
 - [ ] Offloading the DAC timing to other entities other than the standard timers, so that they can be used for other purposes by the user;
 
-**General**:
+## General roadmap
+
+In addition to the GLCD and DAC roadmaps, I have some other features in mind that I'd like to implement in the future:
 
 - [X] RIT that accepts tasks through callback functions, possibly with different timings;
 - [ ] A more general-purpose interface for ADC (support for other channels, etc.);
@@ -351,7 +330,38 @@ Here's a list of features that I'd like to implement in the future, in order of 
 - [ ] Ethernet support for network communication;
 - [ ] A more comprehensive support for SysTick;
 
-## Contributing
+---
+
+## How to use the library in your projects
+
+This branch is meant to be used for library development and testing. If you want to use the library in your own projects, you should download the **sample project** that I created from the `sample-project` branch of this repository.
+
+It contains a fully configured Keil project that uses the library, and includes two targets: one for the simulator, and one for the physical board. Both require the library to be included in the `Keil/Libs/Peripherals` directory in the project's root.
+
+### Retrieving the library
+
+In the root directory, run the `get-latest-peripheral-lib.sh` script. This will download the latest release of the library, and extracts it directly in the `Keil/Libs/Peripherals` directory.
+
+### Project structure
+
+The project is structured as follows:
+
+- `Keil`: contains the Keil project;
+  - `Libs/`: contains every library used by the project (e.g. this one!)
+  - `Source/`:
+    - `System/`: contains the system startup code for the LPC1768, alongside the `system.h` file, which is required when building programs as it defines both the SystemInit() function for initializing the controller, and some other necessary define directives;
+    - `Program/`: contains the source code of your program, alongside other directories:
+      - `Assets/`:
+        - `Fonts/`: contains the custom fonts used by the program;
+        - `Images/`: contains the images used by the program;
+
+- `Scripts/`: contains the Python scripts described in the previous sections, used to generate C buffers from displaying images and rendering fonts.
+
+**Happy coding! 😁**
+
+---
+
+## Contributing to the library
 
 I'm open to contributions, since I'm currenty the only one working on it. I'll define a set of guidelines for contributing in the future, if the project gains traction. For now, if you want to help me, plase open an issue and we can discuss the feature you want to implement, and how to do it.
 

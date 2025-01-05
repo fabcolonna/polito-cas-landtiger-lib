@@ -1,7 +1,5 @@
-#ifndef _WIN32
 #include <LPC17xx.h>
-#endif
-#include "includes.h"
+#include <stdlib.h>
 #include "timer.h"
 
 /// @brief Array of function pointers to the interrupt handlers for each TIMER peripheral.

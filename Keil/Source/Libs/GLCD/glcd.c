@@ -344,7 +344,6 @@ _PRIVATE void draw_rect(const LCD_Rect *const rect, LCD_Coordinate pos)
         to.y = MAX_Y - 1;
 
     // If the starting point is to the right of the ending point (both for x and/or y), swap.
-    u16 tmp;
     if (from.x > to.x)
         SWAP(u16, to.x, from.x)
     if (from.y > to.y)
@@ -567,7 +566,7 @@ _PRIVATE void print_text(const LCD_Text *const text, LCD_Coordinate pos)
 
     u16 max_width = 0;                   // Track the maximum width (for multi-line)
     u16 start_x = pos.x;                 // Saving the starting x position
-    u16 total_height = font.char_height; // Minimum height is one line (font height)
+    // u16 total_height = font.char_height; // Minimum height is one line (font height)
 
     i16 current_char_width;
     bool no_more_space = false;
@@ -583,7 +582,7 @@ _PRIVATE void print_text(const LCD_Text *const text, LCD_Coordinate pos)
         {
             pos.x = 0;
             pos.y += font.char_height;
-            total_height += font.char_height; // Increment total height for each new line
+            // total_height += font.char_height; // Increment total height for each new line
         }
         else
             no_more_space = true; // Stop printing if there's no more space

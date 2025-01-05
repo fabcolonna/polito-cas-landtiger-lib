@@ -5,17 +5,14 @@
             "includePath": [
                 "${workspaceFolder}/**",
                 "${workspaceFolder}/Keil/Source/**",
+                "${workspaceFolder}/Keil/Source/System/**",
+                "${workspaceFolder}/Keil/Source/Tests/**",
                 //"C:/Program Files/Arm/Packs/Keil/LPC1700_DFP/2.7.2/Device/Include/**", // on macOS with Parallels VM
                 "${workspaceFolder}/Keil/Source/CMSIS_core/**",
                 "C:/Users/fabio/AppData/Local/Arm/Packs/Keil/LPC1700_DFP/2.7.2/Device/Include/**", // on Windows
                 "C:/Users/fabio/AppData/Local/Arm/Packs/Keil/LPC1700_DFP/2.7.2/RTE_Driver/**"
             ],
-            "defines": [
-                "_DEBUG",
-                "UNICODE",
-                "_UNICODE"
-            ],
-            "cStandard": "c17"
+            "cStandard": "c11"
         }
     ],
     "version": 4
