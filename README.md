@@ -37,6 +37,8 @@ There are some bash/batch scripts in the root directory that I use to automate s
 - `lib-rel.sh`: sets up a new Release on GitHub, by creating a new tag, pushing it to the remote repository, and uploading the `.lib`, which is then deleted from the local machine.
 - `doxy-up.sh`: generates the Doxygen documentation and pushes it to the `gh-pages` branch, which is automatically deployed as a GitHub Page. The documentation is available by clicking on the badge at the top of this README.
 
+>**Note**: I use a Mac for development, so the scripts are written in bash. I'll provide a PS1 version of them in the future for Windows users.
+
 ## Current status of the project
 
 The library currently supports the following peripherals. More complex interfaces will be described more in depth in the dedicated sections below.
@@ -340,7 +342,23 @@ It contains a fully configured Keil project that uses the library, and includes 
 
 ### Retrieving the library
 
-In the root directory, run the `get-latest-peripheral-lib.sh` script. This will download the latest release of the library, and extracts it directly in the `Keil/Libs/Peripherals` directory.
+In the root directory, run the `get-latest-peripheral-lib.sh` script (or the `GetLatestPeripheralsLib.ps1` on Windows) to download the latest release of the library. It will place it in the expected directory without any further action required.
+
+>**Note**: Use this script every time you want to update the library in your project (provided that a new release is available).
+
+### Deinitializing git
+
+If you plan to use Git for version control in your project, you should first remove the `.git` directory from the library's directory, to avoid conflicts with this repo. To do this, simply run
+
+```bash
+rm -rf .git
+```
+
+and initialize a brand new repository with
+
+```bash
+git init
+```
 
 ### Project structure
 
