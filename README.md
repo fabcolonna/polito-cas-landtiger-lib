@@ -29,15 +29,15 @@ I developed the library using both Visual Studio Code and Keil uVision 5. The fo
 - `test-sim`: produces an executable from every source file in the Source Group, and runs it using the simulator;
 - `test-dev`: produces an executable from every source file in the Source Group, and runs it on the physical board.
 
-### Scripts
+### Utility scripts
 
-There are some bash/batch scripts in the root directory that I use to automate some tasks. Here's a list of them:
+In the `Utils/` There are some scripts in the root directory that I use to automate some tasks. Here's a list of them:
 
-- `lib-mk.sh`: moves the `.lib` file created by Keil into a directory alongside the `Include/` directory, in which every header file is copied. This is necessary, otherwise users won't be able to use the library in their projects;
-- `lib-rel.sh`: sets up a new Release on GitHub, by creating a new tag, pushing it to the remote repository, and uploading the `.lib`, which is then deleted from the local machine.
-- `doxy-up.sh`: generates the Doxygen documentation and pushes it to the `gh-pages` branch, which is automatically deployed as a GitHub Page. The documentation is available by clicking on the badge at the top of this README.
+- `prepare-library.sh`: moves the `.lib` file created by Keil into a directory alongside the `Include/` directory, in which every header file is copied. This is necessary, otherwise users won't be able to use the library in their projects;
+- `release-library.sh`: sets up a new Release on GitHub, by creating a new tag, pushing it to the remote repository, and uploading the `.lib`, which is then deleted from the local machine.
+- `doxygen-update.sh`: generates the Doxygen documentation and pushes it to the `gh-pages` branch, which is automatically deployed as a GitHub Page. The documentation is available by clicking on the badge at the top of this README.
 
->**Note**: I use a Mac for development, so the scripts are written in bash. I'll provide a PS1 version of them in the future for Windows users.
+>**Note**: I use a Mac for development, so the scripts are written in bash. If you need to run them on Windows, you can use a Bash emulator like Git Bash (or WSL?).
 
 ## Current status of the project
 

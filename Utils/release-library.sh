@@ -1,5 +1,7 @@
 #!/bin/bash
 
+cd ..
+
 REPO="fabcolonna/polito-cas-landtiger-lib"
 ASSETS=peripherals-lib.tar.gz
 

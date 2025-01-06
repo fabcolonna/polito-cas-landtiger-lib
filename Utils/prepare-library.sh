@@ -1,5 +1,7 @@
 #!/bin/bash
 
+cd ..
+
 LIB_DIR=Lib
 INC_DIR=Lib/Include
 

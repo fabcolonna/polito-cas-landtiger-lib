@@ -1,5 +1,7 @@
 #!/bin/bash
 
+cd ..
+
 [[ -z $(git status -s) ]] || { 
     echo "Working directory is not clean. Please commit or stash your changes first."; 
     exit 1;
