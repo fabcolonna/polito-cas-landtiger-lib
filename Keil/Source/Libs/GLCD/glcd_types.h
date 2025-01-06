@@ -65,11 +65,18 @@ typedef enum
 typedef struct
 {
     const u32 *data;
-    u16 data_size, max_char_width, char_height;
+    u16 data_size, max_char_width, max_char_height;
     // Stores the width of each individual char, so we can move forward to the next char leaving just the right amount
     // of space between them. It's optional, e.g. system font & msgothic font don't have this info. In this case, the
     // spacing between chars is the same as the max_char_width.
-    const u16 *char_widths;
+    const u16 *char_widths, *char_heights;
+
+    // Stores the offsets from the baseline for each char, so we can align letters like 'g' or 'h' correctly with
+    // letters like 'a' or 'b'. It's optional, e.g. system font & msgothic font don't have this info. In this case, we
+    // simply have this array = NULL. The renderer uses the baseline to determine how much we should move up from the
+    // where->y coordinate so that the char is aligned to the baseline correctly. Moving up means subtracting the offset
+    // from where-y.
+    const u16 *baseline_offsets;
 } LCD_Font;
 
 typedef i8 LCD_FontID;
@@ -110,7 +117,11 @@ typedef struct
     char *text;
     LCD_Color text_color, bg_color;
     LCD_FontID font;
+    i16 char_spacing, line_spacing;
 } LCD_Text;
+
+#define LCD_TEXT_DEF_CHAR_SPACING 0
+#define LCD_TEXT_DEF_LINE_SPACING 0
 
 /// @brief Represents a drawable component that can be rendered on the screen.
 typedef enum

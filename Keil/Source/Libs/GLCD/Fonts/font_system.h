@@ -118,8 +118,10 @@ const LCD_Font Font_System = {
     .data = Font_SystemData,
     .data_size = Font_SystemDataSize,
     .char_widths = NULL,
+    .char_heights = NULL,
     .max_char_width = Font_SystemCharWidth,
-    .char_height = Font_SystemCharHeight,
+    .max_char_height = Font_SystemCharHeight,
+    .baseline_offsets = NULL,
 };
 
 #endif

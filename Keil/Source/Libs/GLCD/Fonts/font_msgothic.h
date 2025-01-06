@@ -126,8 +126,10 @@ const LCD_Font Font_MSGothic = {
     .data = Font_MSGothicData,
     .data_size = Font_MSGothicDataSize,
     .char_widths = NULL,
+    .char_heights = NULL,
     .max_char_width = Font_MSGothicCharWidth,
-    .char_height = Font_MSGothicCharHeight,
+    .max_char_height = Font_MSGothicCharHeight,
+    .baseline_offsets = NULL,
 };
 
 #endif
