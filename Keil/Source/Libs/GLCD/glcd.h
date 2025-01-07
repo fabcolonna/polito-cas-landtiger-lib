@@ -16,7 +16,14 @@ _FORCE_INLINE u16 rgb888_to_rgb565(u32 rgb888)
     return (u16)((r >> 3) << 11 | (g >> 2) << 5 | (b >> 3));
 }
 
-#define BGR_TO_RGB565(bgr) (u16)(((bgr >> 11) & 0x1F) | ((bgr >> 5) & 0x3F) | (bgr & 0x1F))
+// BGR565 = 0bBBBBBGGGGGGRRRRR
+_FORCE_INLINE u16 bgr565_to_rgb565(u16 bgr565)
+{
+    const u8 b = (bgr565 >> 11) & 0x1F;
+    const u8 g = (bgr565 >> 5) & 0x3F;
+    const u8 r = bgr565 & 0x1F;
+    return (u16)(r << 11 | g << 5 | b);
+}
 
 /// @brief Initializes TFT LCD Controller.
 /// @param orientation The orientation of the screen, from the LCD_Orientation enum
