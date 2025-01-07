@@ -27,6 +27,19 @@
         LCD_RQAddObject(&name##_obj_static); /* Return the ID from this statement expression */                        \
     })
 
+/// @brief Creates an object with immediate components, without declaring static data structures.
+/// @note The object goes out of scope immediately after LCD_OBJECT_IMMEDIATE finishes executing,
+///       thus, we use the LCD_RQRenderImmediate function to render it without storing it in the
+///       queue. Deleting these kind of objects requires calling LCD_SetBackgoundColor().
+/// @note Use this function when you plan on creating object you don't find necessary to store, i.e.
+///       objects that are not frequently updated.
+#define LCD_OBJECT_IMMEDIATE(num_comps, ...)                                                                           \
+    ({                                                                                                                 \
+        LCD_Component comps[num_comps] = __VA_ARGS__;                                                                  \
+        LCD_Obj obj = {.comps = comps, .comps_size = (num_comps)};                                                     \
+        LCD_RQRenderImmediate(&obj); /* Return the ID from this statement expression */                                \
+    })
+
 #define LCD_LINE(...)                                                                                                  \
     (LCD_Component)                                                                                                    \
     {                                                                                                                  \

@@ -69,6 +69,13 @@ LCD_ObjID LCD_RQAddObject(const LCD_Obj *const obj);
 ///        add multiple objects at once, and only update the screen at the end.
 void LCD_RQRender(void);
 
+/// @brief Renders the object immediately, without adding it to the render queue.
+///        Since we don't retain a reference to the object, we can't remove it later.
+/// @note To remove an object rendered you must call LCD_SetBackgroundColor(), effectively
+///       clearing the screen and redrawing only the objects stored in the render queue
+/// @param obj The object to render immediately
+void LCD_RQRenderImmediate(const LCD_Obj *const obj);
+
 /// @brief Removes an object from the render queue by its ID.
 /// @param id The ID of the object to remove
 /// @param redraw_screen Whether to redraw the other objects

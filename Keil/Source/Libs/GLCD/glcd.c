@@ -498,7 +498,7 @@ _PRIVATE void draw_img_rle(const LCD_Image *const img, LCD_Coordinate pos)
 
 // Prints the char and returns the width of the char printed, or -1 if something went wrong.
 _PRIVATE bool print_char(u8 chr, const LCD_Font *const font, const LCD_Coordinate *const where, LCD_Color txt_col,
-                              LCD_Color bg_col, u16 *out_char_w, u16 *out_char_h)
+                         LCD_Color bg_col, u16 *out_char_w, u16 *out_char_h)
 {
     // We can't print non-ASCII printable chars, and other invalid values
     if (!font || !where || chr < ASCII_FONT_MIN_VALUE || chr > ASCII_FONT_MAX_VALUE)
@@ -522,7 +522,7 @@ _PRIVATE bool print_char(u8 chr, const LCD_Font *const font, const LCD_Coordinat
     const u16 baseline_offset = font->baseline_offsets ? font->baseline_offsets[index] : 0;
 
     // If the char is completely outside the screen, return immediately
-    if (where->x < 0 || where->x >= MAX_X) 
+    if (where->x < 0 || where->x >= MAX_X)
     {
         out_char_h = NULL;
         out_char_w = NULL;
@@ -616,7 +616,7 @@ _PRIVATE void print_text(const LCD_Text *const text, LCD_Coordinate pos)
         y_inc = font.max_char_height + text->line_spacing;
         if ((pos.x + x_inc) < MAX_X)
             pos.x += x_inc;
-        // If there's no space on the x axis, but there's space on the y axis, move to the next line        
+        // If there's no space on the x axis, but there's space on the y axis, move to the next line
         else if ((pos.y + y_inc) < MAX_Y)
         {
             pos.x = 0; // OR start_x, to keep the same x position for all lines
@@ -639,7 +639,34 @@ _PRIVATE void print_text(const LCD_Text *const text, LCD_Coordinate pos)
 
 // PRIVATE RENDER QUEUE FUNCTIONS
 
-_PRIVATE void render_item(LCD_RQItem *const item)
+_PRIVATE inline void render_immediate(const LCD_Obj *const obj)
+{
+    LCD_Component *comp;
+    for (u16 i = 0; i < obj->comps_size; i++)
+    {
+        comp = &obj->comps[i];
+        switch (comp->type)
+        {
+        case LCD_COMP_LINE:
+            draw_line(&comp->object.line);
+            break;
+        case LCD_COMP_RECT:
+            draw_rect(&comp->object.rect, comp->pos);
+            break;
+        case LCD_COMP_CIRCLE:
+            draw_circle(&comp->object.circle);
+            break;
+        case LCD_COMP_IMAGE:
+            draw_img_rle(&comp->object.image, comp->pos);
+            break;
+        case LCD_COMP_TEXT:
+            print_text(&comp->object.text, comp->pos);
+            break;
+        }
+    }
+}
+
+_PRIVATE inline void render_item(LCD_RQItem *const item)
 {
     if (!item || !item->obj || item->id < 0 || !item->obj->comps || item->obj->comps_size == 0)
         return;
@@ -1024,6 +1051,14 @@ void LCD_RQRender(void)
         if (item->visible && !item->rendered)
             render_item(item);
     }
+}
+
+void LCD_RQRenderImmediate(const LCD_Obj *const obj)
+{
+    if (!obj || !obj->comps || obj->comps_size <= 0)
+        return;
+
+    render_immediate(obj);
 }
 
 void LCD_RQRemoveObject(LCD_ObjID id, bool redraw_screen)
