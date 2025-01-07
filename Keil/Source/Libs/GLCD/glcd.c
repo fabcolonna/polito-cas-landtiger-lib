@@ -9,11 +9,6 @@
 
 // PRIVATE DEFINES & TYPES
 
-typedef struct
-{
-    void *a, *b;
-} LCD_Tuple;
-
 /// @brief LCD Controller PINs are connected to the GPIO0 port (same as the LEDs).
 ///        Hence, they're controlled using the FIOSET and FIOCLR registers.
 /// @details EN = Enable (19)
@@ -502,18 +497,16 @@ _PRIVATE void draw_img_rle(const LCD_Image *const img, LCD_Coordinate pos)
 // TEXT FUNCTIONS
 
 // Prints the char and returns the width of the char printed, or -1 if something went wrong.
-_PRIVATE LCD_Tuple print_char(u8 chr, const LCD_Font *const font, const LCD_Coordinate *const where, LCD_Color txt_col,
-                              LCD_Color bg_col)
+_PRIVATE bool print_char(u8 chr, const LCD_Font *const font, const LCD_Coordinate *const where, LCD_Color txt_col,
+                              LCD_Color bg_col, u16 *out_char_w, u16 *out_char_h)
 {
-    i16 char_w = -1, char_h = -1;
-    LCD_Tuple w_h_tuple = {.a = (i16 *)&char_w, (i16 *)&char_h};
-
     // We can't print non-ASCII printable chars, and other invalid values
     if (!font || !where || chr < ASCII_FONT_MIN_VALUE || chr > ASCII_FONT_MAX_VALUE)
-        return w_h_tuple;
-
-    if (where->x >= MAX_X || where->y >= MAX_Y)
-        return w_h_tuple; // Char is completely outside the screen
+    {
+        out_char_h = NULL;
+        out_char_w = NULL;
+        return false;
+    }
 
     // Each line of the array contains the char data, and chars are stored in ASCII order. Each line is
     // made up of font->char_height different u32 values, each one representing a row of the given char.
@@ -528,12 +521,31 @@ _PRIVATE LCD_Tuple print_char(u8 chr, const LCD_Font *const font, const LCD_Coor
     // with the ttf2c script, chances are that the baseline offsets are stored in the baseline_offsets array.
     const u16 baseline_offset = font->baseline_offsets ? font->baseline_offsets[index] : 0;
 
+    // If the char is completely outside the screen, return immediately
+    if (where->x < 0 || where->x >= MAX_X) 
+    {
+        out_char_h = NULL;
+        out_char_w = NULL;
+        return false;
+    }
+
+    if (where->y - baseline_offset < 0 || where->y - baseline_offset >= MAX_Y)
+    {
+        out_char_h = NULL;
+        out_char_w = NULL;
+        return false;
+    }
+
     // Getting the char height/width from the char_heights/widths array, which stores them in ASCII order.
     // If any of these arrays is NULL (e.g. for the preloaded fonts), then max_char_height/width is used.
-    char_h = font->char_heights ? font->char_heights[index] : font->max_char_height;
-    char_w = font->char_widths ? font->char_widths[index] : font->max_char_width;
+    const u16 char_h = font->char_heights ? font->char_heights[index] : font->max_char_height;
+    const u16 char_w = font->char_widths ? font->char_widths[index] : font->max_char_width;
     if (char_w <= 0 || char_h <= 0)
-        return w_h_tuple; // Something went wrong, should not happen!
+    {
+        out_char_h = NULL;
+        out_char_w = NULL;
+        return false; // Something went wrong, should not happen!
+    }
 
     // We need to move to the correct row of the array, which contains the char data.
     // Problem is, the length of the rows before the one we need is variable, hence we can't
@@ -565,7 +577,9 @@ _PRIVATE LCD_Tuple print_char(u8 chr, const LCD_Font *const font, const LCD_Coor
     // leaving just the right amount of space between them. If the font data has been created with
     // the ttf2c script, chances are that the width of the char is stored in the char_widths array.
     // This also applies to the char_heights array.
-    return w_h_tuple;
+    *out_char_w = char_w;
+    *out_char_h = char_h;
+    return true;
 }
 
 _PRIVATE void print_text(const LCD_Text *const text, LCD_Coordinate pos)
@@ -590,28 +604,23 @@ _PRIVATE void print_text(const LCD_Text *const text, LCD_Coordinate pos)
     u16 start_x = pos.x; // Saving the starting x position
     // u16 total_height = font.char_height; // Minimum height is one line (font height)
 
-    LCD_Tuple char_w_h;
-    i16 char_w, char_h;
+    u16 char_w, char_h, x_inc, y_inc;
     bool no_more_space = false;
     while ((chr = *str++) && !no_more_space)
     {
-        char_w_h = print_char(chr, &font, &pos, text->text_color, text->bg_color);
-        char_w = *((i16 *)char_w_h.a);
-        char_h = *((i16 *)char_w_h.b);
-
-        if (char_w < 0 || char_h < 0)
+        if (!print_char(chr, &font, &pos, text->text_color, text->bg_color, &char_w, &char_h))
             return; // Something went wrong, should not happen!
 
-        // Moving to the next char position
-        if (pos.x + char_w < MAX_X) // Continue on the same line
-            pos.x += char_w + text->char_spacing;
-        else if (pos.y + font.max_char_height < MAX_Y) // Go to the next line if there's space on the x axis
+        // Moving to the next char position: if there's space on the x axis, move to the right
+        x_inc = char_w + text->char_spacing;
+        y_inc = font.max_char_height + text->line_spacing;
+        if ((pos.x + x_inc) < MAX_X)
+            pos.x += x_inc;
+        // If there's no space on the x axis, but there's space on the y axis, move to the next line        
+        else if ((pos.y + y_inc) < MAX_Y)
         {
-            pos.x = 0;
-
-            // Moving to the next line by adding the height of the tallest font, so
-            // we take into account taller chars. We then sum the line spacing that the user wants.
-            pos.y += font.max_char_height + text->line_spacing;
+            pos.x = 0; // OR start_x, to keep the same x position for all lines
+            pos.y += y_inc;
             // total_height += font.char_height; // Increment total height for each new line
         }
         else
