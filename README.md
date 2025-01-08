@@ -145,6 +145,9 @@ This produces the following output:
 
 ![Calibration Cross](./Assets/README/cross.png)
 
+>**Note**: If you need to render objects that are not meant to be removed from the screen selectively, you can avoid the overhead caused by the render queue logic by simply drawing them directly on the screen using the `LCD_OBJECT_IMMEDIATE` macro, which does not allocate anything and
+does not return an `LCD_ObjID`. Objects of this type are not deletable selectively using the `LCD_RQRemoveObject` function, and they are not affected by the `LCD_RQSetObjectVisibility` function. If you wish to delete them, you must call `LCD_SetBackgroundColor()`, which will effectively redraw only the objects that are part of the render queue, alongside the (eventually new) background color.
+
 ### GLCD in depth: custom fonts
 
 The GLCD has 2 built-in fonts that can be used to render text, `LCD_DEF_FONT_SYSTEM` and `LCD_DEF_FONT_MSGOTHIC`. The problem with these fonts is that the user has no control over the characters' size, and there might be cases where it's necessary to draw smaller or bigger text. That's why I introduced the possibility to load **custom fonts**, with **custom sizes**!
@@ -308,6 +311,7 @@ The GLCD interface is still in development, and there are a lot of features that
 - [X] Support for custom fonts loaded as bitmaps;
 - [ ] Support for object alignment (e.g. centering text, images), to avoid having to calculate the position manually;
 - [ ] Memory arena for the render queue, to let the user decide how much memory to allocate for the GLCD based on the application's needs and the available memory, thus removing the static limitation of 1024 components and the need to statically allocated memory for the objects and components to avoid dangling pointers;
+- [ ] Event driven rendering (maybe using the RIT?).
 
 ### DAC in depth
 
@@ -326,6 +330,8 @@ In addition to the GLCD and DAC roadmaps, I have some other features in mind tha
 - [ ] A more general-purpose interface for ADC (support for other channels, etc.);
 - [ ] Support for file systems and SD cards, for reading actual files, instead of bitmaps represented as C buffers, like fonts, images or audio;
 - [ ] Support for prolonged joystick actions;
+- [ ] Asynchronous touch button support;
+- [ ] Add an `LCD_Button` and `LCD_BUTTON` type for building touch button objects;
 
 **Not immediately planned**:
 

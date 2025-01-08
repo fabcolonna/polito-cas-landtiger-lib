@@ -6,7 +6,11 @@ LIB_DIR=Lib
 INC_DIR=Lib/Include
 
 mkdir -p $LIB_DIR
-cp Keil/Objects/*.lib $LIB_DIR || { echo "No .lib files found"; exit 1; }
+cp Keil/Objects/*.lib $LIB_DIR || {
+     echo "No .lib files found"
+     rmdir $LIB_DIR
+     exit 1;
+}
 
 # Moving .h files to include folder
 mkdir -p $INC_DIR

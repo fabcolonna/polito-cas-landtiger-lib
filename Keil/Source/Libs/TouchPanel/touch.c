@@ -437,7 +437,7 @@ const TP_Coordinate *TP_WaitForTouch(void)
     return &tp_coords;
 }
 
-const LCD_Coordinate *TP_GetLCDCoordinateFor(TP_Coordinate *const tp_point)
+const LCD_Coordinate *TP_GetLCDCoordinateFor(const TP_Coordinate *const tp_point)
 {
     if (!initialized || !tp_point)
         return NULL;
@@ -449,6 +449,35 @@ const LCD_Coordinate *TP_GetLCDCoordinateFor(TP_Coordinate *const tp_point)
 
     lcd_point.x = ((matrix.a_n * tp_point->x) + (matrix.b_n * tp_point->y) + matrix.c_n) / matrix.divider;
     lcd_point.y = ((matrix.d_n * tp_point->x) + (matrix.e_n * tp_point->y) + matrix.f_n) / matrix.divider;
-
     return &lcd_point;
+}
+
+// TOUCH BUTTONS
+
+void TP_WaitForButtonPress(TP_Button button)
+{
+    if (!initialized)
+        return;
+
+    TP_Coordinate *touch_point;
+    do
+    {
+        touch_point = (TP_Coordinate *)TP_WaitForTouch();
+    } while (!TP_HasButtonBeenPressed(button, touch_point));
+}
+
+bool TP_HasButtonBeenPressed(TP_Button button, const TP_Coordinate *const touch_point)
+{
+    if (!touch_point)
+        return false;
+
+    // We should map the coordinates to the LCD coordinates, because the buttons pos
+    // is in LCD coordinates!
+    const LCD_Coordinate *touch_lcd_pos = TP_GetLCDCoordinateFor(touch_point);
+    if (!touch_lcd_pos)
+        return false;
+
+    const bool between_w = IS_BETWEEN_EQ(touch_lcd_pos->x, button.pos.x + 1, button.pos.x + button.width - 1);
+    const bool between_h = IS_BETWEEN_EQ(touch_lcd_pos->y, button.pos.y + 1, button.pos.y + button.height - 1);
+    return between_w && between_h;
 }
