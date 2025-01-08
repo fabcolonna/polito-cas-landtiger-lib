@@ -7,6 +7,7 @@ int main(void)
 {
     SystemInit();
     LCD_Init(LCD_ORIENT_VER);
+    TP_Init(false);
     LCD_SetBackgroundColor(LCD_COL_BLACK);
 
     const LCD_FontID font_upheaval14 = LCD_FMAddFont(Font_Upheaval14);

@@ -3,6 +3,7 @@
 #include "power.h"
 
 #include <LPC17xx.h>
+#include <assert.h>
 #include <stdbool.h>
 #include <stdlib.h>
 
@@ -44,6 +45,8 @@ typedef struct
 
 /// @brief Current calibration matrix.
 _PRIVATE TP_CalibrationMatrix current_calib_matrix;
+
+_PRIVATE bool initialized = false, calibratated = false;
 
 // DELAY PRIVATE FUNCTIONS
 
@@ -319,6 +322,8 @@ _PRIVATE bool calc_calibration_matrix(TP_CalibrationMatrix *out_matrix, const LC
 // hence it's been made private and called from the init function.
 bool calibrate(void)
 {
+    calibratated = false;
+
     const LCD_Coordinate lcd_crosses[3] = {{45, 45}, {45, 270}, {190, 190}};
     TP_Coordinate tp_crosses[3] = {{0}, {0}, {0}};
 
@@ -332,8 +337,8 @@ bool calibrate(void)
     LCD_ObjID text;
     LCD_BEGIN_DRAWING;
     text = LCD_OBJECT(text, 1, {
-        LCD_TEXT(10, 10, {
-            .text = "Touch crosshair to calibrate",
+        LCD_TEXT(5, 10, {
+            .text = "Touch crosshairs to calibrate",
             .font = LCD_DEF_FONT_SYSTEM,
             .text_color = LCD_COL_WHITE,
             .bg_color = LCD_COL_NONE,
@@ -367,8 +372,8 @@ bool calibrate(void)
 
     LCD_BEGIN_DRAWING;
     text = LCD_OBJECT(text, 1, {
-        LCD_TEXT(40, 40, {
-            .text = "Calibration complete!",
+        LCD_TEXT(10, LCD_GetHeight() / 2 - 10, {
+            .text = "Success! Touch to continue.",
             .font = LCD_DEF_FONT_SYSTEM,
             .text_color = LCD_COL_WHITE,
             .bg_color = LCD_COL_NONE,
@@ -380,24 +385,52 @@ bool calibrate(void)
 
     TP_WaitForTouch();
     LCD_RQRemoveObject(text, false);
-    return true;
+    calibratated = true;
+    return calibratated;
 }
 
 // PUBLIC FUNCTIONS
 
-void TP_Init(void)
+void TP_Init(bool skip_calibration)
 {
     LPC_GPIO0->FIODIR |= (1 << 6);  // P0.6 CS is output
     LPC_GPIO2->FIODIR |= (0 << 13); // P2.13 TP_INT is input
     TP_CS(1);
 
     spi_init(); // Initialize SPI interface for touch panel
+    initialized = true;
+
+    if (skip_calibration)
+        return;
+
+    TP_Calibrate();
+    assert(calibratated && initialized); // Should never fail.
+}
+
+bool TP_IsInitialized(void)
+{
+    return initialized;
+}
+
+bool TP_IsCalibrated(void)
+{
+    return calibratated;
+}
+
+void TP_Calibrate(void)
+{
+    if (!initialized)
+        return;
+
     while (!calibrate())
         ;
 }
 
 const TP_Coordinate *TP_WaitForTouch(void)
 {
+    if (!initialized)
+        return NULL;
+
     static TP_Coordinate tp_coords;
     while (!poll_touch(&tp_coords))
         ;
@@ -406,8 +439,10 @@ const TP_Coordinate *TP_WaitForTouch(void)
 
 const LCD_Coordinate *TP_GetLCDCoordinateFor(TP_Coordinate *const tp_point)
 {
-    static LCD_Coordinate lcd_point;
+    if (!initialized || !tp_point)
+        return NULL;
 
+    static LCD_Coordinate lcd_point;
     TP_CalibrationMatrix matrix = current_calib_matrix;
     if (matrix.divider == 0 || !tp_point)
         return NULL;
