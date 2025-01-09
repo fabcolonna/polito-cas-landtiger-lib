@@ -42,6 +42,15 @@ LCD_Coordinate LCD_GetCenter(void);
 /// @return The coordinates at which the object should be drawn
 // LCD_Coordinate LCD_GetCenterForObject(const LCD_Obj *const obj);
 
+/// @brief Returns the bounding box of the component, i.e. the smallest
+///        rectangle that contains the component itself, with both the
+///        2 coordinates (top-left & bottom-right), and the width and
+///        height already calculated.
+/// @param comp The component to get the bounding box of
+/// @return The bounding box of the component, expressed with 2 coordinates
+///         and the width and height.
+LCD_CompBBox LCD_GetComponentBBox(LCD_Component comp);
+
 /// @brief Returns the RGB565 color of the pixel at the specified coordinates.
 /// @param point The coordinates of the pixel
 /// @return The RGB565 color of the pixel
@@ -97,5 +106,11 @@ LCD_FontID LCD_FMAddFont(LCD_Font font);
 
 /// @brief Removes a font from the font manager by its ID.
 void LCD_FMRemoveFont(LCD_FontID id);
+
+// DEBUG FUNCTIONS
+
+/// @brief Debug function to render the bounding box of a component.
+/// @param bbox The bounding box to render
+void LCD_DEBUG_RenderComponentBBox(const LCD_CompBBox *const bbox);
 
 #endif

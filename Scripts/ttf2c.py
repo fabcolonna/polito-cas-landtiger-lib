@@ -98,6 +98,7 @@ const LCD_Font {type_name} = {{
     .char_heights = {char_heights_name},
     .max_char_height = {max(char_heights)},
     .baseline_offsets = {baseline_offsets_name},
+    .max_baseline_offset = {max(baseline_offsets)}
 }};
 
 #endif""")

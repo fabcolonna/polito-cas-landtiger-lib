@@ -130,6 +130,7 @@ const LCD_Font Font_MSGothic = {
     .max_char_width = Font_MSGothicCharWidth,
     .max_char_height = Font_MSGothicCharHeight,
     .baseline_offsets = NULL,
+    .max_baseline_offset = 0,
 };
 
 #endif

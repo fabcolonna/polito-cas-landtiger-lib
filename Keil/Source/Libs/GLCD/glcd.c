@@ -2,6 +2,7 @@
 
 #include <LPC17xx.h>
 #include <alloca.h>
+#include <assert.h>
 #include <math.h>
 #include <stdbool.h>
 #include <stdlib.h>
@@ -90,7 +91,7 @@ typedef struct
 } LCD_RQItem;
 
 /// @brief Maximum number of components that can be rendered on the screen.
-#define MAX_RQ_ITEMS 1024
+#define MAX_RQ_ITEMS 128
 
 /// @brief The render queue, containing all the components to be rendered.
 ///        It also contains info about the visibility and rendering status
@@ -259,17 +260,117 @@ _PRIVATE void set_gram_cursor(u16 x, u16 y)
     }
 }
 
-// PRIVATE DRAWING FUNCTIONS
+// DRAWING TYPES & MACROS
 
-#define SET_POINT_SIMPLER(color, x, y) LCD_SetPointColor(color, (LCD_Coordinate){x, y})
-
-_PRIVATE void draw_line(const LCD_Line *const line)
+enum
 {
-    if (!line)
-        return;
+    MD_DRAW = 0x1,
+    MD_BBOX = 0x2
+} ProcessingMode;
+
+#define IS_MODE(mode, flag) ((mode & flag) != 0)
+
+// DRAWING FUNCTIONS
+
+#define SET_POINT_SIMPLER(mode, color, x, y)                                                                           \
+    {                                                                                                                  \
+        if (IS_MODE(mode, MD_DRAW))                                                                                    \
+            LCD_SetPointColor(color, (LCD_Coordinate){x, y});                                                          \
+        else                                                                                                           \
+        {                                                                                                              \
+            (void)(color);                                                                                             \
+            (void)(x);                                                                                                 \
+            (void)(y);                                                                                                 \
+        }                                                                                                              \
+    }
+
+_PRIVATE bool process_line(const LCD_Line *const line, LCD_CompBBox *out_bbox, u8 mode)
+{
+    if (!line || !mode)
+        return false;
 
     // If the starting point is to the right of the ending point (both for x and/or y), swap.
     LCD_Coordinate from = line->from, to = line->to;
+    LCD_Coordinate original_from = from, original_to = to;
+
+    int dx = abs(to.x - from.x); // Absolute difference
+    int dy = abs(to.y - from.y);
+
+    // Determine the step directions
+    int x_step = (from.x < to.x) ? 1 : -1;
+    int y_step = (from.y < to.y) ? 1 : -1;
+
+    // Special cases: Vertical or Horizontal lines
+    if (dx == 0) // Vertical line
+    {
+        while (from.y != to.y + y_step)
+        {
+            SET_POINT_SIMPLER(mode, line->color, from.x, from.y);
+            from.y += y_step;
+        }
+    }
+    else if (dy == 0) // Horizontal line
+    {
+        while (from.x != to.x + x_step)
+        {
+            SET_POINT_SIMPLER(mode, line->color, from.x, from.y);
+            from.x += x_step;
+        }
+    }
+    else if (dx > dy) // Bresenham's algorithm: slope < 1
+    {
+        int tmp = 2 * dy - dx;
+        while (from.x != to.x + x_step)
+        {
+            SET_POINT_SIMPLER(mode, line->color, from.x, from.y);
+            from.x += x_step;
+            if (tmp > 0)
+            {
+                from.y += y_step;
+                tmp += 2 * dy - 2 * dx;
+            }
+            else
+                tmp += 2 * dy;
+        }
+    }
+    else // Bresenham's algorithm: slope >= 1
+    {
+        int tmp = 2 * dx - dy;
+        while (from.y != to.y + y_step)
+        {
+            SET_POINT_SIMPLER(mode, line->color, from.x, from.y);
+            from.y += y_step;
+            if (tmp > 0)
+            {
+                from.x += x_step;
+                tmp += 2 * dx - 2 * dy;
+            }
+            else
+                tmp += 2 * dx;
+        }
+    }
+
+    // Update the bounding box if requested
+    if (out_bbox && IS_MODE(mode, MD_BBOX))
+    {
+        out_bbox->top_left = original_from;
+        out_bbox->bottom_right = original_to;
+        out_bbox->dim.width = dx == 0 ? 1 : dx;
+        out_bbox->dim.height = dy == 0 ? 1 : dy;
+    }
+
+    return true;
+}
+
+/*
+_PRIVATE bool process_line(const LCD_Line *const line, LCD_CompBBox *out_bbox, u8 mode)
+{
+    if (!line || !mode)
+        return false;
+
+    // If the starting point is to the right of the ending point (both for x and/or y), swap.
+    LCD_Coordinate from = line->from, to = line->to;
+    LCD_Coordinate original_from = from, original_to = to;
 
     if (from.x > to.x)
         SWAP(u16, to.x, from.x)
@@ -280,19 +381,19 @@ _PRIVATE void draw_line(const LCD_Line *const line)
     if (dx == 0) // Vertical line
     {
         while (from.y <= to.y)
-            SET_POINT_SIMPLER(line->color, from.x, from.y++);
+            SET_POINT_SIMPLER(mode, line->color, from.x, from.y++);
     }
     else if (dy == 0) // Horizontal line
     {
         while (from.x <= to.x)
-            SET_POINT_SIMPLER(line->color, from.x++, from.y);
+            SET_POINT_SIMPLER(mode, line->color, from.x++, from.y);
     }
     else if (dx > dy)
     {
         tmp = 2 * dy - dx;
         while (from.x != to.x)
         {
-            SET_POINT_SIMPLER(line->color, from.x++, from.y);
+            SET_POINT_SIMPLER(mode, line->color, from.x++, from.y);
             if (tmp > 0)
             {
                 from.y++;
@@ -301,14 +402,14 @@ _PRIVATE void draw_line(const LCD_Line *const line)
             else
                 tmp += 2 * dy;
         }
-        SET_POINT_SIMPLER(line->color, from.x, from.y);
+        SET_POINT_SIMPLER(mode, line->color, from.x, from.y);
     }
     else
     {
         tmp = 2 * dx - dy;
         while (from.y != to.y)
         {
-            SET_POINT_SIMPLER(line->color, from.x, from.y++);
+            SET_POINT_SIMPLER(mode, line->color, from.x, from.y++);
             if (tmp > 0)
             {
                 from.x++;
@@ -317,25 +418,36 @@ _PRIVATE void draw_line(const LCD_Line *const line)
             else
                 tmp += 2 * dy;
         }
-        SET_POINT_SIMPLER(line->color, from.x, from.y);
+        SET_POINT_SIMPLER(mode, line->color, from.x, from.y);
     }
-}
 
-_PRIVATE void draw_rect(const LCD_Rect *const rect, LCD_Coordinate pos)
+    if (out_bbox && IS_MODE(mode, MD_BBOX))
+    {
+        out_bbox->top_left = original_from;
+        out_bbox->bottom_right = original_to;
+        out_bbox->dim.width = dx == 0 ? 1 : dx;
+        out_bbox->dim.height = dy == 0 ? 1 : dy;
+    }
+
+    return true;
+}
+*/
+
+_PRIVATE bool process_rect(const LCD_Rect *const rect, LCD_Coordinate pos, LCD_CompBBox *out_bbox, u8 mode)
 {
-    if (!rect)
-        return;
+    if (!rect || !mode)
+        return false;
 
     // Rect object now contains width and height, not the start/end coordinates.
     // This, to support the rendering of the rectangle at various positions on the
     // screen, based on the pos parameter. pos is the top left corner of the rectangle.
     if (rect->width == 0 || rect->height == 0)
-        return;
+        return false;
 
     LCD_Coordinate from = pos;
     LCD_Coordinate to = {from.x + rect->width, from.y + rect->height};
     if (from.x >= MAX_X || from.y >= MAX_Y)
-        return; // Rectangle is completely outside the screen
+        return false; // Rectangle is completely outside the screen
 
     // If the ending point is outside the screen, adjust it.
     if (to.x >= MAX_X)
@@ -354,40 +466,50 @@ _PRIVATE void draw_rect(const LCD_Rect *const rect, LCD_Coordinate pos)
 
     line.from = from;
     line.to = (LCD_Coordinate){to.x, from.y};
-    draw_line(&line); // Top horizontal edge
+    process_line(&line, NULL, MD_DRAW); // Top horizontal edge
     line.to = (LCD_Coordinate){from.x, to.y};
-    draw_line(&line); // Left vertical edge
+    process_line(&line, NULL, MD_DRAW); // Left vertical edge
 
     line.from = to;
     line.to = (LCD_Coordinate){to.x, from.y};
-    draw_line(&line); // Right vertical edge
+    process_line(&line, NULL, MD_DRAW); // Right vertical edge
     line.to = (LCD_Coordinate){from.x, to.y};
-    draw_line(&line); // Bottom horizontal edge
+    process_line(&line, NULL, MD_DRAW); // Bottom horizontal edge
 
     if (rect->fill_color != LCD_COL_NONE)
     {
         // Filling the rectangle
         for (u16 i = from.x + 1; i < to.x; i++)
             for (u16 j = from.y + 1; j < to.y; j++)
-                SET_POINT_SIMPLER(rect->fill_color, i, j);
+                SET_POINT_SIMPLER(mode, rect->fill_color, i, j);
     }
+
+    if (out_bbox && IS_MODE(mode, MD_BBOX))
+    {
+        out_bbox->top_left = from;
+        out_bbox->bottom_right = to;
+        out_bbox->dim.width = rect->width;
+        out_bbox->dim.height = rect->height;
+    }
+
+    return true;
 }
 
-_PRIVATE void draw_circle(const LCD_Circle *const circle)
+_PRIVATE bool process_circle(const LCD_Circle *const circle, LCD_CompBBox *out_bbox, u8 mode)
 {
     const LCD_Coordinate center = circle->center;
     const u16 radius = circle->radius;
 
-    if (radius == 0)
-        return;
+    if (radius == 0 || !mode)
+        return false;
 
     // Printing 4 cardinal points of the circle: note that if the radius is subtracted from y,
     // from the center, the pixel will be actually colored at the other side, because smaller
     // numbers mean higher positions in the screen.
-    SET_POINT_SIMPLER(circle->edge_color, center.x + radius, center.y); // Right side of the center
-    SET_POINT_SIMPLER(circle->edge_color, center.x - radius, center.y); // Left side
-    SET_POINT_SIMPLER(circle->edge_color, center.x, center.y + radius); // Top, but we +, it's the bottom
-    SET_POINT_SIMPLER(circle->edge_color, center.x, center.y - radius); // Bottom, but we -, it's the top
+    SET_POINT_SIMPLER(mode, circle->edge_color, center.x + radius, center.y); // Right side of the center
+    SET_POINT_SIMPLER(mode, circle->edge_color, center.x - radius, center.y); // Left side
+    SET_POINT_SIMPLER(mode, circle->edge_color, center.x, center.y + radius); // Top, but we +, it's the bottom
+    SET_POINT_SIMPLER(mode, circle->edge_color, center.x, center.y - radius); // Bottom, but we -, it's the top
 
     u16 x = radius, y = 0; // Working on the first octant in the fourth quadrant
     int p = 1 - radius;    // Initial value of the decision parameter
@@ -414,14 +536,14 @@ _PRIVATE void draw_circle(const LCD_Circle *const circle)
             break;
 
         // Printing the points in the other octants using symmetry
-        SET_POINT_SIMPLER(circle->edge_color, x + center.x, y + center.y);
-        SET_POINT_SIMPLER(circle->edge_color, -x + center.x, y + center.y);
-        SET_POINT_SIMPLER(circle->edge_color, x + center.x, -y + center.y);
-        SET_POINT_SIMPLER(circle->edge_color, -x + center.x, -y + center.y);
-        SET_POINT_SIMPLER(circle->edge_color, y + center.x, x + center.y);
-        SET_POINT_SIMPLER(circle->edge_color, -y + center.x, x + center.y);
-        SET_POINT_SIMPLER(circle->edge_color, y + center.x, -x + center.y);
-        SET_POINT_SIMPLER(circle->edge_color, -y + center.x, -x + center.y);
+        SET_POINT_SIMPLER(mode, circle->edge_color, x + center.x, y + center.y);
+        SET_POINT_SIMPLER(mode, circle->edge_color, -x + center.x, y + center.y);
+        SET_POINT_SIMPLER(mode, circle->edge_color, x + center.x, -y + center.y);
+        SET_POINT_SIMPLER(mode, circle->edge_color, -x + center.x, -y + center.y);
+        SET_POINT_SIMPLER(mode, circle->edge_color, y + center.x, x + center.y);
+        SET_POINT_SIMPLER(mode, circle->edge_color, -y + center.x, x + center.y);
+        SET_POINT_SIMPLER(mode, circle->edge_color, y + center.x, -x + center.y);
+        SET_POINT_SIMPLER(mode, circle->edge_color, -y + center.x, -x + center.y);
     }
 
     if (circle->fill_color != LCD_COL_NONE)
@@ -429,22 +551,32 @@ _PRIVATE void draw_circle(const LCD_Circle *const circle)
         for (u16 i = center.x - radius + 1; i < center.x + radius; i++)
             for (u16 j = center.y - radius + 1; j < center.y + radius; j++)
                 if (pow((i - center.x), 2) + pow((j - center.y), 2) <= pow(radius, 2)) // Inside the circle
-                    SET_POINT_SIMPLER(circle->fill_color, i, j);
+                    SET_POINT_SIMPLER(mode, circle->fill_color, i, j);
     }
+
+    if (out_bbox && IS_MODE(mode, MD_BBOX))
+    {
+        out_bbox->top_left = (LCD_Coordinate){center.x - radius, center.y - radius};
+        out_bbox->bottom_right = (LCD_Coordinate){center.x + radius, center.y + radius};
+        out_bbox->dim.width = 2 * radius;
+        out_bbox->dim.height = 2 * radius;
+    }
+
+    return true;
 }
 
-_PRIVATE void draw_img_rle(const LCD_Image *const img, LCD_Coordinate pos)
+_PRIVATE bool process_img_rle(const LCD_Image *const img, LCD_Coordinate pos, LCD_CompBBox *out_bbox, u8 mode)
 {
-    if (!img || !img->pixels)
-        return;
+    if (!img || !img->pixels || !mode)
+        return false;
 
     u16 width = img->width, height = img->height;
     if (width == 0 || height == 0)
-        return;
+        return false;
 
     // Pos is the top-left corner of the image.
     if (pos.x >= MAX_X || pos.y >= MAX_Y)
-        return; // Image is completely outside the screen
+        return false; // Image is completely outside the screen
 
     // If the image is partially outside the screen, adjust its width and height.
     if (pos.x + width > MAX_X)
@@ -477,7 +609,7 @@ _PRIVATE void draw_img_rle(const LCD_Image *const img, LCD_Coordinate pos)
                     rgb888 = (u32)(pixel_data & 0x00FFFFFF);
 
                     if (alpha_data) // Alpha is != 0
-                        SET_POINT_SIMPLER(rgb888_to_rgb565(rgb888), current_x, pos.y + i);
+                        SET_POINT_SIMPLER(mode, rgb888_to_rgb565(rgb888), current_x, pos.y + i);
 
                     current_x++; // Move to the next pixel, regardless of the alpha value
                 }
@@ -485,27 +617,44 @@ _PRIVATE void draw_img_rle(const LCD_Image *const img, LCD_Coordinate pos)
                 {
                     // No alpha, pixel_data is of type 0x00RRGGBB
                     rgb888 = (u32)(pixel_data & 0x00FFFFFF);
-                    SET_POINT_SIMPLER(rgb888_to_rgb565(rgb888), current_x++, pos.y + i);
+                    SET_POINT_SIMPLER(mode, rgb888_to_rgb565(rgb888), current_x++, pos.y + i);
                 }
 
                 pixels_left--;
             }
         }
     }
+
+    if (out_bbox && IS_MODE(mode, MD_BBOX))
+    {
+        out_bbox->top_left = pos;
+        out_bbox->bottom_right = (LCD_Coordinate){pos.x + width, pos.y + height};
+        out_bbox->dim.width = width;
+        out_bbox->dim.height = height;
+    }
+
+    return true;
 }
 
 // TEXT FUNCTIONS
 
-// Prints the char and returns the width of the char printed, or -1 if something went wrong.
-_PRIVATE bool print_char(u8 chr, const LCD_Font *const font, const LCD_Coordinate *const where, LCD_Color txt_col,
-                         LCD_Color bg_col, u16 *out_char_w, u16 *out_char_h)
+typedef enum
+{
+    PRINT_CHR_OK = 0,
+    PRINT_CHR_ERR_NULL_PARAMS,
+    PRINT_CHR_ERR_SHOULD_NEWLINE,
+    PRINT_CHR_ERR_OUT_OF_VERTICAL_BOUNDS,
+} PrintCharError;
+
+_PRIVATE PrintCharError print_char(u8 chr, const LCD_Font *const font, LCD_Coordinate where, bool print_enabled,
+                                   LCD_Color txt_col, LCD_Color bg_col, u16 *out_char_w, u16 *out_char_h)
 {
     // We can't print non-ASCII printable chars, and other invalid values
-    if (!font || !where || chr < ASCII_FONT_MIN_VALUE || chr > ASCII_FONT_MAX_VALUE)
+    if (!font || chr < ASCII_FONT_MIN_VALUE || chr > ASCII_FONT_MAX_VALUE)
     {
         out_char_h = NULL;
         out_char_w = NULL;
-        return false;
+        return PRINT_CHR_ERR_NULL_PARAMS;
     }
 
     // Each line of the array contains the char data, and chars are stored in ASCII order. Each line is
@@ -521,31 +670,39 @@ _PRIVATE bool print_char(u8 chr, const LCD_Font *const font, const LCD_Coordinat
     // with the ttf2c script, chances are that the baseline offsets are stored in the baseline_offsets array.
     const u16 baseline_offset = font->baseline_offsets ? font->baseline_offsets[index] : 0;
 
-    // If the char is completely outside the screen, return immediately
-    if (where->x < 0 || where->x >= MAX_X)
-    {
-        out_char_h = NULL;
-        out_char_w = NULL;
-        return false;
-    }
-
-    if (where->y - baseline_offset < 0 || where->y - baseline_offset >= MAX_Y)
-    {
-        out_char_h = NULL;
-        out_char_w = NULL;
-        return false;
-    }
+    // We're moving the char down by baseline_offset pixels, so that when it's printed
+    // by moving up, it's gonna have its top-left corner at the expected position.
+    where.y += font->max_baseline_offset;
 
     // Getting the char height/width from the char_heights/widths array, which stores them in ASCII order.
     // If any of these arrays is NULL (e.g. for the preloaded fonts), then max_char_height/width is used.
     const u16 char_h = font->char_heights ? font->char_heights[index] : font->max_char_height;
     const u16 char_w = font->char_widths ? font->char_widths[index] : font->max_char_width;
-    if (char_w <= 0 || char_h <= 0)
+
+    // Verifying this before the x check, because the char might be completely outside the screen
+    if (where.y - baseline_offset < 0 || where.y - baseline_offset >= MAX_Y)
     {
         out_char_h = NULL;
         out_char_w = NULL;
-        return false; // Something went wrong, should not happen!
+        return PRINT_CHR_ERR_OUT_OF_VERTICAL_BOUNDS;
     }
+
+    // If the char is completely outside the screen, return immediately
+    if (where.x < 0 || where.x + char_w >= MAX_X)
+    {
+        *out_char_h = char_h;
+        *out_char_w = char_w;
+        return PRINT_CHR_ERR_SHOULD_NEWLINE;
+    }
+
+    // Need to handle empty chars, which are chars with no width or height, like space.
+    assert(char_w > 0); // Char width must be > 0, otherwise it's really nothingness
+
+    // If we don't want to actually print the char, we just return the width of the char.
+    // Additionally, if we wan't to print but the char has no height data, just return,
+    // so that print_text can move to the next char and leave some space between them.
+    if (!print_enabled || char_h == 0)
+        goto end;
 
     // We need to move to the correct row of the array, which contains the char data.
     // Problem is, the length of the rows before the one we need is variable, hence we can't
@@ -569,9 +726,12 @@ _PRIVATE bool print_char(u8 chr, const LCD_Font *const font, const LCD_Coordinat
             // E.g 8 bit font data: mask 0xFF and data 0xC3 = 0b11000011
             // Starting from the leftmost bit -> 0b11000011 >> 7=(char_w=8 - j=0 - 1) = 0b00000011 & 0x1 = 1
             pixel_has_value = (value >> (char_w - j - 1)) & 0x1;
-            SET_POINT_SIMPLER(pixel_has_value ? txt_col : bg_col, where->x + j, where->y + i - baseline_offset);
+            SET_POINT_SIMPLER(print_enabled ? MD_DRAW : 0, pixel_has_value ? txt_col : bg_col, where.x + j,
+                              where.y + i - baseline_offset);
         }
     }
+
+end:
 
     // We need to determine the width of the selected char, so we can move forward to the next char
     // leaving just the right amount of space between them. If the font data has been created with
@@ -579,55 +739,74 @@ _PRIVATE bool print_char(u8 chr, const LCD_Font *const font, const LCD_Coordinat
     // This also applies to the char_heights array.
     *out_char_w = char_w;
     *out_char_h = char_h;
-    return true;
+    return PRINT_CHR_OK;
 }
 
-_PRIVATE void print_text(const LCD_Text *const text, LCD_Coordinate pos)
+/// @brief Prints the string onto the screen, or calculates its dimensions without the overhead of printing.
+/// @param text The text to print
+/// @param pos The top-left corner (considering the eventual baseline offset) of the text
+/// @param dont_actually_print If true, the text is not printed, but the width is calculated. Used
+///                            to determine the width of the text without actually printing it.
+/// @param out_dim [OUTPUT] The width and height of the text, regardless of the actual printing.
+_PRIVATE bool process_text(const LCD_Text *const text, LCD_Coordinate pos, LCD_CompBBox *out_bbox, u8 mode)
 {
-    if (!text || !text->text)
-        return;
+    if (!text || !text->text || !mode)
+        return false;
 
     const LCD_FontID font_id = text->font;
     if (font_id >= font_list_size)
-        return;
+        return false;
 
     const LCD_Font font = font_list[font_id];
     if (!font.data)
-        return;
+        return false;
 
     if (pos.x >= MAX_X || pos.y >= MAX_Y)
-        return; // Text is completely outside the screen
+        return false; // Text is completely outside the screen
 
     u8 chr, *str = (u8 *)(text->text);
 
-    u16 max_width = 0;   // Track the maximum width (for multi-line)
-    u16 start_x = pos.x; // Saving the starting x position
+    u16 max_width = 0;                      // Track the maximum width (for multi-line)
+    u16 text_height = font.max_char_height; // Track the total height of the text. Minimum is one line (font height)
+    u16 start_x = pos.x;                    // Saving the starting x position
     // u16 total_height = font.char_height; // Minimum height is one line (font height)
 
+    PrintCharError pc_err;
     u16 char_w, char_h, x_inc, y_inc;
     bool no_more_space = false;
-    while ((chr = *str++) && !no_more_space)
+    while ((chr = *str) && !no_more_space)
     {
-        if (!print_char(chr, &font, &pos, text->text_color, text->bg_color, &char_w, &char_h))
-            return; // Something went wrong, should not happen!
+        pc_err =
+            print_char(chr, &font, pos, IS_MODE(mode, MD_DRAW), text->text_color, text->bg_color, &char_w, &char_h);
+        if (pc_err == PRINT_CHR_ERR_NULL_PARAMS)
+            return false;
+
+        // If err is PRINT_CHR_ERR_SHOULD_NEWLINE, we should move to the next line and then print the char again.
+        if (pc_err == PRINT_CHR_OK)
+            str++;
 
         // Moving to the next char position: if there's space on the x axis, move to the right
         x_inc = char_w + text->char_spacing;
         y_inc = font.max_char_height + text->line_spacing;
+
         if ((pos.x + x_inc) < MAX_X)
             pos.x += x_inc;
         // If there's no space on the x axis, but there's space on the y axis, move to the next line
         else if ((pos.y + y_inc) < MAX_Y)
         {
-            pos.x = 0; // OR start_x, to keep the same x position for all lines
+            pos.x = start_x; // =0 OR start_x, to keep the same x position for all lines or start at the very left.
             pos.y += y_inc;
-            // total_height += font.char_height; // Increment total height for each new line
+            text_height += y_inc; // Increase the total height of the text
         }
         else
+        {
+            assert(pc_err == PRINT_CHR_ERR_OUT_OF_VERTICAL_BOUNDS);
             no_more_space = true; // Stop printing if there's no more space
+        }
 
         // Update the maximum width for the current line
-        u16 current_width = pos.x - start_x;
+        i16 current_width = pos.x - start_x;
+        assert(current_width >= 0); // Should never be negative, if @ line 639 we specify to start at start_x, not 0
         if (current_width > max_width)
             max_width = current_width;
     }
@@ -635,12 +814,129 @@ _PRIVATE void print_text(const LCD_Text *const text, LCD_Coordinate pos)
     // If the string is short and doesn't wrap, set max_width correctly
     if (max_width == 0)
         max_width = pos.x - start_x;
+
+    if (out_bbox && IS_MODE(mode, MD_BBOX))
+    {
+        // The top left corner is higher due to the baseline offset.
+        out_bbox->top_left = (LCD_Coordinate){start_x, pos.y};
+        out_bbox->bottom_right = pos;
+        out_bbox->dim.width = max_width;
+        out_bbox->dim.height = text_height;
+    }
+
+    return true;
+}
+
+// BUTTON FUNCTIONS
+
+_PRIVATE inline LCD_Coordinate center_button_label_in_rect(LCD_Dimension label_dim, const LCD_Rect *const border,
+                                                           LCD_Coordinate pos)
+{
+    if (!border)
+        return (LCD_Coordinate){-1, -1};
+
+    return (LCD_Coordinate){
+        .x = pos.x + (border->width - label_dim.width) / 2,
+        .y = pos.y + (border->height - label_dim.height) / 2,
+    };
+}
+
+_PRIVATE bool process_button(const LCD_Button *const button, LCD_Coordinate pos, LCD_CompBBox *out_bbox, u8 mode)
+{
+    if (!button || !mode)
+        return false;
+
+    const LCD_ButtonLabel *const label = &(button->label);
+    const LCD_Text label_as_text = {
+        .text = button->label.text,
+        .font = label->font,
+        .text_color = label->text_color,
+        .bg_color = LCD_COL_NONE,
+        .char_spacing = label->char_spacing,
+        .line_spacing = label->line_spacing,
+    };
+
+    // There are two cases: the button has no border, and the button has a border.
+    // If the button has no border, we only need to consider the label:
+    if (button->edge_color == LCD_COL_NONE && button->fill_color == LCD_COL_NONE)
+    {
+        // With no border, we only need to consider the label. Again, two more cases:
+        // if the mode is MD_DRAW, we need to print the label, otherwise we only need to calculate
+        // its bounding box, so that the caller can use it to position the button correctly.
+        return process_text(&label_as_text, pos, out_bbox, mode);
+    }
+
+    // If the button has a border, we need to consider the label and the border itself.
+    // First of all, let's calculate the bounding box of the label, so that we can center it
+    LCD_CompBBox label_bbox;
+    if (!process_text(&label_as_text, pos, &label_bbox, MD_BBOX))
+        return false;
+
+    const LCD_Rect border = {
+        .width = label_bbox.dim.width + button->padding.left + button->padding.right,
+        .height = label_bbox.dim.height + button->padding.top + button->padding.bottom,
+        .edge_color = button->edge_color,
+        .fill_color = button->fill_color,
+    };
+
+    // If the button has a border, its bbox is the border itself, hence we're setting it
+    // right from the process_rect function.
+    process_rect(&border, pos, out_bbox, mode);
+
+    // Now we need to center the label in the button
+    const LCD_Coordinate label_coords = center_button_label_in_rect(
+        (LCD_Dimension){
+            .width = label_bbox.dim.width,
+            .height = label_bbox.dim.height,
+        },
+        &border, pos);
+
+    process_text(&label_as_text, label_coords, NULL, mode);
+    return true;
+}
+
+_PRIVATE bool delete_button(const LCD_Button *const button, LCD_Coordinate pos)
+{
+    if (!button)
+        return false;
+
+    const LCD_ButtonLabel *const label = &(button->label);
+    const LCD_Text label_as_text = {
+        .text = button->label.text,
+        .font = label->font,
+        .text_color = current_bg_color,
+        .bg_color = current_bg_color,
+        .char_spacing = label->char_spacing,
+        .line_spacing = label->line_spacing,
+    };
+
+    LCD_Dimension label_dim;
+    if (!process_text(&label_as_text, pos, NULL, MD_DRAW))
+        return false;
+
+    // If edge_color and/or fill_color are defined, we only need to delete the label
+    if (button->edge_color == LCD_COL_NONE && button->fill_color == LCD_COL_NONE)
+        return true;
+
+    // Otherwise, we need to delete the border too.
+    const LCD_Rect border = {
+        .width = label_dim.width + button->padding.left + button->padding.right,
+        .height = label_dim.height + button->padding.top + button->padding.bottom,
+        .edge_color = current_bg_color,
+        .fill_color = current_bg_color,
+    };
+
+    process_rect(&border, pos, NULL, MD_DRAW);
+    return true;
 }
 
 // PRIVATE RENDER QUEUE FUNCTIONS
 
-_PRIVATE inline void render_immediate(const LCD_Obj *const obj)
+_PRIVATE bool render_immediate(const LCD_Obj *const obj)
 {
+    if (!obj || !obj->comps || obj->comps_size == 0)
+        return false;
+
     LCD_Component *comp;
     for (u16 i = 0; i < obj->comps_size; i++)
     {
@@ -648,32 +944,51 @@ _PRIVATE inline void render_immediate(const LCD_Obj *const obj)
         switch (comp->type)
         {
         case LCD_COMP_LINE:
-            draw_line(&comp->object.line);
+            process_line(&comp->object.line, NULL, MD_DRAW);
             break;
         case LCD_COMP_RECT:
-            draw_rect(&comp->object.rect, comp->pos);
+            process_rect(&comp->object.rect, comp->pos, NULL, MD_DRAW);
             break;
         case LCD_COMP_CIRCLE:
-            draw_circle(&comp->object.circle);
+            process_circle(&comp->object.circle, NULL, MD_DRAW);
             break;
         case LCD_COMP_IMAGE:
-            draw_img_rle(&comp->object.image, comp->pos);
+            process_img_rle(&comp->object.image, comp->pos, NULL, MD_DRAW);
             break;
         case LCD_COMP_TEXT:
-            print_text(&comp->object.text, comp->pos);
+            process_text(&comp->object.text, comp->pos, NULL, MD_DRAW);
+            break;
+        case LCD_COMP_BUTTON:
+            process_button(&comp->object.button, comp->pos, NULL, MD_DRAW);
             break;
         }
     }
+
+    return true;
 }
 
-_PRIVATE inline void render_item(LCD_RQItem *const item)
+_PRIVATE bool render_item(LCD_RQItem *const item)
 {
     if (!item || !item->obj || item->id < 0 || !item->obj->comps || item->obj->comps_size == 0)
-        return;
+        return false;
 
     // If the object is already rendered or not visible, skip it
     if (item->rendered || !item->visible)
-        return;
+        return true;
+
+    render_immediate(item->obj);
+    item->rendered = true;
+    return true;
+}
+
+_PRIVATE bool unrender_item(LCD_RQItem *const item)
+{
+    if (!item || !item->obj || item->id < 0 || !item->obj->comps || item->obj->comps_size == 0)
+        return false;
+
+    // If the object is not rendered, skip it
+    if (!item->rendered)
+        return true;
 
     LCD_Component *comp;
     for (u16 i = 0; i < item->obj->comps_size; i++)
@@ -681,86 +996,50 @@ _PRIVATE inline void render_item(LCD_RQItem *const item)
         comp = &item->obj->comps[i];
         switch (comp->type)
         {
-        case LCD_COMP_LINE:
-            draw_line(&comp->object.line);
-            break;
-        case LCD_COMP_RECT:
-            draw_rect(&comp->object.rect, comp->pos);
-            break;
-        case LCD_COMP_CIRCLE:
-            draw_circle(&comp->object.circle);
-            break;
-        case LCD_COMP_IMAGE:
-            draw_img_rle(&comp->object.image, comp->pos);
-            break;
-        case LCD_COMP_TEXT:
-            print_text(&comp->object.text, comp->pos);
-            break;
-        }
-    }
-
-    item->rendered = true;
-}
-
-_PRIVATE void unrender_item(LCD_RQItem *const item)
-{
-    if (!item || !item->obj || item->id < 0 || !item->obj->comps || item->obj->comps_size == 0)
-        return;
-
-    // If the object is not rendered, skip it
-    if (!item->rendered)
-        return;
-
-    LCD_Component *comp;
-    for (u16 i = 0; i < item->obj->comps_size; i++)
-    {
-        comp = &item->obj->comps[i];
-        if (comp->type == LCD_COMP_LINE)
-        {
+        case LCD_COMP_LINE: {
             LCD_Line line = comp->object.line;
             line.color = current_bg_color;
-            draw_line(&line);
+            process_line(&line, NULL, MD_DRAW);
+            break;
         }
-        else if (comp->type == LCD_COMP_RECT)
-        {
+        case LCD_COMP_RECT: {
             LCD_Rect rect = comp->object.rect;
-            rect.edge_color = current_bg_color;
-            if (rect.fill_color != LCD_COL_NONE)
-                rect.fill_color = current_bg_color;
-
-            draw_rect(&rect, comp->pos);
+            rect.edge_color = current_bg_color, rect.fill_color = current_bg_color;
+            process_rect(&rect, comp->pos, NULL, MD_DRAW);
+            break;
         }
-        else if (comp->type == LCD_COMP_CIRCLE)
-        {
+        case LCD_COMP_CIRCLE: {
             LCD_Circle circle = comp->object.circle;
-            circle.edge_color = current_bg_color;
-            if (circle.fill_color != LCD_COL_NONE)
-                circle.fill_color = current_bg_color;
-
-            draw_circle(&circle);
+            circle.edge_color = current_bg_color, circle.fill_color = current_bg_color;
+            process_circle(&circle, NULL, MD_DRAW);
+            break;
         }
-        else if (comp->type == LCD_COMP_IMAGE)
-        {
+        case LCD_COMP_IMAGE: {
             const LCD_Rect rect = {
                 .width = comp->object.image.width,
                 .height = comp->object.image.height,
                 .fill_color = current_bg_color,
                 .edge_color = current_bg_color,
             };
-
-            draw_rect(&rect, comp->pos);
+            process_rect(&rect, comp->pos, NULL, MD_DRAW);
+            break;
         }
-        else if (comp->type == LCD_COMP_TEXT)
-        {
+        case LCD_COMP_TEXT: {
             LCD_Text text = comp->object.text;
             text.text_color = current_bg_color;
             text.bg_color = current_bg_color;
-
-            print_text(&text, comp->pos);
+            process_text(&text, comp->pos, NULL, MD_DRAW);
+            break;
         }
+        case LCD_COMP_BUTTON:
+            delete_button(&comp->object.button, comp->pos);
+            break;
+        }
+
+        item->rendered = false;
     }
 
-    item->rendered = false;
+    return true;
 }
 
 // PUBLIC FUNCTIONS
@@ -1008,6 +1287,36 @@ void LCD_SetBackgroundColor(LCD_Color color)
     LCD_RQRender();
 }
 
+// OBJECT DIMENSIONS
+
+LCD_CompBBox LCD_GetComponentBBox(LCD_Component comp)
+{
+    LCD_CompBBox bbox;
+    switch (comp.type)
+    {
+    case LCD_COMP_LINE:
+        process_line(&comp.object.line, &bbox, MD_BBOX);
+        break;
+    case LCD_COMP_RECT:
+        process_rect(&comp.object.rect, comp.pos, &bbox, MD_BBOX);
+        break;
+    case LCD_COMP_CIRCLE:
+        process_circle(&comp.object.circle, &bbox, MD_BBOX);
+        break;
+    case LCD_COMP_IMAGE:
+        process_img_rle(&comp.object.image, comp.pos, &bbox, MD_BBOX);
+        break;
+    case LCD_COMP_TEXT:
+        process_text(&comp.object.text, comp.pos, &bbox, MD_BBOX);
+        break;
+    case LCD_COMP_BUTTON:
+        process_button(&comp.object.button, comp.pos, &bbox, MD_BBOX);
+        break;
+    }
+
+    return bbox;
+}
+
 // RENDERING
 
 LCD_ObjID LCD_RQAddObject(const LCD_Obj *const obj)
@@ -1150,4 +1459,56 @@ void LCD_FMRemoveFont(LCD_FontID id)
     for (u32 i = id; i < font_list_size - 1; i++)
         font_list[i] = font_list[i + 1];
     font_list_size--;
+}
+
+// PUBLIC DEBUG FUNCTIONS
+
+void LCD_DEBUG_RenderComponentBBox(const LCD_CompBBox *const bbox)
+{
+    if (!bbox)
+        return;
+
+    // A bbox is always a rectangle, so we can render it as a rectangle directly.
+    // clang-format off
+    const LCD_Obj bbox_obj = {
+        .comps_size = 3,
+        .comps = (LCD_Component[]){
+            {
+                .type = LCD_COMP_RECT,
+                .pos = bbox->top_left,
+                .object.rect = {
+                    .width = bbox->dim.width,
+                    .height = bbox->dim.height,
+                    .edge_color = LCD_COL_RED,
+                    .fill_color = LCD_COL_NONE,
+                },
+            },
+            // Diagonal lines
+            {
+                .type = LCD_COMP_LINE,
+                .object.line = {
+                    .from = bbox->top_left,
+                    .to = bbox->bottom_right,
+                    .color = LCD_COL_GREEN,
+                },
+            },
+            {
+                .type = LCD_COMP_LINE,
+                .object.line = {
+                    .from = {
+                        .x = bbox->top_left.x + bbox->dim.width,
+                        .y = bbox->top_left.y,
+                    },
+                    .to = {
+                        .x = bbox->top_left.x,
+                        .y = bbox->top_left.y + bbox->dim.height,
+                    },
+                    .color = LCD_COL_BLUE,
+                },
+            },
+        },
+    };
+    // clang-format on
+
+    render_immediate(&bbox_obj);
 }

@@ -454,7 +454,22 @@ const LCD_Coordinate *TP_GetLCDCoordinateFor(const TP_Coordinate *const tp_point
 
 // TOUCH BUTTONS
 
-void TP_WaitForButtonPress(TP_Button button)
+TP_ButtonArea TP_AssignButtonArea(LCD_Button button, LCD_Coordinate pos)
+{
+    LCD_CompBBox bbox = LCD_GetComponentBBox((LCD_Component){
+        .object.button = button,
+        .type = LCD_COMP_BUTTON,
+        .pos = pos,
+    });
+
+    return (TP_ButtonArea){
+        .pos = pos,
+        .width = bbox.dim.width,
+        .height = bbox.dim.height,
+    };
+}
+
+void TP_WaitForButtonPress(TP_ButtonArea button)
 {
     if (!initialized)
         return;
@@ -466,7 +481,7 @@ void TP_WaitForButtonPress(TP_Button button)
     } while (!TP_HasButtonBeenPressed(button, touch_point));
 }
 
-bool TP_HasButtonBeenPressed(TP_Button button, const TP_Coordinate *const touch_point)
+bool TP_HasButtonBeenPressed(TP_ButtonArea button, const TP_Coordinate *const touch_point)
 {
     if (!touch_point)
         return false;

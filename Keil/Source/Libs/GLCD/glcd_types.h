@@ -54,6 +54,22 @@ typedef struct
     u16 x, y;
 } LCD_Coordinate;
 
+typedef struct
+{
+    u16 width, height;
+} LCD_Dimension;
+
+typedef struct
+{
+    u16 top, right, bottom, left;
+} LCD_Padding;
+
+typedef struct
+{
+    LCD_Coordinate top_left, bottom_right;
+    LCD_Dimension dim;
+} LCD_CompBBox;
+
 // FONT
 
 typedef enum
@@ -77,6 +93,7 @@ typedef struct
     // where->y coordinate so that the char is aligned to the baseline correctly. Moving up means subtracting the offset
     // from where-y.
     const u16 *baseline_offsets;
+    u16 max_baseline_offset;
 } LCD_Font;
 
 typedef i8 LCD_FontID;
@@ -120,8 +137,27 @@ typedef struct
     i16 char_spacing, line_spacing;
 } LCD_Text;
 
+// BUTTON STUFF
+
+typedef struct
+{
+    char *text;
+    LCD_Color text_color;
+    LCD_FontID font;
+    i16 char_spacing, line_spacing;
+} LCD_ButtonLabel;
+
+typedef struct
+{
+    LCD_ButtonLabel label;
+    LCD_Color edge_color, fill_color;
+    LCD_Padding padding;
+} LCD_Button;
+
 #define LCD_TEXT_DEF_CHAR_SPACING 0
 #define LCD_TEXT_DEF_LINE_SPACING 0
+
+#define LCD_NO_PADDING (LCD_Padding){0, 0, 0, 0}
 
 /// @brief Represents a drawable component that can be rendered on the screen.
 typedef enum
@@ -129,9 +165,9 @@ typedef enum
     LCD_COMP_LINE,
     LCD_COMP_RECT,
     LCD_COMP_CIRCLE,
-    // LCD_COMP_IMAGE_RLE,
     LCD_COMP_IMAGE,
-    LCD_COMP_TEXT
+    LCD_COMP_TEXT,
+    LCD_COMP_BUTTON,
 } LCD_ComponentType;
 
 /// @brief Used to store a drawable component of any type.
@@ -145,6 +181,7 @@ typedef struct
         LCD_Circle circle;
         LCD_Image image;
         LCD_Text text;
+        LCD_Button button;
     } object;
 } LCD_Component;
 

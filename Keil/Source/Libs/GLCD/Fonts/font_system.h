@@ -122,6 +122,7 @@ const LCD_Font Font_System = {
     .max_char_width = Font_SystemCharWidth,
     .max_char_height = Font_SystemCharHeight,
     .baseline_offsets = NULL,
+    .max_baseline_offset = 0,
 };
 
 #endif

@@ -1,7 +1,74 @@
+#include "font-pixellari20.h"
 #include "peripherals.h"
 #include "system.h"
 
-#include "font-upheaval14.h"
+/*
+int main(void)
+{
+    SystemInit();
+    LCD_Init(LCD_ORIENT_VER);
+    TP_Init(false);
+
+    LCD_SetBackgroundColor(LCD_COL_BLACK);
+
+    const LCD_FontID font_up = LCD_FMAddFont(Font_Pixellari20);
+    TP_ButtonArea welcome_button_area;
+
+    LCD_OBJECT_IMMEDIATE(1, {
+        LCD_BUTTON(LCD_GetWidth() / 2 - 50, LCD_GetHeight() / 2 - 50, welcome_button_area, {
+            .label = LCD_BUTTON_LABEL({
+                .text = "WELCOME POPO!",
+                .font = font_up,
+                .text_color = LCD_COL_BLACK,
+            }),
+            .edge_color = LCD_COL_MAGENTA,
+            .fill_color = LCD_COL_MAGENTA,
+            .padding = {10, 10, 10, 10},
+        }),
+    });
+
+    POWER_Init(POWR_CFG_SLEEP_ON_EXIT);
+    POWER_PowerDownOnWFI();
+    POWER_WaitForInterrupts();
+}
+*/
+
+/*
+int main(void)
+{
+    SystemInit();
+    LCD_Init(LCD_ORIENT_VER);
+
+    LCD_SetBackgroundColor(LCD_COL_BLACK);
+
+    const LCD_FontID font_up = LCD_FMAddFont(Font_Pixellari20);
+
+    LCD_Component circle = {
+        .type = LCD_COMP_BUTTON,
+        .pos = {100, 100},
+        .object.button = {
+            .label = {
+                .text = "WELCOME POPO!",
+                .font = font_up,
+                .text_color = LCD_COL_BLACK,
+            },
+            .padding = {3, 5, 3, 5},
+            .fill_color = LCD_COL_MAGENTA,
+        },
+    };
+
+    LCD_Obj o = {
+        .comps = (LCD_Component[]){circle},
+        .comps_size = 1,
+    };
+
+    LCD_RQAddObject(&o);
+    LCD_RQRender();
+
+    LCD_CompBBox bbox = LCD_GetComponentBBox(circle);
+    LCD_DEBUG_RenderComponentBBox(&bbox);
+}
+*/
 
 int main(void)
 {
@@ -11,48 +78,30 @@ int main(void)
 
     LCD_SetBackgroundColor(LCD_COL_BLACK);
 
-    const LCD_FontID font_upheaval14 = LCD_FMAddFont(Font_Upheaval14);
-	
-    const TP_Button start_button = {
-        .pos = {
-            .x = 27,
-            .y = LCD_GetHeight() / 2 + 40,
-        },
-        .width = 75,
-        .height = 20,
-    };
+    const LCD_FontID font_up = LCD_FMAddFont(Font_Pixellari20);
 
-    LCD_ObjID welcome_id;
+    TP_ButtonArea tp_button_area;
 
-    LCD_BEGIN_DRAWING;
-    welcome_id = LCD_OBJECT(welcome, 3, {
-        LCD_TEXT(79, LCD_GetHeight() / 2 - 10, {
-            .text = "Welcome to",
-            .font = LCD_DEF_FONT_SYSTEM,
-            .text_color = LCD_COL_WHITE,
-            .bg_color = LCD_COL_NONE,
-        }),
-
-        // Button
-        LCD_RECT(start_button.pos.x, start_button.pos.y, {
-            .width = start_button.width,
-            .height = start_button.height,
-            .edge_color = LCD_COL_YELLOW,
-            .fill_color = LCD_COL_YELLOW,
-        }),
-        LCD_TEXT(start_button.pos.x + start_button.width / 2 - 10, start_button.pos.y + start_button.height / 2, {
-            .text = "Start",
-            .font = font_upheaval14,
-            .text_color = LCD_COL_WHITE,
-            .bg_color = LCD_COL_NONE,
+    // clang-format off
+    LCD_OBJECT_IMMEDIATE(1, {
+        LCD_BUTTON(50, 100, tp_button_area, {
+            .label = LCD_BUTTON_LABEL({
+                .text = "WELCOME POPO!",
+                .font = font_up,
+                .text_color = LCD_COL_BLACK,
+            }),
+            .padding = {3, 5, 3, 5},
+            .fill_color = LCD_COL_MAGENTA,
         }),
     });
-    LCD_END_DRAWING;
+    // clang-format on
 
-    TP_WaitForButtonPress(start_button);
-    LCD_RQRemoveObject(welcome_id, true);
-
-    POWER_Init(POWR_CFG_SLEEP_ON_EXIT);
-    POWER_PowerDownOnWFI();
-    POWER_WaitForInterrupts();
+    TP_WaitForButtonPress(tp_button_area);
+    LCD_OBJECT_IMMEDIATE(1, {
+        LCD_TEXT(50, 150, {
+            .text = "Button pressed!",
+            .font = font_up,
+            .text_color = LCD_COL_WHITE,
+        }),
+    });
 }

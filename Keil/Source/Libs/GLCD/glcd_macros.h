@@ -70,4 +70,23 @@
         .type = LCD_COMP_TEXT, .pos = (LCD_Coordinate){x, y}, .object.text = (LCD_Text)__VA_ARGS__                     \
     }
 
+// BUTTON
+
+#define LCD_BUTTON_LABEL(...) (LCD_ButtonLabel) __VA_ARGS__
+
+/// @brief Creates a button component.
+/// @param x The x-coordinate of the button.
+/// @param y The y-coordinate of the button.
+/// @param ... The initializers for the button component.
+/// @returns A TP_ButtonArea component, mapped to the position & size of the button, so that
+///          it can be used with the touch panel, to detect button presses.
+/// @note Use the LCD_BUTTON_LABEL macro to initialize the label field, not the text field.
+#define LCD_BUTTON(x, y, out_button_area, ...)                                                                         \
+    ((out_button_area = TP_AssignButtonArea((LCD_Button)__VA_ARGS__, (LCD_Coordinate){x, y})),                         \
+     (LCD_Component){                                                                                                  \
+         .type = LCD_COMP_BUTTON,                                                                                      \
+         .pos = (LCD_Coordinate){x, y},                                                                                \
+         .object.button = (LCD_Button)__VA_ARGS__,                                                                     \
+     })
+
 #endif

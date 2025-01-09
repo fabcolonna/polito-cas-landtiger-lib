@@ -15,7 +15,7 @@ typedef struct
 {
     LCD_Coordinate pos;
     u16 width, height;
-} TP_Button;
+} TP_ButtonArea;
 
 // FUNCTIONS
 
@@ -44,15 +44,21 @@ const LCD_Coordinate *TP_GetLCDCoordinateFor(const TP_Coordinate *const tp_point
 
 // TOUCH BUTTON FUNCTIONS
 
-/// @brief Blocks until the given button is pressed.
-/// @param button The button to wait for.
-void TP_WaitForButtonPress(TP_Button button);
+/// @brief Assigns a button area to the given button.
+/// @param button The button to assign the area to.
+/// @param pos The position of the button.
+/// @return The button area.
+TP_ButtonArea TP_AssignButtonArea(LCD_Button button, LCD_Coordinate pos);
 
-/// @brief Checks if the given button has been pressed during the touch event which
+/// @brief Blocks until the given button area is pressed.
+/// @param button The button to wait for.
+void TP_WaitForButtonPress(TP_ButtonArea button);
+
+/// @brief Checks if the given button area has been pressed during the touch event which
 ///        occurred at the given touch point.
 /// @param button The button to check.
 /// @param touch_point The touch point to check.
 /// @return True if the button has been pressed, false otherwise.
-bool TP_HasButtonBeenPressed(TP_Button button, const TP_Coordinate *const touch_point);
+bool TP_HasButtonBeenPressed(TP_ButtonArea button, const TP_Coordinate *const touch_point);
 
 #endif
