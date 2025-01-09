@@ -748,12 +748,12 @@
           <CreateExecutable>1</CreateExecutable>
           <CreateLib>0</CreateLib>
           <CreateHexFile>0</CreateHexFile>
-          <DebugInformation>1</DebugInformation>
-          <BrowseInformation>1</BrowseInformation>
+          <DebugInformation>0</DebugInformation>
+          <BrowseInformation>0</BrowseInformation>
           <ListingPath>.\Listings\</ListingPath>
           <HexFormatSelection>1</HexFormatSelection>
           <Merge32K>0</Merge32K>
-          <CreateBatchFile>0</CreateBatchFile>
+          <CreateBatchFile>1</CreateBatchFile>
           <BeforeCompile>
             <RunUserProg1>0</RunUserProg1>
             <RunUserProg2>0</RunUserProg2>
@@ -1032,7 +1032,7 @@
             <v6WtE>0</v6WtE>
             <v6Rtti>0</v6Rtti>
             <VariousControls>
-              <MiscControls></MiscControls>
+              <MiscControls>-MMD -MF ./Objects/%I.d -MJ ./Objects/%I.json</MiscControls>
               <Define>SIMULATOR</Define>
               <Undefine></Undefine>
               <IncludePath>.\Source\Libs\Button;.\Source\CMSIS_core;.\Source;.\Source\Libs\RIT;.\Source\Libs\Timer;.\Source\Libs\LED;.\Source\Libs\Power;.\Source\Libs\Utils;.\Source\Tests;.\Source\Libs\SysTick;.\Source\Libs\Joystick;.\Source\Libs\ADC-PM;.\Source\Libs\DAC;.\Source\Libs\GLCD;.\Source\Libs\GLCD\Fonts;.\Source\Libs\TouchPanel;.\Source\System;.\Source\Libs</IncludePath>
@@ -1703,7 +1703,7 @@
           </ArmAdsMisc>
           <Cads>
             <interw>1</interw>
-            <Optim>5</Optim>
+            <Optim>4</Optim>
             <oTime>0</oTime>
             <SplitLS>0</SplitLS>
             <OneElfS>0</OneElfS>
@@ -1726,7 +1726,7 @@
             <v6WtE>0</v6WtE>
             <v6Rtti>0</v6Rtti>
             <VariousControls>
-              <MiscControls></MiscControls>
+              <MiscControls>-MMD -MF compile-commands.d -MJ compile-commands.json</MiscControls>
               <Define>SIMULATOR</Define>
               <Undefine></Undefine>
               <IncludePath>.\Source\Libs\Button;.\Source\CMSIS_core;.\Source;.\Source\Libs\RIT;.\Source\Libs\Timer;.\Source\Libs\LED;.\Source\Libs\Power;.\Source\Libs\Utils;.\Source\Libs\SysTick;.\Source\Libs\Joystick;.\Source\Libs\ADC-PM;.\Source\Libs\DAC;.\Source\Libs\GLCD;.\Source\Libs\GLCD\Fonts;.\Source\Libs\TouchPanel;.\Source\Libs</IncludePath>

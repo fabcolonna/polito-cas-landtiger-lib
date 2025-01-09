@@ -1,6 +1,9 @@
 {
     "files.associations": {
         "*.s": "arm",
-        "assert.h": "c"
-    }
+        "assert.h": "c",
+        "peripherals.h": "c",
+        "button.h": "c"
+    },
+    "sonarlint.pathToCompileCommands": "${workspaceFolder}\\compile_commands.json",
 }
