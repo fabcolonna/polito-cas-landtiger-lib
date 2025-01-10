@@ -1,11 +1,7 @@
 #include "glcd_mem.h"
-#include "glcd_types.h"
-
 #include <stdlib.h>
 
 #define IS_ARENA_OK (arena_ready && current_arena.objs && current_arena.capacity > 0)
-
-#define IS_BEING_USED(obj) (obj->comps && obj->)
 
 // PRIVATE VARIABLES & TYPES
 
@@ -63,7 +59,6 @@ _PRIVATE LCD_ObjSlot *find_free_obj_slot(u16 comps_size)
     // Initializing the object itself
     new_slot->obj->comps_size = comps_size;
     new_slot->obj->comps = (LCD_Component *)((u8 *)new_slot->obj + sizeof(LCD_Obj));
-
     current_arena.offset += size_needed;
     return new_slot;
 }
@@ -73,20 +68,24 @@ _PRIVATE LCD_MAError free_object(LCD_Obj *obj)
     if (!obj)
         return LCD_MA_ERR_INVALID_OBJECT;
 
+    // Moving backwards from the object to the slot that wraps it
+    LCD_ObjSlot *slot = (LCD_ObjSlot *)((u8 *)obj - sizeof(LCD_ObjSlot));
+
     // Checking if the object is in the arena
-    const u8 *obj_as_u8 = (u8 *)obj;
     const u8 *start = (u8 *)current_arena.objs;
     const u8 *end = start + current_arena.offset;
-    if (obj_as_u8 < start || obj_as_u8 >= end)
+    if ((u8 *)slot < start || (u8 *)slot >= end)
         return LCD_MA_ERR_INVALID_OBJECT;
 
-    // Moving backwards from the object to the slot that wraps it
-    LCD_ObjSlot *slot = (LCD_ObjSlot *)(obj_as_u8 - sizeof(LCD_ObjSlot));
     slot->used = false;
-
     slot->obj->comps = NULL;
     slot->obj->comps_size = 0;
     slot->obj = NULL; // Just to be sure, but it's not really necessary
+
+    // We should decrement the offset, if this was the last object in the arena
+    // and there are no more objects after it.
+    if ((u8 *)slot + slot->size == end)
+        current_arena.offset -= slot->size;
 
     return LCD_MA_ERR_NONE;
 }
@@ -120,22 +119,22 @@ LCD_MAError LCD_MAReleaseMemory(LCD_MemoryArena *arena)
     return LCD_MA_ERR_NONE;
 }
 
-LCD_MAError LCD_MAAllocObject(u16 comps_size, LCD_Obj *out_obj)
+LCD_MAError LCD_MAAllocObject(u16 comps_size, LCD_Obj **out_obj)
 {
     if (!IS_ARENA_OK)
     {
-        out_obj = NULL;
+        *out_obj = NULL;
         return LCD_MA_ERR_INVALID_ARENA;
     }
 
     LCD_ObjSlot *slot = find_free_obj_slot(comps_size);
     if (!slot)
     {
-        out_obj = NULL;
+        *out_obj = NULL;
         return LCD_MA_ERR_NOT_ENOUGH_SPACE;
     }
 
-    out_obj = slot->obj;
+    *out_obj = slot->obj;
     return LCD_MA_ERR_NONE;
 }
 

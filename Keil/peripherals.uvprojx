@@ -676,9 +676,9 @@
           <GroupName>Tests</GroupName>
           <Files>
             <File>
-              <FileName>test.c</FileName>
+              <FileName>main.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\Source\Tests\test.c</FilePath>
+              <FilePath>.\Source\Tests\main.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -758,8 +758,8 @@
           <CreateExecutable>1</CreateExecutable>
           <CreateLib>0</CreateLib>
           <CreateHexFile>0</CreateHexFile>
-          <DebugInformation>0</DebugInformation>
-          <BrowseInformation>0</BrowseInformation>
+          <DebugInformation>1</DebugInformation>
+          <BrowseInformation>1</BrowseInformation>
           <ListingPath>.\Listings\</ListingPath>
           <HexFormatSelection>1</HexFormatSelection>
           <Merge32K>0</Merge32K>
@@ -1431,9 +1431,9 @@
           <GroupName>Tests</GroupName>
           <Files>
             <File>
-              <FileName>test.c</FileName>
+              <FileName>main.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\Source\Tests\test.c</FilePath>
+              <FilePath>.\Source\Tests\main.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -1800,7 +1800,7 @@
               <MiscControls></MiscControls>
               <Define>SIMULATOR</Define>
               <Undefine></Undefine>
-              <IncludePath>.\Source\Libs\Button;.\Source\CMSIS_core;.\Source;.\Source\Libs\RIT;.\Source\Libs\Timer;.\Source\Libs\LED;.\Source\Libs\Power;.\Source\Libs\Utils;.\Source\Libs\SysTick;.\Source\Libs\Joystick;.\Source\Libs\ADC-PM;.\Source\Libs\DAC;.\Source\Libs\GLCD;.\Source\Libs\GLCD\Fonts;.\Source\Libs\TouchPanel;.\Source\Libs</IncludePath>
+              <IncludePath>.\Source\Libs\Button;.\Source\CMSIS_core;.\Source;.\Source\Libs\RIT;.\Source\Libs\Timer;.\Source\Libs\LED;.\Source\Libs\Power;.\Source\Libs\Utils;.\Source\Libs\SysTick;.\Source\Libs\Joystick;.\Source\Libs\ADC-PM;.\Source\Libs\DAC;.\Source\Libs\GLCD;.\Source\Libs\GLCD\Fonts;.\Source\Libs\TouchPanel;.\Source\Libs\GLCD\MemoryArena</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -2273,9 +2273,9 @@
           </GroupOption>
           <Files>
             <File>
-              <FileName>test.c</FileName>
+              <FileName>main.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\Source\Tests\test.c</FilePath>
+              <FilePath>.\Source\Tests\main.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -2321,6 +2321,14 @@
         </targetInfos>
       </component>
       <component Cclass="Device" Cgroup="GPDMA" Cvendor="Keil" Cversion="1.4.0" condition="LPC17xx CMSIS Device">
+        <package name="LPC1700_DFP" schemaVersion="1.7.28" url="https://www.keil.com/pack/" vendor="Keil" version="2.7.2"/>
+        <targetInfos>
+          <targetInfo name="LandTiger (test)"/>
+          <targetInfo name="Library"/>
+          <targetInfo name="Simulator (test)"/>
+        </targetInfos>
+      </component>
+      <component Cclass="Device" Cgroup="PIN" Cvendor="Keil" Cversion="1.0.0" condition="LPC1700 CMSIS Device">
         <package name="LPC1700_DFP" schemaVersion="1.7.28" url="https://www.keil.com/pack/" vendor="Keil" version="2.7.2"/>
         <targetInfos>
           <targetInfo name="LandTiger (test)"/>

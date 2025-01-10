@@ -13,23 +13,23 @@
 // BUG: Touch Area sensitivity not correctly set when fill_color is set but edge_color is not
 // BUG: RQ_RemoveObject does not completely delete the Button
 
-static u8 memory_arena[50];
+LCD_MA_ALLOC_STATIC_MEMORY(lcd_arena, 128);
 
 int main(void)
 {
     SystemInit();
     LCD_Init(LCD_ORIENT_VER);
 
-    LCD_SetBackgroundColor(LCD_COL_BLACK);
+    // LCD_SetBackgroundColor(LCD_COL_BLACK);
 
-    LCD_MemoryArena *arena = LCD_MAUseMemory(memory_arena, sizeof(memory_arena));
+    LCD_MemoryArena *arena = LCD_MAUseMemory(lcd_arena, sizeof(lcd_arena));
     if (!arena)
         return 1;
 
     const LCD_FontID font_up = LCD_FMAddFont(Font_Pixellari20);
 
-    LCD_Obj *obj = NULL;
-    const LCD_MAError err = LCD_MAAllocObject(3, obj);
+    LCD_Obj *obj;
+    const LCD_MAError err = LCD_MAAllocObject(1, &obj);
     if (err != LCD_MA_ERR_NONE)
         return 1;
 
@@ -43,6 +43,30 @@ int main(void)
                  }),
     };
 
+    LCD_MAFreeObject(obj);
+
     LCD_RQAddObject(obj);
     LCD_RQRender();
+
+    LCD_MAAllocObject(2, &obj);
+
+    TP_ButtonArea area;
+    obj->comps = (LCD_Component[]){
+        LCD_BUTTON(LCD_GetWidth() / 2 - 20, LCD_GetHeight() / 2 - 10, area, {
+            .label = LCD_BUTTON_LABEL({
+                .text = "START!",
+                .font = font_up,
+                .text_color = LCD_COL_WHITE,
+            }),
+            .padding = {3, 5, 3, 5},
+            .fill_color = rgb888_to_rgb565(0xe27417),
+        })
+    };
+
+    LCD_RQAddObject(obj);
+    LCD_RQRender();
+
+    POWER_Init(POWR_CFG_SLEEP_ON_EXIT);
+    POWER_PowerDownOnWFI();
+    POWER_WaitForInterrupts();
 }

@@ -4,6 +4,10 @@
 #include "glcd_types.h"
 #include "utils.h"
 
+// MACRO FUNCTIONS
+
+#define LCD_MA_ALLOC_STATIC_MEMORY(name, size) static u8 name[size];
+
 // TYPES
 
 // Forward declaration of LCD_MemoryArena type
@@ -34,8 +38,12 @@ LCD_MAError LCD_MAReleaseMemory(LCD_MemoryArena *arena);
 
 /// @brief Allocates an object in the memory arena.
 /// @param comps_size The size of the object in bytes.
-/// @param out_obj A pointer to the allocated object.
-LCD_MAError LCD_MAAllocObject(u16 comps_size, LCD_Obj *out_obj);
+/// @param out_obj A pointer to a pointer to the object to be allocated.
+/// @note Why a pointer to a pointer? If I pass LCD_Obj *, the pointer itself will be
+///       passed as a value. Hence, If all i need to do is change the value pointed by
+///       the pointer, this works; but if I need to change the pointer itself, I need
+///       to pass itself as a pointer!
+LCD_MAError LCD_MAAllocObject(u16 comps_size, LCD_Obj **out_obj);
 
 /// @brief Frees an object in the memory arena.
 /// @param obj A pointer to the object to be freed.
