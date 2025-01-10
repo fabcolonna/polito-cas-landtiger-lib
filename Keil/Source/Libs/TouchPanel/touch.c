@@ -260,10 +260,8 @@ _PRIVATE LCD_ObjID calib_cross_obj_id;
 _PRIVATE inline void draw_calibration_cross(u16 x, u16 y)
 {
     // clang-format off
-
-    LCD_BEGIN_DRAWING;
-    calib_cross_obj_id = LCD_OBJECT(calib_cross, 3, {
-        LCD_RECT(x - 15, y - 15, {
+    LCD_OBJECT(&calib_cross_obj_id, {
+        LCD_RECT2(x - 15, y - 15, {
             .width = 30,
             .height = 30,
             .edge_color = LCD_COL_WHITE,
@@ -280,7 +278,9 @@ _PRIVATE inline void draw_calibration_cross(u16 x, u16 y)
             .color = LCD_COL_WHITE
         }),
     });
-    LCD_END_DRAWING;
+
+    LCD_RQRender();
+    // clang-format on
 }
 
 _PRIVATE inline void delete_calibration_cross(void)
@@ -332,21 +332,19 @@ bool calibrate(void)
 
     LCD_SetBackgroundColor(LCD_COL_BLACK);
 
-    // clang-format off
-
     LCD_ObjID text;
-    LCD_BEGIN_DRAWING;
-    text = LCD_OBJECT(text, 1, {
-        LCD_TEXT(5, 10, {
+    // clang-format off
+    LCD_OBJECT(&text, {
+        LCD_TEXT2(5, 10, {
             .text = "Touch crosshairs to calibrate",
             .font = LCD_DEF_FONT_SYSTEM,
             .text_color = LCD_COL_WHITE,
             .bg_color = LCD_COL_NONE,
         }),
     });
-    LCD_END_DRAWING;
-
     // clang-format on
+
+    LCD_RQRender();
 
     for (u8 i = 0; i < 3; i++)
     {
@@ -366,24 +364,6 @@ bool calibrate(void)
     if (!calc_calibration_matrix(&current_calib_matrix, lcd_crosses, tp_crosses))
         return false;
 
-    LCD_RQRemoveObject(text, false);
-
-    // clang-format off
-
-    LCD_BEGIN_DRAWING;
-    text = LCD_OBJECT(text, 1, {
-        LCD_TEXT(10, LCD_GetHeight() / 2 - 10, {
-            .text = "Success! Touch to continue.",
-            .font = LCD_DEF_FONT_SYSTEM,
-            .text_color = LCD_COL_WHITE,
-            .bg_color = LCD_COL_NONE,
-        })
-    });
-    LCD_END_DRAWING;
-
-    // clang-format on
-
-    TP_WaitForTouch();
     LCD_RQRemoveObject(text, false);
     calibratated = true;
     return calibratated;

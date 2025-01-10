@@ -5,7 +5,6 @@
 #include "glcd_mem.h"
 #include "glcd_types.h"
 
-
 /// @brief Converts RGB (24 bit) into RGB565 (16 bit):
 ///        - 5 bits for red (bits 11-15)
 ///        - 6 bits for green (bits 5-10)
@@ -20,7 +19,15 @@ _FORCE_INLINE u16 rgb888_to_rgb565(u32 rgb888)
 
 /// @brief Initializes TFT LCD Controller.
 /// @param orientation The orientation of the screen, from the LCD_Orientation enum
-void LCD_Init(LCD_Orientation orientation);
+/// @param arena A correctly initialized memory arena, which will be used to store
+///        the objects that will be rendered on the screen.
+/// @return LCD_Error The error code.
+LCD_Error LCD_Init(LCD_Orientation orientation, LCD_MemoryArena *arena);
+
+/// @brief Changes the memory arena used by the LCD.
+/// @param arena The new memory arena to use
+/// @return LCD_Error The error code.
+LCD_Error LCD_UseArena(LCD_MemoryArena *arena);
 
 /// @brief Checks if the LCD has been initialized.
 /// @return Whether the LCD has been initialized
@@ -61,7 +68,8 @@ LCD_Color LCD_GetPointColor(LCD_Coordinate point);
 /// @brief Sets the color of the pixel at the specified coordinates.
 /// @param color The RGB565 color to set
 /// @param point The coordinates of the pixel to color
-void LCD_SetPointColor(LCD_Color color, LCD_Coordinate point);
+/// @return LCD_Error The error code.
+LCD_Error LCD_SetPointColor(LCD_Color color, LCD_Coordinate point);
 
 /// @brief Sets the background color of the screen.
 /// @param color The RGB565 color to set
@@ -69,45 +77,49 @@ void LCD_SetPointColor(LCD_Color color, LCD_Coordinate point);
 ///       in the render queue with the new background color.
 void LCD_SetBackgroundColor(LCD_Color color);
 
-/// @brief Adds a new object to the render queue.
+/// @brief Adds a new object to the memory arena and to the render queue, and returns
+///        its ID (if out_id is not NULL) through the out_id pointer.
 /// @param obj The object to add
-/// @return -1 if the object is NULL or the render queue is full, the ID of the object otherwise
-LCD_ObjID LCD_RQAddObject(const LCD_Obj *const obj);
+/// @param out_id The ID of the object, or NULL on error.
+/// @return LCD_Error The error code.
+LCD_Error LCD_RQAddObject(LCD_Obj obj, LCD_ObjID *out_id);
 
 /// @brief Manually triggers an update of the screen. Useful when you want to
 ///        add multiple objects at once, and only update the screen at the end.
 void LCD_RQRender(void);
 
-/// @brief Renders the object immediately, without adding it to the render queue.
-///        Since we don't retain a reference to the object, we can't remove it later.
+/// @brief Renders the object immediately, without adding neither to the render queue
+///        nor to the memory arena. This is useful for objects that are not frequently
+///        updated, and that you don't want to store in the memory arena.
 /// @note To remove an object rendered you must call LCD_SetBackgroundColor(), effectively
-///       clearing the screen and redrawing only the objects stored in the render queue
+///       clearing the screen and redrawing only the objects stored.
 /// @param obj The object to render immediately
-void LCD_RQRenderImmediate(const LCD_Obj *const obj);
+LCD_Error LCD_RQRenderImmediate(const LCD_Obj *const obj);
 
-/// @brief Removes an object from the render queue by its ID.
+/// @brief Removes an object from the render queue by its ID. It also deallocates the
+///        memory used by that object in the memory arena.
 /// @param id The ID of the object to remove
 /// @param redraw_screen Whether to redraw the other objects
-void LCD_RQRemoveObject(LCD_ObjID id, bool redraw_screen);
+LCD_Error LCD_RQRemoveObject(LCD_ObjID id, bool redraw_screen);
 
 /// @brief Shows/hides an object on/from the screen without modifying the render queue.
 /// @param id The ID of the object to hide
 /// @param visible Whether the object should be visible or not
 /// @param redraw_lower_layers Whether to redraw the other objects (if removed)
-void LCD_RQSetObjectVisibility(LCD_ObjID id, bool visible, bool redraw_screen);
+LCD_Error LCD_RQSetObjectVisibility(LCD_ObjID id, bool visible, bool redraw_screen);
 
 /// @brief Removes all visible and non-visible objects from the screen.
 void LCD_RQClear(void);
 
 // FONT MANAGER
 
-/// @brief Adds a new font to the font manager.
+/// @brief Adds a new font to the font manager, and returns its ID through the out_id pointer.
 /// @param font The font to add
 /// @return -1 if the font is NULL or the font manager is full, the ID of the font otherwise
-LCD_FontID LCD_FMAddFont(LCD_Font font);
+LCD_Error LCD_FMAddFont(LCD_Font font, LCD_FontID *out_id);
 
 /// @brief Removes a font from the font manager by its ID.
-void LCD_FMRemoveFont(LCD_FontID id);
+LCD_Error LCD_FMRemoveFont(LCD_FontID id);
 
 // DEBUG FUNCTIONS
 

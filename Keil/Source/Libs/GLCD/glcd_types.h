@@ -1,6 +1,7 @@
 #ifndef __GLCD_TYPES_H
 #define __GLCD_TYPES_H
 
+#include "glcd_errors.h"
 #include "utils.h"
 #include <stdbool.h>
 

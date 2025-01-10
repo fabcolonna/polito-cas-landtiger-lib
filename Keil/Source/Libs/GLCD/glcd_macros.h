@@ -6,39 +6,51 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define LCD_BEGIN_DRAWING {
-#define LCD_END_DRAWING                                                                                                \
-    LCD_RQRender();                                                                                                    \
-    }
+/**
+ * @brief Constructs an identifiable object from a list of components, in a declarative fashion.
+ * @param id [OUTPUT] A pointer to an LCD_ObjID variable, where the ID of the object will be stored.
+ *          This ID can be used to remove the object from the queue, or to update it. You can specify
+ *          NULL if you don't need the ID (in that case just use the LCD_RENDER_IMM!)
+ * @param ... The components that make up the object.
+ * @example
+ *
+ * LCD_ObjID id;
+ * LCD_Error err = LCD_OBJECT(&id, {
+ *      LCD_RECT(pos_rect, {
+ *          .width = 10, .height = 10,
+ *          .fill_color = LCD_COL_RED,
+ *      }),
+ *      LCD_TEXT(pos_text, {
+ *          .text = "Hello, World!",
+ *          .font = LCD_DEF_FONT_SYSTEM,
+ *          .text_color = LCD_COL_BLUE,
+ *      }),
+ * });
+ * @note Since the objects are identifiable, they need space in the memory arena specified during the
+ *      initialization of the LCD module. If the memory arena is full, the function will return the error.
+ * @return The LCD_Error that LCD_RQAddObject returns.
+ */
+#define LCD_OBJECT(id, ...)                                                                                            \
+    LCD_RQAddObject((LCD_Obj){.comps = (LCD_Component[])__VA_ARGS__,                                                   \
+                              .comps_size = sizeof((LCD_Component[])__VA_ARGS__) / sizeof(LCD_Component)},             \
+                    id)
 
 /**
- * @brief  Creates a static array of LCD_Component, and a corresponding LCD_Obj
- *         that references it.
- * @param  name   A unique identifier for this object (e.g. myLabel, mainMenu, etc.).
- * @param  size   The fixed number of components in the array.
- * @param  ...    The initializers for each LCD_Component in the array.
+ * @brief Renders a list of components immediately, without adding them to the queue.
+ * @param ... The components to render.
+ * @example
+ * LCD_RENDER_IMM(
+ *     LCD_RECT(pos_rect, {
+ *        .width = 10, .height = 10,
+ *        .fill_color = LCD_COL_RED,
+ *    }),
+ * });
+ * @note This is useful when you want to render something immediately, without adding it to the queue.
+ * @return The LCD_Error that LCD_RQRenderImmediate returns.
  */
-#define LCD_OBJECT(name, num_comps, ...)                                                                               \
-    ({                                                                                                                 \
-        LCD_Component name##_comps[num_comps] = __VA_ARGS__;                                                           \
-        static LCD_Component name##_comps_static[num_comps];                                                           \
-        memcpy(name##_comps_static, name##_comps, num_comps * sizeof(LCD_Component));                                  \
-        static LCD_Obj name##_obj_static = {.comps = name##_comps_static, .comps_size = (num_comps)};                  \
-        LCD_RQAddObject(&name##_obj_static); /* Return the ID from this statement expression */                        \
-    })
-
-/// @brief Creates an object with immediate components, without declaring static data structures.
-/// @note The object goes out of scope immediately after LCD_OBJECT_IMMEDIATE finishes executing,
-///       thus, we use the LCD_RQRenderImmediate function to render it without storing it in the
-///       queue. Deleting these kind of objects requires calling LCD_SetBackgoundColor().
-/// @note Use this function when you plan on creating object you don't find necessary to store, i.e.
-///       objects that are not frequently updated.
-#define LCD_OBJECT_IMMEDIATE(num_comps, ...)                                                                           \
-    ({                                                                                                                 \
-        LCD_Component comps[num_comps] = __VA_ARGS__;                                                                  \
-        LCD_Obj obj = {.comps = comps, .comps_size = (num_comps)};                                                     \
-        LCD_RQRenderImmediate(&obj); /* Return the ID from this statement expression */                                \
-    })
+#define LCD_RENDER_IMM(...)                                                                                            \
+    LCD_RQRenderImmediate(                                                                                             \
+        &(LCD_Obj){.comps = (LCD_Component[])__VA_ARGS__, .comps_size = sizeof((LCD_Component[])__VA_ARGS__)})
 
 #define LCD_LINE(...)                                                                                                  \
     (LCD_Component)                                                                                                    \
@@ -46,7 +58,13 @@
         .type = LCD_COMP_LINE, .object.line = (LCD_Line)__VA_ARGS__                                                    \
     }
 
-#define LCD_RECT(x, y, ...)                                                                                            \
+#define LCD_RECT(pos, ...)                                                                                             \
+    (LCD_Component)                                                                                                    \
+    {                                                                                                                  \
+        .type = LCD_COMP_RECT, .pos = pos, .object.rect = (LCD_Rect)__VA_ARGS__                                        \
+    }
+
+#define LCD_RECT2(x, y, ...)                                                                                           \
     (LCD_Component)                                                                                                    \
     {                                                                                                                  \
         .type = LCD_COMP_RECT, .pos = (LCD_Coordinate){x, y}, .object.rect = (LCD_Rect)__VA_ARGS__                     \
@@ -58,13 +76,25 @@
         .type = LCD_COMP_CIRCLE, .object.circle = (LCD_Circle)__VA_ARGS__                                              \
     }
 
-#define LCD_IMAGE(x, y, img)                                                                                           \
+#define LCD_IMAGE(pos, img)                                                                                            \
+    (LCD_Component)                                                                                                    \
+    {                                                                                                                  \
+        .type = LCD_COMP_IMAGE, .pos = pos, .object.image = img                                                        \
+    }
+
+#define LCD_IMAGE2(x, y, img)                                                                                          \
     (LCD_Component)                                                                                                    \
     {                                                                                                                  \
         .type = LCD_COMP_IMAGE, .pos = (LCD_Coordinate){x, y}, .object.image = img                                     \
     }
 
-#define LCD_TEXT(x, y, ...)                                                                                            \
+#define LCD_TEXT(pos, ...)                                                                                             \
+    (LCD_Component)                                                                                                    \
+    {                                                                                                                  \
+        .type = LCD_COMP_TEXT, .pos = pos, .object.text = (LCD_Text)__VA_ARGS__                                        \
+    }
+
+#define LCD_TEXT2(x, y, ...)                                                                                           \
     (LCD_Component)                                                                                                    \
     {                                                                                                                  \
         .type = LCD_COMP_TEXT, .pos = (LCD_Coordinate){x, y}, .object.text = (LCD_Text)__VA_ARGS__                     \

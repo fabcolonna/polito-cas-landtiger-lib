@@ -4,23 +4,17 @@
 #include "glcd_types.h"
 #include "utils.h"
 
-// MACRO FUNCTIONS
+// DEFINE FUNCTIONS
 
-#define LCD_MA_ALLOC_STATIC_MEMORY(name, size) static u8 name[size];
+/// @brief Initializes  a static memory arena with given name and capacity.
+/// @param name The name of the memory arena.
+/// @param capacity The capacity of the memory arena in bytes.
+#define LCD_MA_ALLOC_STATIC_MEM(name, capacity) static u8 name[capacity];
 
 // TYPES
 
 // Forward declaration of LCD_MemoryArena type
 typedef struct _lcd_mem_arena LCD_MemoryArena;
-
-typedef enum
-{
-    LCD_MA_ERR_NONE = 0,
-    LCD_MA_ERR_INVALID_INIT,
-    LCD_MA_ERR_INVALID_ARENA,
-    LCD_MA_ERR_INVALID_OBJECT,
-    LCD_MA_ERR_NOT_ENOUGH_SPACE,
-} LCD_MAError;
 
 // PUBLIC FUNCTIONS
 
@@ -33,8 +27,10 @@ LCD_MemoryArena *LCD_MAUseMemory(void *const memory, u32 capacity);
 
 /// @brief Releases the memory arena.
 /// @param arena A pointer to the memory arena to be released.
-/// @return LCD_MAError The error code.
-LCD_MAError LCD_MAReleaseMemory(LCD_MemoryArena *arena);
+/// @return LCD_Error The error code.
+LCD_Error LCD_MAReleaseMemory(LCD_MemoryArena *arena);
+
+// AUTOMATICALLY CALLED FUNCTIONS (MAYBE WILL MAKE THEM PRIVATE)
 
 /// @brief Allocates an object in the memory arena.
 /// @param comps_size The size of the object in bytes.
@@ -43,11 +39,14 @@ LCD_MAError LCD_MAReleaseMemory(LCD_MemoryArena *arena);
 ///       passed as a value. Hence, If all i need to do is change the value pointed by
 ///       the pointer, this works; but if I need to change the pointer itself, I need
 ///       to pass itself as a pointer!
-LCD_MAError LCD_MAAllocObject(u16 comps_size, LCD_Obj **out_obj);
+/// @return LCD_Error The error code.
+/// @note This function is called automatically by the GLCD library, no need to call it manually.
+LCD_Error LCD_MAAllocObject(u16 comps_size, LCD_Obj **out_obj);
 
 /// @brief Frees an object in the memory arena.
 /// @param obj A pointer to the object to be freed.
-/// @return LCD_MAError The error code.
-LCD_MAError LCD_MAFreeObject(LCD_Obj *obj);
+/// @return LCD_Error The error code.
+/// @note This function is called automatically by the GLCD library, no need to call it manually.
+LCD_Error LCD_MAFreeObject(LCD_Obj *obj);
 
 #endif

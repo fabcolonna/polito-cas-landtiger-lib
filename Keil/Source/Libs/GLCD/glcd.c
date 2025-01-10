@@ -81,6 +81,10 @@ _PRIVATE u16 MAX_X, MAX_Y;
 /// @brief Current background color of the screen.
 _PRIVATE LCD_Color current_bg_color = LCD_COL_BLACK;
 
+// CURRENT MEMORY ARENA
+
+_PRIVATE LCD_MemoryArena *current_arena = NULL;
+
 // RENDER QUEUE
 
 typedef struct
@@ -90,8 +94,12 @@ typedef struct
     bool visible, rendered;
 } LCD_RQItem;
 
+// TODO: Since we implemented a memory arena, maybe move the RQ into the arena?
+
 /// @brief Maximum number of components that can be rendered on the screen.
-#define MAX_RQ_ITEMS 128
+/// @note RQ only referneces objects stored in the memory arena, hence it's memory
+///       footprint in the ZI section is not huge. We can afford to have a larger number.
+#define MAX_RQ_ITEMS 1024
 
 /// @brief The render queue, containing all the components to be rendered.
 ///        It also contains info about the visibility and rendering status
@@ -1047,8 +1055,11 @@ _PRIVATE bool unrender_item(LCD_RQItem *const item)
 #include "font_msgothic.h"
 #include "font_system.h"
 
-void LCD_Init(LCD_Orientation orientation)
+LCD_Error LCD_Init(LCD_Orientation orientation, LCD_MemoryArena *arena)
 {
+    if (!arena)
+        return LCD_ERR_INVALID_ARENA;
+
     // Setting PINS as 00 (GPIO) in PINSEL0 (bit 6 to 25) for P0.19 to P0.25
     // 0000 0011 1111 1111 1111 1111 1100 0000
     LPC_PINCON->PINSEL1 &= ~(0x03FFFFC0);
@@ -1171,7 +1182,18 @@ void LCD_Init(LCD_Orientation orientation)
     for (u32 i = 0; i < MAX_RQ_ITEMS; i++)
         render_queue_free_list[i] = MAX_RQ_ITEMS - 1 - i;
 
+    current_arena = arena;
     initialized = true;
+    return LCD_ERR_OK;
+}
+
+LCD_Error LCD_UseArena(LCD_MemoryArena *arena)
+{
+    if (!arena)
+        return LCD_ERR_INVALID_ARENA;
+
+    current_arena = arena;
+    return LCD_ERR_OK;
 }
 
 bool LCD_IsInitialized(void)
@@ -1201,7 +1223,10 @@ LCD_Coordinate LCD_GetCenter(void)
 
 LCD_Color LCD_GetPointColor(LCD_Coordinate point)
 {
-    LCD_Color dummy;
+    LCD_Color dummy = 0;
+
+    if (point.x >= MAX_X || point.y >= MAX_Y)
+        return dummy;
 
     set_gram_cursor(point.x, point.y);
     init_rw_operation_at(0x0022); // Write GRAM
@@ -1233,14 +1258,16 @@ LCD_Color LCD_GetPointColor(LCD_Coordinate point)
     }
 }
 
-void LCD_SetPointColor(LCD_Color color, LCD_Coordinate point)
+LCD_Error LCD_SetPointColor(LCD_Color color, LCD_Coordinate point)
 {
     if (point.x >= MAX_X || point.y >= MAX_Y)
-        return;
+        return LCD_COORDS_OUT_OF_BOUNDS;
 
     set_gram_cursor(point.x, point.y);
     if (color != LCD_COL_NONE)
         write_to(0x0022, color & 0xFFFF);
+
+    return LCD_ERR_OK;
 }
 
 void LCD_SetBackgroundColor(LCD_Color color)
@@ -1319,25 +1346,37 @@ LCD_CompBBox LCD_GetComponentBBox(LCD_Component comp)
 
 // RENDERING
 
-LCD_ObjID LCD_RQAddObject(const LCD_Obj *const obj)
+LCD_Error LCD_RQAddObject(LCD_Obj obj, LCD_ObjID *out_id)
 {
-    if (!obj || !obj->comps || obj->comps_size <= 0)
-        return -1;
+    if (!obj.comps || obj.comps_size == 0)
+        return LCD_ERR_EMPTY_OBJ;
 
     // No more space in the render queue
     if (render_queue_free_list_count <= 0)
-        return -1;
+        return LCD_ERR_RQ_FULL;
+
+    // Trying to add the object to the memory arena
+    LCD_Obj *obj_ref;
+    const LCD_Error ma_err = LCD_MAAllocObject(obj.comps_size, &obj_ref);
+    if (ma_err != LCD_ERR_OK)
+        return ma_err;
+
+    // Copying the object to the memory arena
+    *obj_ref = obj;
 
     const u32 rq_slot = render_queue_free_list[--render_queue_free_list_count];
     LCD_RQItem *item = &render_queue[rq_slot];
 
     item->id = rq_slot;
-    item->obj = (LCD_Obj *)obj;
+    item->obj = obj_ref;
     item->visible = true; // Object needs to be rendered, eventually
     item->rendered = false;
 
     render_queue_size++;
-    return rq_slot;
+    if (out_id)
+        *out_id = rq_slot;
+
+    return LCD_ERR_OK;
 }
 
 void LCD_RQRender(void)
@@ -1362,23 +1401,24 @@ void LCD_RQRender(void)
     }
 }
 
-void LCD_RQRenderImmediate(const LCD_Obj *const obj)
+LCD_Error LCD_RQRenderImmediate(const LCD_Obj *const obj)
 {
     if (!obj || !obj->comps || obj->comps_size <= 0)
-        return;
+        return LCD_ERR_EMPTY_OBJ;
 
     render_immediate(obj);
+    return LCD_ERR_OK;
 }
 
-void LCD_RQRemoveObject(LCD_ObjID id, bool redraw_screen)
+LCD_Error LCD_RQRemoveObject(LCD_ObjID id, bool redraw_screen)
 {
     if (id < 0 || id >= MAX_RQ_ITEMS)
-        return;
+        return LCD_ERR_INVALID_OBJ_ID;
 
     // id is the index of the component in the render queue
     LCD_RQItem *const item = &render_queue[id];
     if (!item || item->id == -1 || !item->obj)
-        return;
+        return LCD_ERR_INVALID_OBJ_ID;
 
     item->visible = false;
     unrender_item(item);
@@ -1391,18 +1431,23 @@ void LCD_RQRemoveObject(LCD_ObjID id, bool redraw_screen)
     render_queue_free_list[render_queue_free_list_count++] = id;
     render_queue_size--;
 
+    LCD_Error ma_err = LCD_MAFreeObject(item->obj);
+    assert(ma_err == LCD_ERR_OK); // Should never fail
+
     if (redraw_screen)
         LCD_RQRender();
+
+    return LCD_ERR_OK;
 }
 
-void LCD_RQSetObjectVisibility(LCD_ObjID id, bool visible, bool redraw_screen)
+LCD_Error LCD_RQSetObjectVisibility(LCD_ObjID id, bool visible, bool redraw_screen)
 {
     if (id < 0 || id >= MAX_RQ_ITEMS)
-        return;
+        return LCD_ERR_INVALID_OBJ_ID;
 
     LCD_RQItem *const item = &render_queue[id];
     if (!item || item->id == -1 || !item->obj)
-        return;
+        return LCD_ERR_INVALID_OBJ_ID;
 
     item->visible = visible;
     if (visible && !item->rendered)
@@ -1413,6 +1458,8 @@ void LCD_RQSetObjectVisibility(LCD_ObjID id, bool visible, bool redraw_screen)
         if (redraw_screen)
             LCD_RQRender();
     }
+
+    return LCD_ERR_OK;
 }
 
 void LCD_RQClear(void)
@@ -1434,31 +1481,36 @@ void LCD_RQClear(void)
 
         count++;                                                    // Found actual object, incrementing count.
         render_queue_free_list[render_queue_free_list_count++] = i; // Adding index into the FL.
+
+        LCD_Error ma_err = LCD_MAFreeObject(item->obj);
+        assert(ma_err == LCD_ERR_OK); // Should never fail
     }
 
     render_queue_size = 0;
     LCD_SetBackgroundColor(current_bg_color); // Deleting everything
 }
 
-LCD_FontID LCD_FMAddFont(LCD_Font font)
+LCD_Error LCD_FMAddFont(LCD_Font font, LCD_FontID *out_id)
 {
     if (font_list_size >= MAX_FONTS)
-        return -1;
+        return LCD_ERR_FONT_LIST_FULL;
 
     LCD_FontID id = font_list_size;
     font_list[id] = font;
     font_list_size++;
-    return id;
+    *out_id = id;
+    return LCD_ERR_OK;
 }
 
-void LCD_FMRemoveFont(LCD_FontID id)
+LCD_Error LCD_FMRemoveFont(LCD_FontID id)
 {
     if (id >= font_list_size || id <= 1) // Cannot remove the default fonts
-        return;
+        return LCD_ERR_INVALID_FONT_ID;
 
     for (u32 i = id; i < font_list_size - 1; i++)
         font_list[i] = font_list[i + 1];
     font_list_size--;
+    return LCD_ERR_OK;
 }
 
 // PUBLIC DEBUG FUNCTIONS

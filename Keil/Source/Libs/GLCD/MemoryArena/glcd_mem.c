@@ -63,10 +63,10 @@ _PRIVATE LCD_ObjSlot *find_free_obj_slot(u16 comps_size)
     return new_slot;
 }
 
-_PRIVATE LCD_MAError free_object(LCD_Obj *obj)
+_PRIVATE LCD_Error free_object(LCD_Obj *obj)
 {
     if (!obj)
-        return LCD_MA_ERR_INVALID_OBJECT;
+        return LCD_ERR_MA_ATTEMPT_TO_FREE_INVALID_OBJ;
 
     // Moving backwards from the object to the slot that wraps it
     LCD_ObjSlot *slot = (LCD_ObjSlot *)((u8 *)obj - sizeof(LCD_ObjSlot));
@@ -75,7 +75,7 @@ _PRIVATE LCD_MAError free_object(LCD_Obj *obj)
     const u8 *start = (u8 *)current_arena.objs;
     const u8 *end = start + current_arena.offset;
     if ((u8 *)slot < start || (u8 *)slot >= end)
-        return LCD_MA_ERR_INVALID_OBJECT;
+        return LCD_ERR_MA_ATTEMPT_TO_FREE_INVALID_OBJ;
 
     slot->used = false;
     slot->obj->comps = NULL;
@@ -87,7 +87,7 @@ _PRIVATE LCD_MAError free_object(LCD_Obj *obj)
     if ((u8 *)slot + slot->size == end)
         current_arena.offset -= slot->size;
 
-    return LCD_MA_ERR_NONE;
+    return LCD_ERR_OK;
 }
 
 // PUBLIC FUNCTIONS
@@ -105,10 +105,10 @@ LCD_MemoryArena *LCD_MAUseMemory(void *const memory, u32 capacity)
     return &current_arena;
 }
 
-LCD_MAError LCD_MAReleaseMemory(LCD_MemoryArena *arena)
+LCD_Error LCD_MAReleaseMemory(LCD_MemoryArena *arena)
 {
     if (!arena || arena != &current_arena)
-        return LCD_MA_ERR_INVALID_ARENA;
+        return LCD_ERR_MA_INVALID_ARENA;
 
     current_arena.objs = NULL;
     current_arena.capacity = 0;
@@ -116,32 +116,32 @@ LCD_MAError LCD_MAReleaseMemory(LCD_MemoryArena *arena)
 
     arena_ready = false;
     arena = NULL;
-    return LCD_MA_ERR_NONE;
+    return LCD_ERR_OK;
 }
 
-LCD_MAError LCD_MAAllocObject(u16 comps_size, LCD_Obj **out_obj)
+LCD_Error LCD_MAAllocObject(u16 comps_size, LCD_Obj **out_obj)
 {
     if (!IS_ARENA_OK)
     {
         *out_obj = NULL;
-        return LCD_MA_ERR_INVALID_ARENA;
+        return LCD_ERR_MA_INVALID_ARENA;
     }
 
     LCD_ObjSlot *slot = find_free_obj_slot(comps_size);
     if (!slot)
     {
         *out_obj = NULL;
-        return LCD_MA_ERR_NOT_ENOUGH_SPACE;
+        return LCD_ERR_MA_NOT_ENOUGH_SPACE;
     }
 
     *out_obj = slot->obj;
-    return LCD_MA_ERR_NONE;
+    return LCD_ERR_OK;
 }
 
-LCD_MAError LCD_MAFreeObject(LCD_Obj *obj)
+LCD_Error LCD_MAFreeObject(LCD_Obj *obj)
 {
     if (!IS_ARENA_OK)
-        return LCD_MA_ERR_INVALID_ARENA;
+        return LCD_ERR_MA_INVALID_ARENA;
 
     return free_object(obj);
 }
