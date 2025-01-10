@@ -2,7 +2,9 @@
 #define __GLCD_H
 
 #include "glcd_macros.h"
+#include "glcd_mem.h"
 #include "glcd_types.h"
+
 
 /// @brief Converts RGB (24 bit) into RGB565 (16 bit):
 ///        - 5 bits for red (bits 11-15)

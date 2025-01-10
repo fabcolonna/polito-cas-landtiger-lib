@@ -4,7 +4,7 @@
             "name": "Win32",
             "includePath": [
                 "${workspaceFolder}/**",
-                "${workspaceFolder}/Keil/Source/**",
+                "${workspaceFolder}/Keil/Source/**/**",
                 "${workspaceFolder}/Keil/Source/System/**",
                 "${workspaceFolder}/Keil/Source/Tests/**",
                 "${workspaceFolder}/Keil/Source/Libs/**/**",
