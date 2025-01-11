@@ -68,8 +68,7 @@ typedef struct
 typedef struct
 {
     LCD_Coordinate top_left, bottom_right;
-    LCD_Dimension dim;
-} LCD_CompBBox;
+} LCD_BBox;
 
 // FONT
 

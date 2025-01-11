@@ -436,7 +436,7 @@ const LCD_Coordinate *TP_GetLCDCoordinateFor(const TP_Coordinate *const tp_point
 
 TP_ButtonArea TP_AssignButtonArea(LCD_Button button, LCD_Coordinate pos)
 {
-    LCD_CompBBox bbox = LCD_GetComponentBBox((LCD_Component){
+    LCD_BBox bbox = LCD_GetComponentBBox((LCD_Component){
         .object.button = button,
         .type = LCD_COMP_BUTTON,
         .pos = pos,
@@ -444,8 +444,8 @@ TP_ButtonArea TP_AssignButtonArea(LCD_Button button, LCD_Coordinate pos)
 
     return (TP_ButtonArea){
         .pos = pos,
-        .width = bbox.dim.width,
-        .height = bbox.dim.height,
+        .width = abs(bbox.bottom_right.x - bbox.top_left.x),
+        .height = abs(bbox.bottom_right.y - bbox.top_left.y),
     };
 }
 

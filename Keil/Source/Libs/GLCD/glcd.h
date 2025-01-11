@@ -58,9 +58,21 @@ LCD_Coordinate LCD_GetCenter(void);
 /// @param comp The component to get the bounding box of
 /// @return The bounding box of the component, expressed with 2 coordinates
 ///         and the width and height.
-LCD_CompBBox LCD_GetComponentBBox(LCD_Component comp);
+LCD_BBox LCD_GetComponentBBox(LCD_Component comp);
 
-LCD_
+/// @brief Returns the bounding box of an object that has been previously added
+///        to the render queue, and thus it has an ID.
+/// @param id The ID of the object to get the bounding box of
+/// @return The bounding box of the object, expressed with 2 coordinates
+///         and the width and height.
+LCD_BBox LCD_GetObjBBoxWithID(LCD_ObjID id);
+
+/// @brief Returns the bounding box of the object passed as parameter, regardless
+///        of whether it has been added to the render queue or not.
+/// @param obj The object to get the bounding box of
+/// @return The bounding box of the object, expressed with 2 coordinates
+///         and the width and height.
+LCD_BBox LCD_GetObjBBox(const LCD_Obj *const obj);
 
 /// @brief Returns the RGB565 color of the pixel at the specified coordinates.
 /// @param point The coordinates of the pixel
@@ -127,6 +139,6 @@ LCD_Error LCD_FMRemoveFont(LCD_FontID id);
 
 /// @brief Debug function to render the bounding box of a component.
 /// @param bbox The bounding box to render
-void LCD_DEBUG_RenderComponentBBox(const LCD_CompBBox *const bbox);
+void LCD_DEBUG_RenderBBox(LCD_BBox bbox);
 
 #endif

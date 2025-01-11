@@ -292,7 +292,7 @@ enum
         }                                                                                                              \
     }
 
-_PRIVATE bool process_line(const LCD_Line *const line, LCD_CompBBox *out_bbox, u8 mode)
+_PRIVATE bool process_line(const LCD_Line *const line, LCD_BBox *out_bbox, u8 mode)
 {
     if (!line || !mode)
         return false;
@@ -358,20 +358,24 @@ _PRIVATE bool process_line(const LCD_Line *const line, LCD_CompBBox *out_bbox, u
         }
     }
 
-    // Update the bounding box if requested
     if (out_bbox && IS_MODE(mode, MD_BBOX))
     {
+        // Swapping original coordinates if needed
+        if (original_from.x > original_to.x)
+            SWAP(u16, original_from.x, original_to.x)
+
+        if (original_from.y > original_to.y)
+            SWAP(u16, original_from.y, original_to.y)
+
         out_bbox->top_left = original_from;
         out_bbox->bottom_right = original_to;
-        out_bbox->dim.width = dx == 0 ? 1 : dx;
-        out_bbox->dim.height = dy == 0 ? 1 : dy;
     }
 
     return true;
 }
 
 /*
-_PRIVATE bool process_line(const LCD_Line *const line, LCD_CompBBox *out_bbox, u8 mode)
+_PRIVATE bool process_line(const LCD_Line *const line, LCD_BBox *out_bbox, u8 mode)
 {
     if (!line || !mode)
         return false;
@@ -441,7 +445,7 @@ _PRIVATE bool process_line(const LCD_Line *const line, LCD_CompBBox *out_bbox, u
 }
 */
 
-_PRIVATE bool process_rect(const LCD_Rect *const rect, LCD_Coordinate pos, LCD_CompBBox *out_bbox, u8 mode)
+_PRIVATE bool process_rect(const LCD_Rect *const rect, LCD_Coordinate pos, LCD_BBox *out_bbox, u8 mode)
 {
     if (!rect || !mode)
         return false;
@@ -496,14 +500,12 @@ _PRIVATE bool process_rect(const LCD_Rect *const rect, LCD_Coordinate pos, LCD_C
     {
         out_bbox->top_left = from;
         out_bbox->bottom_right = to;
-        out_bbox->dim.width = rect->width;
-        out_bbox->dim.height = rect->height;
     }
 
     return true;
 }
 
-_PRIVATE bool process_circle(const LCD_Circle *const circle, LCD_CompBBox *out_bbox, u8 mode)
+_PRIVATE bool process_circle(const LCD_Circle *const circle, LCD_BBox *out_bbox, u8 mode)
 {
     const LCD_Coordinate center = circle->center;
     const u16 radius = circle->radius;
@@ -566,14 +568,12 @@ _PRIVATE bool process_circle(const LCD_Circle *const circle, LCD_CompBBox *out_b
     {
         out_bbox->top_left = (LCD_Coordinate){center.x - radius, center.y - radius};
         out_bbox->bottom_right = (LCD_Coordinate){center.x + radius, center.y + radius};
-        out_bbox->dim.width = 2 * radius;
-        out_bbox->dim.height = 2 * radius;
     }
 
     return true;
 }
 
-_PRIVATE bool process_img_rle(const LCD_Image *const img, LCD_Coordinate pos, LCD_CompBBox *out_bbox, u8 mode)
+_PRIVATE bool process_img_rle(const LCD_Image *const img, LCD_Coordinate pos, LCD_BBox *out_bbox, u8 mode)
 {
     if (!img || !img->pixels || !mode)
         return false;
@@ -637,8 +637,6 @@ _PRIVATE bool process_img_rle(const LCD_Image *const img, LCD_Coordinate pos, LC
     {
         out_bbox->top_left = pos;
         out_bbox->bottom_right = (LCD_Coordinate){pos.x + width, pos.y + height};
-        out_bbox->dim.width = width;
-        out_bbox->dim.height = height;
     }
 
     return true;
@@ -756,16 +754,12 @@ end:
 /// @param dont_actually_print If true, the text is not printed, but the width is calculated. Used
 ///                            to determine the width of the text without actually printing it.
 /// @param out_dim [OUTPUT] The width and height of the text, regardless of the actual printing.
-_PRIVATE bool process_text(const LCD_Text *const text, LCD_Coordinate pos, LCD_CompBBox *out_bbox, u8 mode)
+_PRIVATE bool process_text(const LCD_Text *const text, LCD_Coordinate pos, LCD_BBox *out_bbox, u8 mode)
 {
-    if (!text || !text->text || !mode)
+    if (!text || !text->text || !mode || text->font >= font_list_size)
         return false;
 
-    const LCD_FontID font_id = text->font;
-    if (font_id >= font_list_size)
-        return false;
-
-    const LCD_Font font = font_list[font_id];
+    const LCD_Font font = font_list[text->font];
     if (!font.data)
         return false;
 
@@ -773,50 +767,50 @@ _PRIVATE bool process_text(const LCD_Text *const text, LCD_Coordinate pos, LCD_C
         return false; // Text is completely outside the screen
 
     u8 chr, *str = (u8 *)(text->text);
+    u16 start_x = pos.x, start_y = pos.y; // Saving the starting (x, y) coords
 
-    u16 max_width = 0;                      // Track the maximum width (for multi-line)
-    u16 text_height = font.max_char_height; // Track the total height of the text. Minimum is one line (font height)
-    u16 start_x = pos.x;                    // Saving the starting x position
-    // u16 total_height = font.char_height; // Minimum height is one line (font height)
+    // Track the max width (for multi-line) and the total height of the text (min. is one line, i.e. font height)
+    u16 cur_width = 0, max_width = 0, total_height = font.max_char_height;
 
-    PrintCharError pc_err;
-    u16 char_w, char_h, x_inc, y_inc;
+    PrintCharError err;
     bool no_more_space = false;
+    u16 char_w, char_h, x_inc, y_inc;
     while ((chr = *str) && !no_more_space)
     {
-        pc_err =
-            print_char(chr, &font, pos, IS_MODE(mode, MD_DRAW), text->text_color, text->bg_color, &char_w, &char_h);
-        if (pc_err == PRINT_CHR_ERR_NULL_PARAMS)
-            return false;
+        err = print_char(chr, &font, pos, IS_MODE(mode, MD_DRAW), text->text_color, text->bg_color, &char_w, &char_h);
+        if (err == PRINT_CHR_ERR_NULL_PARAMS)
+            return false; // Invalid, return.
 
-        // If err is PRINT_CHR_ERR_SHOULD_NEWLINE, we should move to the next line and then print the char again.
-        if (pc_err == PRINT_CHR_OK)
+        // String is incremented only if the char has been printed correctly, otherwise we
+        // may need to re-print it (e.g. if err = PRINT_CHR_ERR_SHOULD_NEWLINE)
+        if (err == PRINT_CHR_OK)
             str++;
 
-        // Moving to the next char position: if there's space on the x axis, move to the right
         x_inc = char_w + text->char_spacing;
         y_inc = font.max_char_height + text->line_spacing;
 
         if ((pos.x + x_inc) < MAX_X)
+        {
+            // While there's space on the x axis, move on this axis by x_inc
             pos.x += x_inc;
-        // If there's no space on the x axis, but there's space on the y axis, move to the next line
+        }
         else if ((pos.y + y_inc) < MAX_Y)
         {
+            // If there's no space on the x axis, but there's space on the y axis, move to the next line
             pos.x = start_x; // =0 OR start_x, to keep the same x position for all lines or start at the very left.
-            pos.y += y_inc;
-            text_height += y_inc; // Increase the total height of the text
+            pos.y += y_inc;  // Move to the next line
+            total_height += y_inc; // Increment the total height of the text
         }
         else
         {
-            assert(pc_err == PRINT_CHR_ERR_OUT_OF_VERTICAL_BOUNDS);
+            assert(err == PRINT_CHR_ERR_OUT_OF_VERTICAL_BOUNDS);
             no_more_space = true; // Stop printing if there's no more space
         }
 
         // Update the maximum width for the current line
-        i16 current_width = pos.x - start_x;
-        assert(current_width >= 0); // Should never be negative, if @ line 639 we specify to start at start_x, not 0
-        if (current_width > max_width)
-            max_width = current_width;
+        cur_width = ((pos.x - start_x) < MAX_X) ? (pos.x - start_x) : MAX_X;
+        assert(cur_width >= 0); // Should never be < 0, if @ line 800 we specify to start at start_x, not 0
+        max_width = (cur_width > max_width) ? cur_width : max_width;
     }
 
     // If the string is short and doesn't wrap, set max_width correctly
@@ -825,11 +819,8 @@ _PRIVATE bool process_text(const LCD_Text *const text, LCD_Coordinate pos, LCD_C
 
     if (out_bbox && IS_MODE(mode, MD_BBOX))
     {
-        // The top left corner is higher due to the baseline offset.
-        out_bbox->top_left = (LCD_Coordinate){start_x, pos.y};
-        out_bbox->bottom_right = pos;
-        out_bbox->dim.width = max_width;
-        out_bbox->dim.height = text_height;
+        out_bbox->top_left = (LCD_Coordinate){start_x, start_y};
+        out_bbox->bottom_right = (LCD_Coordinate){start_x + max_width, start_y + total_height};
     }
 
     return true;
@@ -849,7 +840,7 @@ _PRIVATE inline LCD_Coordinate center_button_label_in_rect(LCD_Dimension label_d
     };
 }
 
-_PRIVATE bool process_button(const LCD_Button *const button, LCD_Coordinate pos, LCD_CompBBox *out_bbox, u8 mode)
+_PRIVATE bool process_button(const LCD_Button *const button, LCD_Coordinate pos, LCD_BBox *out_bbox, u8 mode)
 {
     if (!button || !mode)
         return false;
@@ -876,13 +867,18 @@ _PRIVATE bool process_button(const LCD_Button *const button, LCD_Coordinate pos,
 
     // If the button has a border, we need to consider the label and the border itself.
     // First of all, let's calculate the bounding box of the label, so that we can center it
-    LCD_CompBBox label_bbox;
+    LCD_BBox label_bbox;
     if (!process_text(&label_as_text, pos, &label_bbox, MD_BBOX))
         return false;
 
+    const LCD_Dimension label_bbox_dim = {
+        .width = abs(label_bbox.bottom_right.x - label_bbox.top_left.x),
+        .height = abs(label_bbox.bottom_right.y - label_bbox.top_left.y),
+    };
+
     const LCD_Rect border = {
-        .width = label_bbox.dim.width + button->padding.left + button->padding.right,
-        .height = label_bbox.dim.height + button->padding.top + button->padding.bottom,
+        .width = label_bbox_dim.width + button->padding.left + button->padding.right,
+        .height = label_bbox_dim.height + button->padding.top + button->padding.bottom,
         .edge_color = button->edge_color,
         .fill_color = button->fill_color,
     };
@@ -894,8 +890,8 @@ _PRIVATE bool process_button(const LCD_Button *const button, LCD_Coordinate pos,
     // Now we need to center the label in the button
     const LCD_Coordinate label_coords = center_button_label_in_rect(
         (LCD_Dimension){
-            .width = label_bbox.dim.width,
-            .height = label_bbox.dim.height,
+            .width = label_bbox_dim.width,
+            .height = label_bbox_dim.height,
         },
         &border, pos);
 
@@ -936,6 +932,48 @@ _PRIVATE bool delete_button(const LCD_Button *const button, LCD_Coordinate pos)
 
     process_rect(&border, pos, NULL, MD_DRAW);
     return true;
+}
+
+// BBOX PRIVATE FUNCTIONS
+
+_PRIVATE bool boxes_intersect(const LCD_BBox *const a, const LCD_BBox *const b)
+{
+    if (!a || !b)
+        return false;
+
+    // Check for overlap along the x-axis: left edge of a is to the left of the right edge of b
+    // AND the right edge of a is to the right of the left edge of b
+    bool x_overlap = (a->top_left.x < b->bottom_right.x) && (a->bottom_right.x > b->top_left.x);
+
+    // Check for overlap along the y-axis: top edge of a is above the bottom edge of b
+    // AND the bottom edge of a is below the top edge of b
+    bool y_overlap = (a->top_left.y < b->bottom_right.y) && (a->bottom_right.y > b->top_left.y);
+
+    // Rectangles intersect if they overlap on both axes
+    return x_overlap && y_overlap;
+}
+
+_PRIVATE LCD_BBox get_union_bbox(LCD_BBox *comps_bbox, u16 comps_bbox_sz)
+{
+    assert(comps_bbox && comps_bbox_sz > 0); // Should never be empty / NULL
+
+    LCD_BBox bbox = comps_bbox[0], *current_comp_bbox;
+    for (u16 i = 0; i < comps_bbox_sz; i++)
+    {
+        current_comp_bbox = &comps_bbox[i];
+        if (current_comp_bbox->top_left.x < bbox.top_left.x)
+            bbox.top_left.x = current_comp_bbox->top_left.x;
+
+        if (current_comp_bbox->top_left.y < bbox.top_left.y)
+            bbox.top_left.y = current_comp_bbox->top_left.y;
+
+        if (current_comp_bbox->bottom_right.x > bbox.bottom_right.x)
+            bbox.bottom_right.x = current_comp_bbox->bottom_right.x;
+
+        if (current_comp_bbox->bottom_right.y > bbox.bottom_right.y)
+            bbox.bottom_right.y = current_comp_bbox->bottom_right.y;
+    }
+    return bbox;
 }
 
 // PRIVATE RENDER QUEUE FUNCTIONS
@@ -1051,9 +1089,29 @@ _PRIVATE bool unrender_item(LCD_RQItem *const item)
     // are rendered below it. Hence, we need to use the bounding box to determine
     // which elements in the render queue intersect with the object we want to remove,
     // and set them as rendered=false, so that they can be re-rendered.
-    LCD_ObjBBox obj_bbox = LCD_GetObjBBox(item->obj);
+    const LCD_BBox obj_bbox = LCD_GetObjBBox(item->obj);
 
-    // TODO: Complete this.
+    // Iterating over the render queue to find rendered & visible objects that
+    // may intersect with the object we removed.
+    LCD_RQItem *rq_item;
+    LCD_BBox rq_item_bbox;
+    for (u32 i = 0, count = 0; i < MAX_RQ_ITEMS && count != render_queue_size; i++)
+    {
+        // There may be empty slots in the render queue, we need to skip them
+        rq_item = &render_queue[i];
+        if (rq_item->id == -1 || !rq_item->obj)
+            continue;
+
+        // Skipping the object we removed
+        if (rq_item->id == item->id)
+            continue;
+
+        rq_item_bbox = LCD_GetObjBBox(rq_item->obj);
+        if (boxes_intersect(&obj_bbox, &rq_item_bbox))
+            rq_item->rendered = false;
+
+        count++; // Found actual object, incrementing count.
+    }
 
     return true;
 }
@@ -1324,9 +1382,9 @@ void LCD_SetBackgroundColor(LCD_Color color)
 
 // OBJECT DIMENSIONS
 
-LCD_CompBBox LCD_GetComponentBBox(LCD_Component comp)
+LCD_BBox LCD_GetComponentBBox(LCD_Component comp)
 {
-    LCD_CompBBox bbox;
+    LCD_BBox bbox;
     switch (comp.type)
     {
     case LCD_COMP_LINE:
@@ -1350,6 +1408,61 @@ LCD_CompBBox LCD_GetComponentBBox(LCD_Component comp)
     }
 
     return bbox;
+}
+
+// We evaluate the object BBox by taking the bounding box of each component
+// and then calculating the union of all of them, that is, the smallest rectangle
+// that contains all the bounding boxes of the components.
+LCD_BBox LCD_GetObjBBoxWithID(LCD_ObjID id)
+{
+    LCD_BBox bbox = {0};
+
+    // Retrieving the object from the RQ
+    if (id < 0 || id >= MAX_RQ_ITEMS)
+        return bbox;
+
+    LCD_RQItem *item = &render_queue[id];
+    if (!item || item->id == -1 || !item->obj)
+        return bbox;
+
+    LCD_Component *comp;
+    const u16 num_comps = item->obj->comps_size;
+    assert(num_comps < 64); // Should never have all these components.
+
+    LCD_BBox comp_bbox[num_comps]; // Variable length array
+    for (u16 i = 0; i < num_comps; i++)
+    {
+        comp = &item->obj->comps[i];
+        comp_bbox[i] = LCD_GetComponentBBox(*comp);
+    }
+
+    return get_union_bbox(comp_bbox, num_comps);
+}
+
+/// @brief Returns the bounding box of the object passed as parameter, regardless
+///        of whether it has been added to the render queue or not.
+/// @param obj The object to get the bounding box of
+/// @return The bounding box of the object, expressed with 2 coordinates
+///         and the width and height.
+LCD_BBox LCD_GetObjBBox(const LCD_Obj *const obj)
+{
+    LCD_BBox bbox = {0};
+
+    if (!obj || !obj->comps || obj->comps_size == 0)
+        return bbox;
+
+    LCD_Component *comp;
+    const u16 num_comps = obj->comps_size;
+    assert(num_comps < 64); // Should never have all these components.
+
+    LCD_BBox comp_bbox[num_comps]; // Variable length array
+    for (u16 i = 0; i < num_comps; i++)
+    {
+        comp = &obj->comps[i];
+        comp_bbox[i] = LCD_GetComponentBBox(*comp);
+    }
+
+    return get_union_bbox(comp_bbox, num_comps);
 }
 
 // RENDERING
@@ -1523,10 +1636,18 @@ LCD_Error LCD_FMRemoveFont(LCD_FontID id)
 
 // PUBLIC DEBUG FUNCTIONS
 
-void LCD_DEBUG_RenderComponentBBox(const LCD_CompBBox *const bbox)
+#define STRUCTS_EQ(type, a, b) (memcmp(a, b, sizeof(type)) == 0)
+
+void LCD_DEBUG_RenderBBox(LCD_BBox bbox)
 {
-    if (!bbox)
+    const LCD_BBox zero_bbox = {0};
+    if (STRUCTS_EQ(LCD_BBox, &bbox, &zero_bbox))
         return;
+
+    const LCD_Dimension dim = {
+        abs(bbox.bottom_right.x - bbox.top_left.x),
+        abs(bbox.bottom_right.y - bbox.top_left.y),
+    };
 
     // A bbox is always a rectangle, so we can render it as a rectangle directly.
     // clang-format off
@@ -1535,10 +1656,10 @@ void LCD_DEBUG_RenderComponentBBox(const LCD_CompBBox *const bbox)
         .comps = (LCD_Component[]){
             {
                 .type = LCD_COMP_RECT,
-                .pos = bbox->top_left,
+                .pos = bbox.top_left,
                 .object.rect = {
-                    .width = bbox->dim.width,
-                    .height = bbox->dim.height,
+                    .width = dim.width,
+                    .height = dim.height,
                     .edge_color = LCD_COL_RED,
                     .fill_color = LCD_COL_NONE,
                 },
@@ -1547,8 +1668,8 @@ void LCD_DEBUG_RenderComponentBBox(const LCD_CompBBox *const bbox)
             {
                 .type = LCD_COMP_LINE,
                 .object.line = {
-                    .from = bbox->top_left,
-                    .to = bbox->bottom_right,
+                    .from = bbox.top_left,
+                    .to = bbox.bottom_right,
                     .color = LCD_COL_GREEN,
                 },
             },
@@ -1556,12 +1677,12 @@ void LCD_DEBUG_RenderComponentBBox(const LCD_CompBBox *const bbox)
                 .type = LCD_COMP_LINE,
                 .object.line = {
                     .from = {
-                        .x = bbox->top_left.x + bbox->dim.width,
-                        .y = bbox->top_left.y,
+                        .x = bbox.top_left.x + dim.width,
+                        .y = bbox.top_left.y,
                     },
                     .to = {
-                        .x = bbox->top_left.x,
-                        .y = bbox->top_left.y + bbox->dim.height,
+                        .x = bbox.top_left.x,
+                        .y = bbox.top_left.y + dim.height,
                     },
                     .color = LCD_COL_BLUE,
                 },
