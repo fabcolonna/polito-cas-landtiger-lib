@@ -26,7 +26,7 @@ if ($hFiles.Count -eq 0) {
 
 # Create Peripherals\ and Peripherals\Include\ directories
 # and copy peripherals.lib files from Keil\Objects
-Remove-Item -Recurse -Force $libDir | Out-Null
+Remove-Item -Recurse -Force $libDir > $null 2>&1
 New-Item -ItemType Directory -Path $libDir | Out-Null 
 New-Item -ItemType Directory -Path $incDir | Out-Null
 Copy-Item -Path "Keil\Objects\$libName" -Destination $libDir
@@ -57,7 +57,7 @@ while (-Not $stop) {
                 break
             }
 
-            New-Item -ItemType Directory -Path "$projectDir\Keil\Libs" -Force | Out-Null
+            New-Item -ItemType Directory -Path "$projectDir\Keil\Libs" -Force > $null 2>&1
             Remove-Item -Recurse -Force "$projectDir\Keil\Libs\$libDir" | Out-Null
             Copy-Item -Path $libDir -Destination "$projectDir\Keil\Libs" -Recurse | Out-Null
             $stop = $true

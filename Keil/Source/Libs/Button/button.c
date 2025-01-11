@@ -43,7 +43,7 @@ void BUTTON_Init(u8 options, u8 eint0_priority, u8 eint1_priority, u8 eint2_prio
     if (options & BTN_DEBOUNCE_WITH_RIT && RIT_IsEnabled())
     {
         debouncer_on = true;
-        RIT_AddJob(handle_debouncing);
+        RIT_AddJob(handle_debouncing, RIT_NO_DIVIDER);
     }
 }
 

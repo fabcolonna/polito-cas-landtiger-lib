@@ -22,7 +22,7 @@ void ADC_PMInit(u8 options, u8 clock_divider, u8 int_priority)
         NVIC_SetPriority(ADC_IRQn, int_priority);
 
     if (options & ADC_PM_SAMPLE_WITH_RIT && RIT_IsEnabled())
-        RIT_AddJob(ADC_PMGetSample);
+        RIT_AddJob(ADC_PMGetSample, RIT_NO_DIVIDER);
 }
 
 void ADC_PMDeinit(void)

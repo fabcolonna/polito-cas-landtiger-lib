@@ -60,6 +60,8 @@ LCD_Coordinate LCD_GetCenter(void);
 ///         and the width and height.
 LCD_CompBBox LCD_GetComponentBBox(LCD_Component comp);
 
+LCD_
+
 /// @brief Returns the RGB565 color of the pixel at the specified coordinates.
 /// @param point The coordinates of the pixel
 /// @return The RGB565 color of the pixel

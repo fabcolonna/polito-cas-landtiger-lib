@@ -9,7 +9,8 @@
 /// @brief Initializes  a static memory arena with given name and capacity.
 /// @param name The name of the memory arena.
 /// @param capacity The capacity of the memory arena in bytes.
-#define LCD_MA_ALLOC_STATIC_MEM(name, capacity) static u8 name[capacity];
+/// @note The memory area needs to be aligned to 4 bytes, since unaligned memory access is not allowed on ARM.
+#define LCD_MA_ALLOC_STATIC_MEM(name, capacity) static u8 __attribute__((aligned(4))) name[capacity];
 
 // TYPES
 

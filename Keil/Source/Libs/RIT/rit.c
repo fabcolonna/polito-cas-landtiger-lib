@@ -6,8 +6,10 @@
 /// @brief RIT_CLK frequency in MHz. Can be checked in the RIT GUI in Keil
 _PRIVATE const u32 rit_clk_mhz = 100;
 
-_DECL_EXTERNALLY void allocate_jobs_array(u8);
-_DECL_EXTERNALLY void free_jobs_array(void);
+//_DECL_EXTERNALLY void allocate_jobs_array(u8);
+//_DECL_EXTERNALLY void free_jobs_array(void);
+
+_USED_EXTERNALLY u32 base_ival;
 
 void RIT_Init(u32 ival_ms, u16 int_priority)
 {
@@ -21,6 +23,8 @@ void RIT_Init(u32 ival_ms, u16 int_priority)
     LPC_RIT->RICOMPVAL = (rit_clk_mhz * ival_ms * 1000);
     LPC_RIT->RICTRL = 6; // Clear on match + Timer enable for debug
     LPC_RIT->RICOUNTER = 0;
+
+    base_ival = ival_ms;
 
     // Enabling interrupts coming from RIT
     NVIC_EnableIRQ(RIT_IRQn);

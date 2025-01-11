@@ -39,7 +39,7 @@ void JOYSTICK_Init(u8 config)
     LPC_GPIO1->FIODIR &= ~(0x1F << 25);
 
     if (config & JOY_POLL_WITH_RIT && RIT_IsEnabled())
-        RIT_AddJob(handle_polling);
+        RIT_AddJob(handle_polling, RIT_NO_DIVIDER);
 }
 
 void JOYSTICK_Deinit(void)

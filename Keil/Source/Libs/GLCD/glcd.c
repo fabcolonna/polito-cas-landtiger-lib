@@ -1047,6 +1047,14 @@ _PRIVATE bool unrender_item(LCD_RQItem *const item)
         item->rendered = false;
     }
 
+    // The object that we want to remove may intersect with other objects that
+    // are rendered below it. Hence, we need to use the bounding box to determine
+    // which elements in the render queue intersect with the object we want to remove,
+    // and set them as rendered=false, so that they can be re-rendered.
+    LCD_ObjBBox obj_bbox = LCD_GetObjBBox(item->obj);
+
+    // TODO: Complete this.
+
     return true;
 }
 
@@ -1423,6 +1431,9 @@ LCD_Error LCD_RQRemoveObject(LCD_ObjID id, bool redraw_screen)
     item->visible = false;
     unrender_item(item);
 
+    LCD_Error ma_err = LCD_MAFreeObject(item->obj);
+    assert(ma_err == LCD_ERR_OK); // Should never fail
+
     // Freeing the RQ_Item
     item->id = -1;
     item->obj = NULL;
@@ -1430,9 +1441,6 @@ LCD_Error LCD_RQRemoveObject(LCD_ObjID id, bool redraw_screen)
     // Adding the slod index to the free list
     render_queue_free_list[render_queue_free_list_count++] = id;
     render_queue_size--;
-
-    LCD_Error ma_err = LCD_MAFreeObject(item->obj);
-    assert(ma_err == LCD_ERR_OK); // Should never fail
 
     if (redraw_screen)
         LCD_RQRender();

@@ -630,6 +630,11 @@
               <FileType>5</FileType>
               <FilePath>.\Source\Libs\GLCD\MemoryArena\glcd_mem.h</FilePath>
             </File>
+            <File>
+              <FileName>glcd_macros.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Source\Libs\GLCD\glcd_macros.h</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -1384,6 +1389,11 @@
               <FileName>glcd_mem.h</FileName>
               <FileType>5</FileType>
               <FilePath>.\Source\Libs\GLCD\MemoryArena\glcd_mem.h</FilePath>
+            </File>
+            <File>
+              <FileName>glcd_macros.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Source\Libs\GLCD\glcd_macros.h</FilePath>
             </File>
           </Files>
         </Group>
@@ -2157,6 +2167,11 @@
               <FileName>glcd_mem.h</FileName>
               <FileType>5</FileType>
               <FilePath>.\Source\Libs\GLCD\MemoryArena\glcd_mem.h</FilePath>
+            </File>
+            <File>
+              <FileName>glcd_macros.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Source\Libs\GLCD\glcd_macros.h</FilePath>
             </File>
           </Files>
         </Group>

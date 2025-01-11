@@ -49,8 +49,8 @@
  * @return The LCD_Error that LCD_RQRenderImmediate returns.
  */
 #define LCD_RENDER_IMM(...)                                                                                            \
-    LCD_RQRenderImmediate(                                                                                             \
-        &(LCD_Obj){.comps = (LCD_Component[])__VA_ARGS__, .comps_size = sizeof((LCD_Component[])__VA_ARGS__)})
+    LCD_RQRenderImmediate(&(LCD_Obj){.comps = (LCD_Component[])__VA_ARGS__,                                            \
+                                     .comps_size = sizeof((LCD_Component[])__VA_ARGS__) / sizeof(LCD_Component)})
 
 #define LCD_LINE(...)                                                                                                  \
     (LCD_Component)                                                                                                    \
@@ -58,10 +58,10 @@
         .type = LCD_COMP_LINE, .object.line = (LCD_Line)__VA_ARGS__                                                    \
     }
 
-#define LCD_RECT(pos, ...)                                                                                             \
+#define LCD_RECT(coords, ...)                                                                                          \
     (LCD_Component)                                                                                                    \
     {                                                                                                                  \
-        .type = LCD_COMP_RECT, .pos = pos, .object.rect = (LCD_Rect)__VA_ARGS__                                        \
+        .type = LCD_COMP_RECT, .pos = coords, .object.rect = (LCD_Rect)__VA_ARGS__                                     \
     }
 
 #define LCD_RECT2(x, y, ...)                                                                                           \
@@ -76,10 +76,10 @@
         .type = LCD_COMP_CIRCLE, .object.circle = (LCD_Circle)__VA_ARGS__                                              \
     }
 
-#define LCD_IMAGE(pos, img)                                                                                            \
+#define LCD_IMAGE(coords, img)                                                                                         \
     (LCD_Component)                                                                                                    \
     {                                                                                                                  \
-        .type = LCD_COMP_IMAGE, .pos = pos, .object.image = img                                                        \
+        .type = LCD_COMP_IMAGE, .pos = coords, .object.image = img                                                     \
     }
 
 #define LCD_IMAGE2(x, y, img)                                                                                          \
@@ -88,10 +88,10 @@
         .type = LCD_COMP_IMAGE, .pos = (LCD_Coordinate){x, y}, .object.image = img                                     \
     }
 
-#define LCD_TEXT(pos, ...)                                                                                             \
+#define LCD_TEXT(coords, ...)                                                                                          \
     (LCD_Component)                                                                                                    \
     {                                                                                                                  \
-        .type = LCD_COMP_TEXT, .pos = pos, .object.text = (LCD_Text)__VA_ARGS__                                        \
+        .type = LCD_COMP_TEXT, .pos = coords, .object.text = (LCD_Text)__VA_ARGS__                                     \
     }
 
 #define LCD_TEXT2(x, y, ...)                                                                                           \
@@ -111,11 +111,25 @@
 /// @returns A TP_ButtonArea component, mapped to the position & size of the button, so that
 ///          it can be used with the touch panel, to detect button presses.
 /// @note Use the LCD_BUTTON_LABEL macro to initialize the label field, not the text field.
-#define LCD_BUTTON(x, y, out_button_area, ...)                                                                         \
+#define LCD_BUTTON2(x, y, out_button_area, ...)                                                                        \
     ((out_button_area = TP_AssignButtonArea((LCD_Button)__VA_ARGS__, (LCD_Coordinate){x, y})),                         \
      (LCD_Component){                                                                                                  \
          .type = LCD_COMP_BUTTON,                                                                                      \
          .pos = (LCD_Coordinate){x, y},                                                                                \
+         .object.button = (LCD_Button)__VA_ARGS__,                                                                     \
+     })
+
+/// @brief Creates a button component.
+/// @param coords The position of the button.
+/// @param ... The initializers for the button component.
+/// @returns A TP_ButtonArea component, mapped to the position & size of the button, so that
+///          it can be used with the touch panel, to detect button presses.
+/// @note Use the LCD_BUTTON_LABEL macro to initialize the label field, not the text field.
+#define LCD_BUTTON(coords, out_button_area, ...)                                                                       \
+    ((out_button_area = TP_AssignButtonArea((LCD_Button)__VA_ARGS__, coords)),                                         \
+     (LCD_Component){                                                                                                  \
+         .type = LCD_COMP_BUTTON,                                                                                      \
+         .pos = coords,                                                                                                \
          .object.button = (LCD_Button)__VA_ARGS__,                                                                     \
      })
 
