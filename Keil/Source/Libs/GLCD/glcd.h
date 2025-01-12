@@ -58,7 +58,7 @@ LCD_Coordinate LCD_GetCenter(void);
 /// @param comp The component to get the bounding box of
 /// @return The bounding box of the component, expressed with 2 coordinates
 ///         and the width and height.
-LCD_BBox LCD_GetComponentBBox(LCD_Component comp);
+LCD_BBox LCD_GetComponentBBox(const LCD_Component *const comp);
 
 /// @brief Returns the bounding box of an object that has been previously added
 ///        to the render queue, and thus it has an ID.
@@ -96,7 +96,11 @@ void LCD_SetBackgroundColor(LCD_Color color);
 /// @param obj The object to add
 /// @param out_id The ID of the object, or NULL on error.
 /// @return LCD_Error The error code.
-LCD_Error LCD_RQAddObject(LCD_Obj obj, LCD_ObjID *out_id);
+/// @note Accepting the obj as a const * to simulate the r-value reference in C++, where
+///       it's possible to pass a temporary (LCD_Obj&&) to the function, and then move
+///       the object to the memory arena. This is not possible in C. If used with the two
+///       macros LCD_OBJECT an LCD_RENDER_IMM, the object is passed as r-value reference!
+LCD_Error LCD_RQAddObject(const LCD_Obj *const obj, LCD_ObjID *out_id);
 
 /// @brief Manually triggers an update of the screen. Useful when you want to
 ///        add multiple objects at once, and only update the screen at the end.
@@ -108,12 +112,24 @@ void LCD_RQRender(void);
 /// @note To remove an object rendered you must call LCD_SetBackgroundColor(), effectively
 ///       clearing the screen and redrawing only the objects stored.
 /// @param obj The object to render immediately
+/// @note Accepting the obj as a const * to simulate the r-value reference in C++, where
+///       it's possible to pass a temporary (LCD_Obj&&) to the function, and then move
+///       the object to the memory arena. This is not possible in C. If used with the two
+///       macros LCD_OBJECT an LCD_RENDER_IMM, the object is passed as r-value reference!
 LCD_Error LCD_RQRenderImmediate(const LCD_Obj *const obj);
+
+/// @brief Moves an object in the render queue to a new position. It also updates the
+///        object's position in the RQ itself, and in the memory arena.
+/// @param id The ID of the object to move
+/// @param new_pos The new position of the object, which will replace the old one
+/// @param redraw_screen Whether to redraw the objects that are below the object prior to the move
+/// @return LCD_Error The error code.
+LCD_Error LCD_RQMoveObject(LCD_ObjID id, LCD_Coordinate new_pos, bool redraw_screen);
 
 /// @brief Removes an object from the render queue by its ID. It also deallocates the
 ///        memory used by that object in the memory arena.
 /// @param id The ID of the object to remove
-/// @param redraw_screen Whether to redraw the other objects
+/// @param redraw_screen Whether to redraw the objects that are below the removed object
 LCD_Error LCD_RQRemoveObject(LCD_ObjID id, bool redraw_screen);
 
 /// @brief Shows/hides an object on/from the screen without modifying the render queue.
@@ -121,6 +137,11 @@ LCD_Error LCD_RQRemoveObject(LCD_ObjID id, bool redraw_screen);
 /// @param visible Whether the object should be visible or not
 /// @param redraw_lower_layers Whether to redraw the other objects (if removed)
 LCD_Error LCD_RQSetObjectVisibility(LCD_ObjID id, bool visible, bool redraw_screen);
+
+/// @brief Returns whether an object is visible on the screen or not.
+/// @param id The ID of the object to check
+/// @return Whether the object is visible or not
+bool LCD_IsObjectVisible(LCD_ObjID id);
 
 /// @brief Removes all visible and non-visible objects from the screen.
 void LCD_RQClear(void);

@@ -13,11 +13,17 @@ typedef enum
     /// @brief The object is NULL or empty.
     LCD_ERR_EMPTY_OBJ,
 
+    /// @brief The object is NULL.
+    LCD_ERR_NULL_OBJ,
+
     /// @brief The render queue is full. No more objects can be added.
     LCD_ERR_RQ_FULL,
 
+    /// @brief The object has too many components.
+    LCD_ERR_TOO_MANY_COMPS_IN_OBJ,
+
     /// @brief The specified (x,y) coordinates are out of the screen boundaries.
-    LCD_COORDS_OUT_OF_BOUNDS,
+    LCD_ERR_COORDS_OUT_OF_BOUNDS,
 
     /// @brief The object ID is invalid.
     LCD_ERR_INVALID_OBJ_ID,

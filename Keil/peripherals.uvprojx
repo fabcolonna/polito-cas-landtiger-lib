@@ -685,6 +685,26 @@
               <FileType>1</FileType>
               <FilePath>.\Source\Tests\main.c</FilePath>
             </File>
+            <File>
+              <FileName>pacman.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Source\Tests\PacMan\pacman.c</FilePath>
+            </File>
+            <File>
+              <FileName>pacman.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Source\Tests\PacMan\pacman.h</FilePath>
+            </File>
+            <File>
+              <FileName>pacman_types.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Source\Tests\PacMan\pacman_types.h</FilePath>
+            </File>
+            <File>
+              <FileName>pacman-maze.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Source\Tests\PacMan\pacman-maze.h</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -704,6 +724,21 @@
               <FileName>delay.s</FileName>
               <FileType>2</FileType>
               <FilePath>.\Source\Libs\SysTick\delay.s</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>PRNG</GroupName>
+          <Files>
+            <File>
+              <FileName>pseudo_rand_gen.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Source\Libs\PRNG\pseudo_rand_gen.c</FilePath>
+            </File>
+            <File>
+              <FileName>pseudo_rand_gen.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Source\Libs\PRNG\pseudo_rand_gen.h</FilePath>
             </File>
           </Files>
         </Group>
@@ -1050,7 +1085,7 @@
               <MiscControls></MiscControls>
               <Define>SIMULATOR</Define>
               <Undefine></Undefine>
-              <IncludePath>.\Source\Libs\Button;.\Source\CMSIS_core;.\Source;.\Source\Libs\RIT;.\Source\Libs\Timer;.\Source\Libs\LED;.\Source\Libs\Power;.\Source\Libs\Utils;.\Source\Tests;.\Source\Libs\SysTick;.\Source\Libs\Joystick;.\Source\Libs\ADC-PM;.\Source\Libs\DAC;.\Source\Libs\GLCD;.\Source\Libs\GLCD\Fonts;.\Source\Libs\TouchPanel;.\Source\System;.\Source\Libs;.\Source\Libs\GLCD\MemoryArena</IncludePath>
+              <IncludePath>.\Source\Libs\Button;.\Source\CMSIS_core;.\Source;.\Source\Libs\RIT;.\Source\Libs\Timer;.\Source\Libs\LED;.\Source\Libs\Power;.\Source\Libs\Utils;.\Source\Tests;.\Source\Libs\SysTick;.\Source\Libs\Joystick;.\Source\Libs\ADC-PM;.\Source\Libs\DAC;.\Source\Libs\GLCD;.\Source\Libs\GLCD\Fonts;.\Source\Libs\TouchPanel;.\Source\System;.\Source\Libs;.\Source\Libs\GLCD\MemoryArena;.\Source\Tests\Assets\Fonts;.\Source\Tests\Assets\Images;.\Source\Tests\PacMan;.\Source\Libs\PRNG</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -1445,6 +1480,26 @@
               <FileType>1</FileType>
               <FilePath>.\Source\Tests\main.c</FilePath>
             </File>
+            <File>
+              <FileName>pacman.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Source\Tests\PacMan\pacman.c</FilePath>
+            </File>
+            <File>
+              <FileName>pacman.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Source\Tests\PacMan\pacman.h</FilePath>
+            </File>
+            <File>
+              <FileName>pacman_types.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Source\Tests\PacMan\pacman_types.h</FilePath>
+            </File>
+            <File>
+              <FileName>pacman-maze.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Source\Tests\PacMan\pacman-maze.h</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -1464,6 +1519,21 @@
               <FileName>delay.s</FileName>
               <FileType>2</FileType>
               <FilePath>.\Source\Libs\SysTick\delay.s</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>PRNG</GroupName>
+          <Files>
+            <File>
+              <FileName>pseudo_rand_gen.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Source\Libs\PRNG\pseudo_rand_gen.c</FilePath>
+            </File>
+            <File>
+              <FileName>pseudo_rand_gen.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Source\Libs\PRNG\pseudo_rand_gen.h</FilePath>
             </File>
           </Files>
         </Group>
@@ -2292,6 +2362,26 @@
               <FileType>1</FileType>
               <FilePath>.\Source\Tests\main.c</FilePath>
             </File>
+            <File>
+              <FileName>pacman.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Source\Tests\PacMan\pacman.c</FilePath>
+            </File>
+            <File>
+              <FileName>pacman.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Source\Tests\PacMan\pacman.h</FilePath>
+            </File>
+            <File>
+              <FileName>pacman_types.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Source\Tests\PacMan\pacman_types.h</FilePath>
+            </File>
+            <File>
+              <FileName>pacman-maze.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Source\Tests\PacMan\pacman-maze.h</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -2311,6 +2401,21 @@
               <FileName>delay.s</FileName>
               <FileType>2</FileType>
               <FilePath>.\Source\Libs\SysTick\delay.s</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>PRNG</GroupName>
+          <Files>
+            <File>
+              <FileName>pseudo_rand_gen.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Source\Libs\PRNG\pseudo_rand_gen.c</FilePath>
+            </File>
+            <File>
+              <FileName>pseudo_rand_gen.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Source\Libs\PRNG\pseudo_rand_gen.h</FilePath>
             </File>
           </Files>
         </Group>

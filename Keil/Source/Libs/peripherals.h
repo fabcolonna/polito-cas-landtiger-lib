@@ -13,8 +13,10 @@
 #include "joystick.h"
 #include "led.h"
 #include "power.h"
+#include "pseudo_rand_gen.h"
 #include "rit.h"
 #include "timer.h"
 #include "touch.h"
+
 
 #endif

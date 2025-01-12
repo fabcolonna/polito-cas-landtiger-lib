@@ -31,8 +31,8 @@
  * @return The LCD_Error that LCD_RQAddObject returns.
  */
 #define LCD_OBJECT(id, ...)                                                                                            \
-    LCD_RQAddObject((LCD_Obj){.comps = (LCD_Component[])__VA_ARGS__,                                                   \
-                              .comps_size = sizeof((LCD_Component[])__VA_ARGS__) / sizeof(LCD_Component)},             \
+    LCD_RQAddObject(&((LCD_Obj){.comps = (LCD_Component[])__VA_ARGS__,                                                 \
+                                .comps_size = sizeof((LCD_Component[])__VA_ARGS__) / sizeof(LCD_Component)}),          \
                     id)
 
 /**

@@ -8,6 +8,8 @@
 #define ADC_CH5 (1 << 5)
 #define ADC_GLOBAL_INTEN (1 << 8)
 
+_PRIVATE bool initialized = false;
+
 void ADC_PMInit(u8 options, u8 clock_divider, u8 int_priority)
 {
     POWER_TurnOnPeripheral(POW_PCADC);
@@ -23,6 +25,13 @@ void ADC_PMInit(u8 options, u8 clock_divider, u8 int_priority)
 
     if (options & ADC_PM_SAMPLE_WITH_RIT && RIT_IsEnabled())
         RIT_AddJob(ADC_PMGetSample, RIT_NO_DIVIDER);
+
+    initialized = true;
+}
+
+bool ADC_PMIsInitialized(void)
+{
+    return initialized;
 }
 
 void ADC_PMDeinit(void)
@@ -33,6 +42,7 @@ void ADC_PMDeinit(void)
     NVIC_DisableIRQ(ADC_IRQn);
     LPC_ADC->ADCR = 0;
     LPC_ADC->ADINTEN = 0;
+    initialized = false;
 }
 
 void ADC_PMGetSample(void)

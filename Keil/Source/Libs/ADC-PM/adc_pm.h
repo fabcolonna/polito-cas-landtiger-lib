@@ -4,6 +4,8 @@
 #include "adc_pm_types.h"
 #include "utils.h"
 
+#include <stdbool.h>
+
 /// @brief Initializes the 12bit ADC peripheral, which on this board is wired to the Potentiometer (PM).
 ///        More specifically, the ADC peripheral is wired to the channel 5 of the ADC. Hence, the
 ///        library does not handle other channels.
@@ -15,6 +17,8 @@ void ADC_PMInit(u8 options, u8 clock_divider, u8 int_priority);
 
 void ADC_PMDeinit(void);
 
+bool ADC_PMIsInitialized(void);
+
 /// @brief Retrieves a single sample from the PM, and triggers the interrupt.
 /// @note This function does NOT repetitively sample the PM. It only retrieves a single sample.
 ///       This is because we are not handling the BURST mode of the ADC. In order to keep retrieving
@@ -22,6 +26,7 @@ void ADC_PMDeinit(void);
 /// @note As of now, only the basic conversion (001) is implemented.
 void ADC_PMGetSample(void);
 
+/// @todo This function is not implemented
 void ADC_PMDisableSampling();
 
 // INTERRUPTS
