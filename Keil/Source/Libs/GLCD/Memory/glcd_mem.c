@@ -4,7 +4,8 @@
 // TODO: Implement a more efficient way to get free slots, maybe using a free list
 //       instead of a linear search performed every time an allocation is requested.
 
-#define IS_ARENA_OK (arena_ready && current_arena.objs && current_arena.capacity > 0)
+#define IS_ARENA_OK (arena_ready && arena.objs && arena.capacity > 0)
+#define ALLOC_SIZE(comps_num) (sizeof(LCD_ObjSlot) + sizeof(LCD_Obj) + comps_num * sizeof(LCD_Component))
 
 // Memory needs to be aligned to 4 bytes, since unaligned memory access is not allowed on ARM
 // and cause a hard fault (usage fault with the UNALIGNED bit set).
@@ -27,7 +28,7 @@ struct _lcd_mem_arena
 };
 
 _PRIVATE bool arena_ready = false;
-_PRIVATE LCD_MemoryArena current_arena = {0};
+_PRIVATE LCD_MemoryArena arena = {0};
 
 // PRIVATE FUNCTIONS
 
@@ -40,11 +41,11 @@ _PRIVATE LCD_MemoryArena current_arena = {0};
 /// @return A pointer to the first free object, or NULL if there's not enough space.
 _PRIVATE LCD_ObjSlot *find_free_obj_slot(u16 comps_size)
 {
-    u8 *ptr = (u8 *)current_arena.objs;
-    const u8 *end = ptr + current_arena.offset;
-
     // Calculating the size needed & aligning it to 4 bytes
-    const u32 size_needed = ALIGN_VAL_4(sizeof(LCD_ObjSlot) + sizeof(LCD_Obj) + (comps_size * sizeof(LCD_Component)));
+    const u32 size_needed = ALIGN_VAL_4(ALLOC_SIZE(comps_size));
+
+    u8 *ptr = (u8 *)arena.objs;
+    const u8 *end = ptr + arena.offset;
 
     // Coalescing free slots
     bool found = false;
@@ -76,7 +77,7 @@ _PRIVATE LCD_ObjSlot *find_free_obj_slot(u16 comps_size)
 
     // If here, no free slot was found, so we need to create a new one,
     // provided that there's enough space in the arena.
-    if (!found && (current_arena.offset + size_needed > current_arena.capacity))
+    if (!found && (arena.offset + size_needed > arena.capacity))
         return NULL;
 
     slot = (LCD_ObjSlot *)ALIGN_PTR_4(ptr);
@@ -87,7 +88,7 @@ _PRIVATE LCD_ObjSlot *find_free_obj_slot(u16 comps_size)
     // Initializing the object itself
     slot->obj->comps_size = comps_size;
     slot->obj->comps = (LCD_Component *)ALIGN_PTR_4((u8 *)slot->obj + sizeof(LCD_Obj));
-    current_arena.offset += size_needed;
+    arena.offset += size_needed;
     return slot;
 }
 
@@ -97,57 +98,55 @@ _PRIVATE LCD_Error free_object(LCD_Obj *obj)
         return LCD_ERR_MA_ATTEMPT_TO_FREE_INVALID_OBJ;
 
     // Moving backwards from the object to the slot that wraps it
-    LCD_ObjSlot *slot = (LCD_ObjSlot *)((u8 *)obj - sizeof(LCD_ObjSlot));
+    LCD_ObjSlot *const slot = (LCD_ObjSlot *)((u8 *)obj - sizeof(LCD_ObjSlot));
 
     // Checking if the object is in the arena
-    const u8 *start = (u8 *)current_arena.objs;
-    const u8 *end = start + current_arena.offset;
+    const u8 *start = (u8 *)arena.objs;
+    const u8 *end = start + arena.offset;
     if ((u8 *)slot < start || (u8 *)slot >= end)
         return LCD_ERR_MA_ATTEMPT_TO_FREE_INVALID_OBJ;
 
     slot->used = false;
     slot->obj->comps = NULL;
     slot->obj->comps_size = 0;
-    slot->obj = NULL; // Just to be sure, but it's not really necessary
 
     // We should decrement the offset, if this was the last object in the arena
     // and there are no more objects after it.
     if ((u8 *)slot + slot->size == end)
-        current_arena.offset -= slot->size;
+        arena.offset -= slot->size;
 
     return LCD_ERR_OK;
 }
 
 // PUBLIC FUNCTIONS
 
-LCD_MemoryArena *LCD_MAUseMemory(void *const memory, u32 capacity)
+const LCD_MemoryArena *LCD_MAUseMemory(void *const memory, u32 capacity)
 {
-    if (!memory || capacity <= 0)
+    // Memory needs to be aligned to 4 bytes.
+    if (!memory || capacity <= 0 || (uintptr_t)memory % 4 != 0)
         return NULL;
 
-    // Checking if memory is aligned to 4 bytes
-    if ((uintptr_t)memory % 4 != 0)
-        return NULL;
-
-    current_arena.objs = memory;
-    current_arena.capacity = capacity;
-    current_arena.offset = 0;
-
+    arena = (LCD_MemoryArena){.objs = memory, .capacity = capacity, .offset = 0};
     arena_ready = true;
-    return &current_arena;
+    return &arena;
 }
 
-LCD_Error LCD_MAReleaseMemory(LCD_MemoryArena *arena)
+bool LCD_MAIsArenaReady(const LCD_MemoryArena *const p_arena)
 {
-    if (!arena || arena != &current_arena)
+    // Checks if the current arena is the one specified as param
+    if (p_arena != &arena)
+        return false;
+
+    return arena_ready;
+}
+
+LCD_Error LCD_MAReleaseMemory(const LCD_MemoryArena *const p_arena)
+{
+    if (!p_arena || p_arena != &arena)
         return LCD_ERR_MA_INVALID_ARENA;
 
-    current_arena.objs = NULL;
-    current_arena.capacity = 0;
-    current_arena.offset = 0;
-
+    arena = (LCD_MemoryArena){0};
     arena_ready = false;
-    arena = NULL;
     return LCD_ERR_OK;
 }
 
@@ -159,7 +158,7 @@ LCD_Error LCD_MAAllocObject(u16 comps_size, LCD_Obj **out_obj)
         return LCD_ERR_MA_INVALID_ARENA;
     }
 
-    LCD_ObjSlot *slot = find_free_obj_slot(comps_size);
+    const LCD_ObjSlot *const slot = find_free_obj_slot(comps_size);
     if (!slot)
     {
         *out_obj = NULL;

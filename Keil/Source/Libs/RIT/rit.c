@@ -53,3 +53,8 @@ bool RIT_IsEnabled(void)
 {
     return LPC_RIT->RICTRL & (1 << 3);
 }
+
+u32 RIT_GetIntervalMs(void)
+{
+    return base_ival;
+}

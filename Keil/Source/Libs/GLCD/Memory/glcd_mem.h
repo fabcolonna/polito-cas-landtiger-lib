@@ -24,12 +24,15 @@ typedef struct _lcd_mem_arena LCD_MemoryArena;
 /// @param capacity The capacity of the memory in bytes.
 /// @param out_arena A pointer to the memory arena to be initialized.
 /// @return The memory arena reference, or NULL if memory is NULL or capacity is <= 0.
-LCD_MemoryArena *LCD_MAUseMemory(void *const memory, u32 capacity);
+const LCD_MemoryArena *LCD_MAUseMemory(void *const memory, u32 capacity);
 
 /// @brief Releases the memory arena.
 /// @param arena A pointer to the memory arena to be released.
 /// @return LCD_Error The error code.
-LCD_Error LCD_MAReleaseMemory(LCD_MemoryArena *arena);
+LCD_Error LCD_MAReleaseMemory(const LCD_MemoryArena *const arena);
+
+/// @brief Checks if the arena specified as parameter is ready to be used.
+bool LCD_MAIsArenaReady(const LCD_MemoryArena *const arena);
 
 // AUTOMATICALLY CALLED FUNCTIONS (MAYBE WILL MAKE THEM PRIVATE)
 

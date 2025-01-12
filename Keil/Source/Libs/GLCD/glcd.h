@@ -5,6 +5,21 @@
 #include "glcd_mem.h"
 #include "glcd_types.h"
 
+// CONFIGURATION DEFINES
+
+/// @brief Maximum number of components that can be rendered on the screen.
+/// @note RQ only referneces objects stored in the memory arena, hence it's memory
+///       footprint in the ZI section is not huge. We can afford to have a larger number.
+#define MAX_RQ_ITEMS 512
+
+/// @brief Setting a limit to the number of components that a given object can have.
+#define MAX_COMPS_PER_OBJECT 12
+
+/// @brief Maximum number of fonts that can be loaded into the LCD.
+#define MAX_FONTS 16
+
+// PUBLIC FUNCTIONS
+
 /// @brief Converts RGB (24 bit) into RGB565 (16 bit):
 ///        - 5 bits for red (bits 11-15)
 ///        - 6 bits for green (bits 5-10)
@@ -21,13 +36,14 @@ _FORCE_INLINE u16 rgb888_to_rgb565(u32 rgb888)
 /// @param orientation The orientation of the screen, from the LCD_Orientation enum
 /// @param arena A correctly initialized memory arena, which will be used to store
 ///        the objects that will be rendered on the screen.
+/// @param clear_to [OPTIONAL] The color to clear the screen with
 /// @return LCD_Error The error code.
-LCD_Error LCD_Init(LCD_Orientation orientation, LCD_MemoryArena *arena);
+LCD_Error LCD_Init(LCD_Orientation orientation, const LCD_MemoryArena *const arena, const LCD_Color *const clear_to);
 
 /// @brief Changes the memory arena used by the LCD.
 /// @param arena The new memory arena to use
 /// @return LCD_Error The error code.
-LCD_Error LCD_UseArena(LCD_MemoryArena *arena);
+LCD_Error LCD_UseArena(const LCD_MemoryArena *const arena);
 
 /// @brief Checks if the LCD has been initialized.
 /// @return Whether the LCD has been initialized
@@ -56,23 +72,26 @@ LCD_Coordinate LCD_GetCenter(void);
 ///        2 coordinates (top-left & bottom-right), and the width and
 ///        height already calculated.
 /// @param comp The component to get the bounding box of
-/// @return The bounding box of the component, expressed with 2 coordinates
+/// @param out_bbox [OUTPUT] The bounding box of the component, expressed with 2 coordinates
 ///         and the width and height.
-LCD_BBox LCD_GetComponentBBox(const LCD_Component *const comp);
+/// @return LCD_Error The error code.
+LCD_Error LCD_GetComponentBBox(const LCD_Component *const comp, LCD_BBox *out_box);
 
 /// @brief Returns the bounding box of an object that has been previously added
 ///        to the render queue, and thus it has an ID.
 /// @param id The ID of the object to get the bounding box of
-/// @return The bounding box of the object, expressed with 2 coordinates
+/// @param out_bbox [OUTPUT] The bounding box of the object, expressed with 2 coordinates
 ///         and the width and height.
-LCD_BBox LCD_GetObjBBoxWithID(LCD_ObjID id);
+/// @return LCD_Error The error code
+LCD_Error LCD_GetObjBBoxWithID(LCD_ObjID id, LCD_BBox *out_bbox);
 
 /// @brief Returns the bounding box of the object passed as parameter, regardless
 ///        of whether it has been added to the render queue or not.
 /// @param obj The object to get the bounding box of
-/// @return The bounding box of the object, expressed with 2 coordinates
+/// @param out_bbox [OUTPUT] The bounding box of the object, expressed with 2 coordinates
 ///         and the width and height.
-LCD_BBox LCD_GetObjBBox(const LCD_Obj *const obj);
+/// @return LCD_Error The error code
+LCD_Error LCD_GetObjBBox(const LCD_Obj *const obj, LCD_BBox *out_bbox);
 
 /// @brief Returns the RGB565 color of the pixel at the specified coordinates.
 /// @param point The coordinates of the pixel
@@ -104,7 +123,8 @@ LCD_Error LCD_RQAddObject(const LCD_Obj *const obj, LCD_ObjID *out_id);
 
 /// @brief Manually triggers an update of the screen. Useful when you want to
 ///        add multiple objects at once, and only update the screen at the end.
-void LCD_RQRender(void);
+/// @return LCD_Error The error code.
+LCD_Error LCD_RQRender(void);
 
 /// @brief Renders the object immediately, without adding neither to the render queue
 ///        nor to the memory arena. This is useful for objects that are not frequently
@@ -112,6 +132,7 @@ void LCD_RQRender(void);
 /// @note To remove an object rendered you must call LCD_SetBackgroundColor(), effectively
 ///       clearing the screen and redrawing only the objects stored.
 /// @param obj The object to render immediately
+/// @return LCD_Error The error code.
 /// @note Accepting the obj as a const * to simulate the r-value reference in C++, where
 ///       it's possible to pass a temporary (LCD_Obj&&) to the function, and then move
 ///       the object to the memory arena. This is not possible in C. If used with the two
@@ -122,21 +143,36 @@ LCD_Error LCD_RQRenderImmediate(const LCD_Obj *const obj);
 ///        object's position in the RQ itself, and in the memory arena.
 /// @param id The ID of the object to move
 /// @param new_pos The new position of the object, which will replace the old one
-/// @param redraw_screen Whether to redraw the objects that are below the object prior to the move
+/// @param redraw_underneath Whether to redraw the objects that are below the object prior to the move
 /// @return LCD_Error The error code.
-LCD_Error LCD_RQMoveObject(LCD_ObjID id, LCD_Coordinate new_pos, bool redraw_screen);
+/// LCD_Error LCD_RQMoveObject(LCD_ObjID id, LCD_Coordinate new_pos, bool redraw_underneath);
 
 /// @brief Removes an object from the render queue by its ID. It also deallocates the
 ///        memory used by that object in the memory arena.
 /// @param id The ID of the object to remove
-/// @param redraw_screen Whether to redraw the objects that are below the removed object
-LCD_Error LCD_RQRemoveObject(LCD_ObjID id, bool redraw_screen);
+/// @param redraw_underneath Whether to redraw the objects that are below the removed object
+/// @return LCD_Error The error code.
+LCD_Error LCD_RQRemoveObject(LCD_ObjID id, bool redraw_underneath);
 
 /// @brief Shows/hides an object on/from the screen without modifying the render queue.
 /// @param id The ID of the object to hide
 /// @param visible Whether the object should be visible or not
-/// @param redraw_lower_layers Whether to redraw the other objects (if removed)
-LCD_Error LCD_RQSetObjectVisibility(LCD_ObjID id, bool visible, bool redraw_screen);
+/// @param redraw_underneath Whether to redraw the objects that are below the current one.
+/// @return LCD_Error The error code.
+LCD_Error LCD_RQSetObjectVisibility(LCD_ObjID id, bool visible, bool redraw_underneath);
+
+/// @brief Retrieves the raw LCD_Obj associated to the given ID, if present.
+/// @param id The ID of the object to retrieve
+/// @param out_obj The object itself, if present.
+/// @return LCD_Error The error code.
+LCD_Error LCD_RQGetObject(LCD_ObjID id, LCD_Obj **out_obj);
+
+/// @brief Deletes and re-renders the object associated to the given ID, which
+///        has been modified with a prior call to LCD_RQGetObject().
+/// @param id The ID of the object to update
+/// @param redraw_underneath Whether to redraw the objects that are below the removed one.
+/// @return LCD_Error The error code.
+LCD_Error LCD_RQUpdateObject(LCD_ObjID id, bool redraw_underneath);
 
 /// @brief Returns whether an object is visible on the screen or not.
 /// @param id The ID of the object to check
@@ -144,22 +180,26 @@ LCD_Error LCD_RQSetObjectVisibility(LCD_ObjID id, bool visible, bool redraw_scre
 bool LCD_IsObjectVisible(LCD_ObjID id);
 
 /// @brief Removes all visible and non-visible objects from the screen.
-void LCD_RQClear(void);
+/// @return LCD_Error The error code.
+LCD_Error LCD_RQClear(void);
 
 // FONT MANAGER
 
 /// @brief Adds a new font to the font manager, and returns its ID through the out_id pointer.
 /// @param font The font to add
-/// @return -1 if the font is NULL or the font manager is full, the ID of the font otherwise
+/// @param out_id The ID of the font, if it was added successfully to the font manager.
+/// @return LCD_Error The error code.
 LCD_Error LCD_FMAddFont(LCD_Font font, LCD_FontID *out_id);
 
 /// @brief Removes a font from the font manager by its ID.
+/// @param id The ID of the font to remove from the font manager.
+/// @return LCD_Error The error code.
 LCD_Error LCD_FMRemoveFont(LCD_FontID id);
 
 // DEBUG FUNCTIONS
 
 /// @brief Debug function to render the bounding box of a component.
 /// @param bbox The bounding box to render
-void LCD_DEBUG_RenderBBox(LCD_BBox bbox);
+void LCD_DEBUG_RenderBBox(const LCD_BBox *const bbox);
 
 #endif

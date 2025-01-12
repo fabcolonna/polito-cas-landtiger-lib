@@ -19,7 +19,8 @@ void RIT_Enable(void);
 void RIT_Disable(void);
 bool RIT_IsEnabled(void);
 
-
+/// @brief Returns the interval in millis that RIT uses for its interrupts
+u32 RIT_GetIntervalMs(void);
 
 /// @brief Adds a job to the RIT interrupt handler job queue, if there is space.
 /// @param job The job to execute

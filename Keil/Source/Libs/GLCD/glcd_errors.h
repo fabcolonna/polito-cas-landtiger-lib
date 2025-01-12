@@ -10,11 +10,11 @@ typedef enum
     /// @brief The memory arena is NULL or invalid.
     LCD_ERR_INVALID_ARENA,
 
-    /// @brief The object is NULL or empty.
-    LCD_ERR_EMPTY_OBJ,
+    /// @brief The object is invalid (invalid ID, empty components array, etc.)
+    LCD_ERR_INVALID_OBJ,
 
-    /// @brief The object is NULL.
-    LCD_ERR_NULL_OBJ,
+    /// @brief One or more params is NULL
+    LCD_ERR_NULL_PARAMS,
 
     /// @brief The render queue is full. No more objects can be added.
     LCD_ERR_RQ_FULL,
@@ -24,9 +24,6 @@ typedef enum
 
     /// @brief The specified (x,y) coordinates are out of the screen boundaries.
     LCD_ERR_COORDS_OUT_OF_BOUNDS,
-
-    /// @brief The object ID is invalid.
-    LCD_ERR_INVALID_OBJ_ID,
 
     /// @brief The font list is full. No more fonts can be added.
     LCD_ERR_FONT_LIST_FULL,
@@ -44,6 +41,17 @@ typedef enum
 
     /// @brief The memory arena does not have enough space to allocate the object.
     LCD_ERR_MA_NOT_ENOUGH_SPACE,
+
+    // PROCESS SHAPE ERRORS
+
+    /// @brief An error occurred during BBox evaluation for a shape
+    LCD_ERR_COULD_NOT_PROCESS_SHAPE_BBOX,
+
+    /// @brief An error occurred during shape drawing
+    LCD_ERR_COULD_NOT_PROCESS_SHAPE_DRAW,
+
+    /// @brief An error occurred during shape deletion
+    LCD_ERR_COULD_NOT_PROCESS_SHAPE_DELETE,
 } LCD_Error;
 
 #endif

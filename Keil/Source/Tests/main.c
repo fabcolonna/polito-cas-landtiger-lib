@@ -1,9 +1,9 @@
-#include "pacman.h"
 #include "peripherals.h"
+#include "pm.h"
 #include "system.h"
 
-// Memory arena for PacMan: 1KB
-LCD_MA_ALLOC_STATIC_MEM(lcd_memory, 10192);
+// Memory arena for PacMan: 4K
+LCD_MA_ALLOC_STATIC_MEM(lcd_memory, 4096);
 
 int main(void)
 {
@@ -12,16 +12,19 @@ int main(void)
     RIT_Enable();
 
     // Initializing the LCD
-    LCD_MemoryArena *lcd_arena = LCD_MAUseMemory(lcd_memory, sizeof(lcd_memory));
+    const LCD_MemoryArena *const lcd_arena = LCD_MAUseMemory(lcd_memory, sizeof(lcd_memory));
     if (!lcd_arena)
         return EXIT_FAILURE;
 
-    if (LCD_Init(LCD_ORIENT_VER, lcd_arena) != LCD_ERR_OK)
+    if (LCD_Init(LCD_ORIENT_VER, lcd_arena, NULL) != LCD_ERR_OK)
         return EXIT_FAILURE;
 
-    // TP_Init(false);
+    TP_Init(false);
 
-    PACMAN_Init();
+    if (!PACMAN_Init())
+        return EXIT_FAILURE;
+
+    PACMAN_GameLoop(PM_SPEED_NORMAL);
     POWER_Init(POWR_CFG_SLEEP_ON_EXIT);
     POWER_SleepOnWFI();
     POWER_WaitForInterrupts();

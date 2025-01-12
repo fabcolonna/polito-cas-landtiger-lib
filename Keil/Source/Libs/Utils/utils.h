@@ -30,6 +30,7 @@ typedef enum
 #define CLR_BITS(reg, value, bit) (reg &= ~((value) << bit))
 
 #define _FORCE_INLINE __attribute__((always_inline)) inline
+#define _CBACK
 
 #define _USED_EXTERNALLY volatile
 #define _DECL_EXTERNALLY extern

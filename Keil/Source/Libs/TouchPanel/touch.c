@@ -436,11 +436,18 @@ const LCD_Coordinate *TP_GetLCDCoordinateFor(const TP_Coordinate *const tp_point
 
 TP_ButtonArea TP_AssignButtonArea(LCD_Button button, LCD_Coordinate pos)
 {
-    LCD_BBox bbox = LCD_GetComponentBBox(&(LCD_Component){
-        .object.button = button,
-        .type = LCD_COMP_BUTTON,
-        .pos = pos,
-    });
+    LCD_BBox bbox;
+    if (LCD_GetComponentBBox(
+            &(LCD_Component){
+                .object.button = button,
+                .type = LCD_COMP_BUTTON,
+                .pos = pos,
+            },
+            &bbox) != LCD_ERR_OK)
+    {
+        // TODO: Implement proper error management
+        assert(false); // Should return some error here
+    }
 
     return (TP_ButtonArea){
         .pos = pos,

@@ -14,3 +14,6 @@
 
 // Added a limitation to the number of components that can be added to a single object (12)
 // Max rq items 512
+
+// TODO: Implement MoveObject for moving objects (not every component, but moving the global object keeping
+// the component consistent)

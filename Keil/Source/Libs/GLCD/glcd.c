@@ -48,7 +48,7 @@
     }
 
 /// @brief Models.
-typedef enum
+enum LCD_Model
 {
     ILI9320,   // 0x9320
     ILI9325,   // 0x9325
@@ -65,7 +65,7 @@ typedef enum
     HX8347A,   // 0x0047
     LGDP4535,  // 0x4535
     SSD2119    // 3.5 LCD 0x9919
-} LCD_Model;
+};
 
 // VARIABLES
 
@@ -80,10 +80,6 @@ _PRIVATE u16 MAX_X, MAX_Y;
 /// @brief Current background color of the screen.
 _PRIVATE LCD_Color current_bg_color = LCD_COL_BLACK;
 
-// CURRENT MEMORY ARENA
-
-_PRIVATE LCD_MemoryArena *current_arena = NULL;
-
 // RENDER QUEUE
 
 typedef struct
@@ -94,14 +90,6 @@ typedef struct
 } LCD_RQItem;
 
 // TODO: Since we implemented a memory arena, maybe move the RQ into the arena?
-
-/// @brief Maximum number of components that can be rendered on the screen.
-/// @note RQ only referneces objects stored in the memory arena, hence it's memory
-///       footprint in the ZI section is not huge. We can afford to have a larger number.
-#define MAX_RQ_ITEMS 512
-
-/// @brief Setting a limit to the number of components that a given object can have.
-#define MAX_COMPS_PER_OBJECT 12
 
 /// @brief The render queue, containing all the components to be rendered.
 ///        It also contains info about the visibility and rendering status
@@ -114,9 +102,6 @@ _PRIVATE u32 render_queue_free_list[MAX_RQ_ITEMS] = {0};
 ///        A slot is free if the index = -1 and the obj pointer is NULL.
 _PRIVATE u32 render_queue_free_list_count;
 _PRIVATE u32 render_queue_size;
-
-/// @brief Maximum number of fonts that can be loaded into the LCD.
-#define MAX_FONTS 16
 
 _PRIVATE LCD_Font font_list[MAX_FONTS] = {0};
 _PRIVATE u8 font_list_size = 0;
@@ -758,18 +743,6 @@ _PRIVATE bool process_text(const LCD_Text *const text, LCD_Coordinate pos, LCD_B
 
 // BUTTON FUNCTIONS
 
-_PRIVATE inline LCD_Coordinate center_button_label_in_rect(LCD_Dimension label_dim, const LCD_Rect *const border,
-                                                           LCD_Coordinate pos)
-{
-    if (!border)
-        return (LCD_Coordinate){-1, -1};
-
-    return (LCD_Coordinate){
-        .x = pos.x + (border->width - label_dim.width) / 2,
-        .y = pos.y + (border->height - label_dim.height) / 2,
-    };
-}
-
 _PRIVATE bool process_button(const LCD_Button *const button, LCD_Coordinate pos, LCD_BBox *out_bbox, u8 mode)
 {
     if (!button || !mode)
@@ -817,12 +790,10 @@ _PRIVATE bool process_button(const LCD_Button *const button, LCD_Coordinate pos,
     process_rect(&border, pos, out_bbox, mode);
 
     // Now we need to center the label in the button
-    const LCD_Coordinate label_coords = center_button_label_in_rect(
-        (LCD_Dimension){
-            .width = label_bbox_dim.width,
-            .height = label_bbox_dim.height,
-        },
-        &border, pos);
+    const LCD_Coordinate label_coords = {
+        .x = pos.x + (border.width - label_bbox_dim.width) / 2,
+        .y = pos.y + (border.height - label_bbox_dim.height) / 2,
+    };
 
     process_text(&label_as_text, label_coords, NULL, mode);
     return true;
@@ -917,24 +888,25 @@ _PRIVATE bool do_render(const LCD_Obj *const obj, u8 mode)
         return false;
 
     LCD_Component *comp;
-    for (u16 i = 0; i < obj->comps_size; i++)
+    bool res = true;
+    for (u16 i = 0; i < obj->comps_size && res; i++)
     {
         comp = &obj->comps[i];
         switch (comp->type)
         {
         case LCD_COMP_LINE:
-            process_line(&comp->object.line, NULL, mode);
+            res = process_line(&comp->object.line, NULL, mode);
             break;
         case LCD_COMP_RECT:
-            process_rect(&comp->object.rect, comp->pos, NULL, mode);
+            res = process_rect(&comp->object.rect, comp->pos, NULL, mode);
             break;
         case LCD_COMP_CIRCLE:
-            process_circle(&comp->object.circle, NULL, mode);
+            res = process_circle(&comp->object.circle, NULL, mode);
             break;
         case LCD_COMP_IMAGE: {
             if (IS_MODE(mode, MD_DELETE))
             {
-                process_rect(
+                res = process_rect(
                     &(LCD_Rect){
                         .width = comp->object.image.width,
                         .height = comp->object.image.height,
@@ -944,23 +916,23 @@ _PRIVATE bool do_render(const LCD_Obj *const obj, u8 mode)
                     comp->pos, NULL, MD_DELETE);
             }
             else
-                process_img_rle(&comp->object.image, comp->pos, NULL, MD_DRAW);
+                res = process_img_rle(&comp->object.image, comp->pos, NULL, MD_DRAW);
             break;
         }
         case LCD_COMP_TEXT:
-            process_text(&comp->object.text, comp->pos, NULL, mode);
+            res = process_text(&comp->object.text, comp->pos, NULL, mode);
             break;
         case LCD_COMP_BUTTON: {
             if (IS_MODE(mode, MD_DELETE))
-                delete_button(&comp->object.button, comp->pos);
+                res = delete_button(&comp->object.button, comp->pos);
             else
-                process_button(&comp->object.button, comp->pos, NULL, MD_DRAW);
+                res = process_button(&comp->object.button, comp->pos, NULL, MD_DRAW);
             break;
         }
         }
     }
 
-    return true;
+    return res;
 }
 
 _PRIVATE inline bool render_item(LCD_RQItem *const item)
@@ -972,28 +944,38 @@ _PRIVATE inline bool render_item(LCD_RQItem *const item)
     if (item->rendered || !item->visible)
         return true;
 
-    do_render(item->obj, MD_DRAW);
-    item->rendered = true;
-    return true;
+    item->rendered = do_render(item->obj, MD_DRAW);
+    return item->rendered;
 }
 
-_PRIVATE bool unrender_item(LCD_RQItem *const item)
+_PRIVATE LCD_Error unrender_item(LCD_RQItem *const item, bool redraw_underneath)
 {
-    if (!item || !item->obj || item->id < 0 || !item->obj->comps || item->obj->comps_size == 0)
-        return false;
+    if (!item || !item->obj)
+        return LCD_ERR_NULL_PARAMS;
+
+    if (item->id < 0 || !item->obj->comps || item->obj->comps_size == 0)
+        return LCD_ERR_INVALID_OBJ;
 
     // If the object is not rendered, skip it
     if (!item->rendered)
         return true;
 
-    do_render(item->obj, MD_DELETE);
-    item->rendered = false;
+    item->rendered = !do_render(item->obj, MD_DELETE);
+    if (!redraw_underneath)
+    {
+        // If rendered is false, we deleted, it's not a bug!
+        return item->rendered ? LCD_ERR_COULD_NOT_PROCESS_SHAPE_DELETE : LCD_ERR_OK;
+    }
+
+    LCD_Error err;
 
     // The object that we want to remove may intersect with other objects that
     // are rendered below it. Hence, we need to use the bounding box to determine
     // which elements in the render queue intersect with the object we want to remove,
     // and set them as rendered=false, so that they can be re-rendered.
-    const LCD_BBox obj_bbox = LCD_GetObjBBox(item->obj);
+    LCD_BBox obj_bbox;
+    if ((err = LCD_GetObjBBox(item->obj, &obj_bbox)) != LCD_ERR_OK)
+        return err;
 
     // Iterating over the render queue to find rendered & visible objects that
     // may intersect with the object we removed.
@@ -1006,18 +988,21 @@ _PRIVATE bool unrender_item(LCD_RQItem *const item)
         if (rq_item->id == -1 || !rq_item->obj || !rq_item->visible || !rq_item->rendered)
             continue;
 
+        // Found valid object:
+        count++;
+
         // Skipping the object we removed
         if (rq_item->id == item->id)
             continue;
 
-        rq_item_bbox = LCD_GetObjBBox(rq_item->obj);
+        if ((err = LCD_GetObjBBox(rq_item->obj, &rq_item_bbox)) != LCD_ERR_OK)
+            break;
+
         if (boxes_intersect(&obj_bbox, &rq_item_bbox))
             rq_item->rendered = false;
-
-        count++; // Found actual object, incrementing count.
     }
 
-    return true;
+    return err == LCD_ERR_OK ? LCD_RQRender() : err;
 }
 
 // PUBLIC FUNCTIONS
@@ -1025,9 +1010,9 @@ _PRIVATE bool unrender_item(LCD_RQItem *const item)
 #include "font_msgothic.h"
 #include "font_system.h"
 
-LCD_Error LCD_Init(LCD_Orientation orientation, LCD_MemoryArena *arena)
+LCD_Error LCD_Init(LCD_Orientation orientation, const LCD_MemoryArena *const arena, const LCD_Color *const clear_to)
 {
-    if (!arena)
+    if (!LCD_MAIsArenaReady(arena))
         return LCD_ERR_INVALID_ARENA;
 
     // Setting PINS as 00 (GPIO) in PINSEL0 (bit 6 to 25) for P0.19 to P0.25
@@ -1152,17 +1137,19 @@ LCD_Error LCD_Init(LCD_Orientation orientation, LCD_MemoryArena *arena)
     for (u32 i = 0; i < MAX_RQ_ITEMS; i++)
         render_queue_free_list[i] = MAX_RQ_ITEMS - 1 - i;
 
-    current_arena = arena;
     initialized = true;
+
+    if (clear_to)
+        LCD_SetBackgroundColor(*clear_to);
+
     return LCD_ERR_OK;
 }
 
-LCD_Error LCD_UseArena(LCD_MemoryArena *arena)
+LCD_Error LCD_UseArena(const LCD_MemoryArena *const arena)
 {
-    if (!arena)
+    if (!LCD_MAIsArenaReady(arena))
         return LCD_ERR_INVALID_ARENA;
 
-    current_arena = arena;
     return LCD_ERR_OK;
 }
 
@@ -1230,6 +1217,10 @@ LCD_Color LCD_GetPointColor(LCD_Coordinate point)
 
 LCD_Error LCD_SetPointColor(LCD_Color color, LCD_Coordinate point)
 {
+    // Checking if color is already 565
+    if ((color & ~(0xFFFF)) != 0)
+        color = rgb888_to_rgb565(color);
+
     if (point.x >= MAX_X || point.y >= MAX_Y)
         return LCD_ERR_COORDS_OUT_OF_BOUNDS;
 
@@ -1244,6 +1235,9 @@ void LCD_SetBackgroundColor(LCD_Color color)
 {
     if (color == LCD_COL_NONE)
         return;
+
+    if ((color & ~(0xFFFF)) != 0)
+        color = rgb888_to_rgb565(color);
 
     current_bg_color = color;
 
@@ -1286,74 +1280,74 @@ void LCD_SetBackgroundColor(LCD_Color color)
 
 // OBJECT DIMENSIONS
 
-LCD_BBox LCD_GetComponentBBox(const LCD_Component *const comp)
+LCD_Error LCD_GetComponentBBox(const LCD_Component *const comp, LCD_BBox *out_bbox)
 {
-    if (!comp)
-        return (LCD_BBox){0};
+    if (!comp || !out_bbox)
+        return LCD_ERR_NULL_PARAMS;
 
-    LCD_BBox bbox;
+    bool res;
     switch (comp->type)
     {
     case LCD_COMP_LINE:
-        process_line(&(comp->object.line), &bbox, MD_BBOX);
+        res = process_line(&(comp->object.line), out_bbox, MD_BBOX);
         break;
     case LCD_COMP_RECT:
-        process_rect(&(comp->object.rect), comp->pos, &bbox, MD_BBOX);
+        res = process_rect(&(comp->object.rect), comp->pos, out_bbox, MD_BBOX);
         break;
     case LCD_COMP_CIRCLE:
-        process_circle(&(comp->object.circle), &bbox, MD_BBOX);
+        res = process_circle(&(comp->object.circle), out_bbox, MD_BBOX);
         break;
     case LCD_COMP_IMAGE:
-        process_img_rle(&(comp->object.image), comp->pos, &bbox, MD_BBOX);
+        res = process_img_rle(&(comp->object.image), comp->pos, out_bbox, MD_BBOX);
         break;
     case LCD_COMP_TEXT:
-        process_text(&(comp->object.text), comp->pos, &bbox, MD_BBOX);
+        res = process_text(&(comp->object.text), comp->pos, out_bbox, MD_BBOX);
         break;
     case LCD_COMP_BUTTON:
-        process_button(&(comp->object.button), comp->pos, &bbox, MD_BBOX);
+        res = process_button(&(comp->object.button), comp->pos, out_bbox, MD_BBOX);
         break;
     }
 
-    return bbox;
+    return res ? LCD_ERR_OK : LCD_ERR_COULD_NOT_PROCESS_SHAPE_BBOX;
 }
 
 // We evaluate the object BBox by taking the bounding box of each component
 // and then calculating the union of all of them, that is, the smallest rectangle
 // that contains all the bounding boxes of the components.
-LCD_BBox LCD_GetObjBBoxWithID(LCD_ObjID id)
+LCD_Error LCD_GetObjBBoxWithID(LCD_ObjID id, LCD_BBox *out_bbox)
 {
-    LCD_BBox bbox = {0};
+    if (!out_bbox)
+        return LCD_ERR_NULL_PARAMS;
 
     // Retrieving the object from the RQ
     if (id < 0 || id >= MAX_RQ_ITEMS)
-        return bbox;
+        return LCD_ERR_INVALID_OBJ;
 
-    LCD_RQItem *item = &render_queue[id];
-    if (!item || item->id == -1 || !item->obj)
-        return bbox;
+    if (!render_queue[id].obj)
+        return LCD_ERR_INVALID_OBJ;
 
-    return LCD_GetObjBBox(item->obj);
+    return LCD_GetObjBBox(render_queue[id].obj, out_bbox);
 }
 
-/// @brief Returns the bounding box of the object passed as parameter, regardless
-///        of whether it has been added to the render queue or not.
-/// @param obj The object to get the bounding box of
-/// @return The bounding box of the object, expressed with 2 coordinates
-///         and the width and height.
-LCD_BBox LCD_GetObjBBox(const LCD_Obj *const obj)
+LCD_Error LCD_GetObjBBox(const LCD_Obj *const obj, LCD_BBox *out_bbox)
 {
-    LCD_BBox bbox = {0};
+    if (!obj || !out_bbox)
+        return LCD_ERR_NULL_PARAMS;
 
-    if (!obj || !obj->comps || obj->comps_size == 0)
-        return bbox;
+    if (!obj->comps || obj->comps_size == 0)
+        return LCD_ERR_INVALID_OBJ;
 
-    LCD_BBox comp_bbox[MAX_COMPS_PER_OBJECT];
     assert(obj->comps_size < MAX_COMPS_PER_OBJECT); // Should never have all these components.
+    LCD_BBox comp_bbox[obj->comps_size];
 
-    for (u16 i = 0; i < obj->comps_size; i++)
-        comp_bbox[i] = LCD_GetComponentBBox(&(obj->comps[i]));
+    LCD_Error err = LCD_ERR_OK;
+    for (u16 i = 0; i < obj->comps_size && err == LCD_ERR_OK; i++)
+        err = LCD_GetComponentBBox(&(obj->comps[i]), &(comp_bbox[i]));
 
-    return get_union_bbox(comp_bbox, obj->comps_size);
+    if (err == LCD_ERR_OK)
+        *out_bbox = get_union_bbox(comp_bbox, obj->comps_size);
+
+    return err;
 }
 
 // RENDERING
@@ -1361,10 +1355,10 @@ LCD_BBox LCD_GetObjBBox(const LCD_Obj *const obj)
 LCD_Error LCD_RQAddObject(const LCD_Obj *const obj, LCD_ObjID *out_id)
 {
     if (!obj)
-        return LCD_ERR_NULL_OBJ;
+        return LCD_ERR_NULL_PARAMS;
 
     if (!obj->comps || obj->comps_size == 0)
-        return LCD_ERR_EMPTY_OBJ;
+        return LCD_ERR_INVALID_OBJ;
 
     if (obj->comps_size > MAX_COMPS_PER_OBJECT)
         return LCD_ERR_TOO_MANY_COMPS_IN_OBJ;
@@ -1374,10 +1368,10 @@ LCD_Error LCD_RQAddObject(const LCD_Obj *const obj, LCD_ObjID *out_id)
         return LCD_ERR_RQ_FULL;
 
     // Trying to add the object to the memory arena
+    LCD_Error err;
     LCD_Obj *obj_ref;
-    const LCD_Error ma_err = LCD_MAAllocObject(obj->comps_size, &obj_ref);
-    if (ma_err != LCD_ERR_OK)
-        return ma_err;
+    if ((err = LCD_MAAllocObject(obj->comps_size, &obj_ref)) != LCD_ERR_OK)
+        return err;
 
     // The object is passed as a temporary object, we need to copy it to the
     // object allocated in the memory arena. We also need to copy the components
@@ -1400,7 +1394,7 @@ LCD_Error LCD_RQAddObject(const LCD_Obj *const obj, LCD_ObjID *out_id)
     return LCD_ERR_OK;
 }
 
-void LCD_RQRender(void)
+LCD_Error LCD_RQRender(void)
 {
     // Visiting the render queue and rendering the visible objects.
     // The render queue size tells us how many objects are in the queue, but
@@ -1409,8 +1403,9 @@ void LCD_RQRender(void)
     // actual objects (i.e. not NULL objs). We could simply iterate over
     // MAX_RQ_ITEMS, but that would be surely more inefficient.
 
+    bool res = true;
     LCD_RQItem *item;
-    for (u32 i = 0, count = 0; i < MAX_RQ_ITEMS && count != render_queue_size; i++)
+    for (u32 i = 0, count = 0; i < MAX_RQ_ITEMS && count != render_queue_size && res; i++)
     {
         item = &render_queue[i];
         if (item->id == -1 && !item->obj)
@@ -1418,83 +1413,41 @@ void LCD_RQRender(void)
 
         count++; // Found actual object, incrementing count.
         if (item->visible && !item->rendered)
-            render_item(item);
+            res = render_item(item);
     }
+
+    return res ? LCD_ERR_OK : LCD_ERR_COULD_NOT_PROCESS_SHAPE_DRAW;
 }
 
 LCD_Error LCD_RQRenderImmediate(const LCD_Obj *const obj)
 {
     if (!obj || !obj->comps || obj->comps_size <= 0)
-        return LCD_ERR_EMPTY_OBJ;
+        return LCD_ERR_INVALID_OBJ;
 
-    do_render(obj, MD_DRAW);
-    return LCD_ERR_OK;
+    return do_render(obj, MD_DRAW) ? LCD_ERR_OK : LCD_ERR_COULD_NOT_PROCESS_SHAPE_DRAW;
 }
 
-LCD_Error LCD_RQMoveObject(LCD_ObjID id, LCD_Coordinate new_pos, bool redraw_screen)
-{
-    // Moving something around = unrendering and re-rendering it
-    if (id < 0 || id >= MAX_RQ_ITEMS)
-        return LCD_ERR_INVALID_OBJ_ID;
-
-    if (new_pos.x < 0 || new_pos.y < 0 || new_pos.x >= MAX_X || new_pos.y >= MAX_Y)
-        return LCD_ERR_COORDS_OUT_OF_BOUNDS;
-
-    LCD_RQItem *const item = &render_queue[id];
-    if (!item || item->id == -1 || !item->obj)
-        return LCD_ERR_INVALID_OBJ_ID;
-
-    item->visible = false;
-    unrender_item(item);
-    assert(item->rendered == false); // Should be false after unrendering
-
-    // Rendering the object below the old position, if requested.
-    if (redraw_screen)
-        LCD_RQRender();
-
-    // Moving the object
-    LCD_Component *comp;
-    for (u16 i = 0; i < item->obj->comps_size; i++)
-    {
-        comp = &item->obj->comps[i];
-        switch (comp->type)
-        {
-        case LCD_COMP_LINE:
-            // Skipping: lines are defined by two points, and we're not moving them
-            break;
-        case LCD_COMP_RECT:
-        case LCD_COMP_IMAGE:
-        case LCD_COMP_TEXT:
-        case LCD_COMP_BUTTON:
-            comp->pos = new_pos;
-            break;
-        case LCD_COMP_CIRCLE:
-            comp->object.circle.center = new_pos;
-            break;
-        }
-    }
-
-    item->visible = true;
-    render_item(item);
-    assert(item->rendered == true); // Should be true after rendering
-    return LCD_ERR_OK;
-}
-
-LCD_Error LCD_RQRemoveObject(LCD_ObjID id, bool redraw_screen)
+LCD_Error LCD_RQRemoveObject(LCD_ObjID id, bool redraw_underneath)
 {
     if (id < 0 || id >= MAX_RQ_ITEMS)
-        return LCD_ERR_INVALID_OBJ_ID;
+        return LCD_ERR_INVALID_OBJ;
 
     // id is the index of the component in the render queue
     LCD_RQItem *const item = &render_queue[id];
     if (!item || item->id == -1 || !item->obj)
-        return LCD_ERR_INVALID_OBJ_ID;
+        return LCD_ERR_INVALID_OBJ;
+
+    LCD_Error err;
 
     item->visible = false;
-    unrender_item(item);
+    if ((err = unrender_item(item, redraw_underneath)) != LCD_ERR_OK)
+    {
+        item->visible = true;
+        return err;
+    }
 
-    LCD_Error ma_err = LCD_MAFreeObject(item->obj);
-    assert(ma_err == LCD_ERR_OK); // Should never fail
+    if ((err = LCD_MAFreeObject(item->obj)) != LCD_ERR_OK)
+        return err;
 
     // Freeing the RQ_Item
     item->id = -1;
@@ -1503,30 +1456,61 @@ LCD_Error LCD_RQRemoveObject(LCD_ObjID id, bool redraw_screen)
     // Adding the slod index to the free list
     render_queue_free_list[render_queue_free_list_count++] = id;
     render_queue_size--;
-
-    if (redraw_screen)
-        LCD_RQRender();
-
     return LCD_ERR_OK;
 }
 
-LCD_Error LCD_RQSetObjectVisibility(LCD_ObjID id, bool visible, bool redraw_screen)
+LCD_Error LCD_RQGetObject(LCD_ObjID id, LCD_Obj **out_obj)
 {
     if (id < 0 || id >= MAX_RQ_ITEMS)
-        return LCD_ERR_INVALID_OBJ_ID;
+        return LCD_ERR_INVALID_OBJ;
 
     LCD_RQItem *const item = &render_queue[id];
     if (!item || item->id == -1 || !item->obj)
-        return LCD_ERR_INVALID_OBJ_ID;
+        return LCD_ERR_INVALID_OBJ;
 
-    item->visible = visible;
-    if (visible && !item->rendered)
-        render_item(item);
-    else if (!visible && item->rendered)
+    *out_obj = item->obj;
+}
+
+LCD_Error LCD_RQUpdateObject(LCD_ObjID id, bool redraw_underneath)
+{
+    LCD_Error err = LCD_RQSetObjectVisibility(id, false, redraw_underneath);
+    if (err != LCD_ERR_OK)
+        return err;
+
+    return LCD_RQSetObjectVisibility(id, true, false);
+}
+
+LCD_Error LCD_RQSetObjectVisibility(LCD_ObjID id, bool visible, bool redraw_underneath)
+{
+    if (id < 0 || id >= MAX_RQ_ITEMS)
+        return LCD_ERR_INVALID_OBJ;
+
+    LCD_RQItem *const item = &render_queue[id];
+    if (!item || item->id == -1 || !item->obj)
+        return LCD_ERR_INVALID_OBJ;
+
+    LCD_Error err;
+    if (item->visible && !visible)
     {
-        unrender_item(item);
-        if (redraw_screen)
-            LCD_RQRender();
+        if ((err = unrender_item(item, redraw_underneath)) != LCD_ERR_OK)
+        {
+            item->visible = true; // Not changed
+            return err;
+        }
+
+        item->visible = false;
+        assert(!item->rendered);
+    }
+    else if (!item->visible && visible)
+    {
+        if (!render_item(item))
+        {
+            item->visible = false; // Not changed
+            return LCD_ERR_COULD_NOT_PROCESS_SHAPE_DRAW;
+        }
+
+        item->visible = true;
+        assert(item->rendered);
     }
 
     return LCD_ERR_OK;
@@ -1537,20 +1521,22 @@ bool LCD_IsObjectVisible(LCD_ObjID id)
     if (id < 0 || id >= MAX_RQ_ITEMS)
         return false;
 
-    LCD_RQItem *const item = &render_queue[id];
+    const LCD_RQItem *const item = &render_queue[id];
     if (!item || item->id == -1 || !item->obj)
         return false;
 
     return item->visible;
 }
 
-void LCD_RQClear(void)
+LCD_Error LCD_RQClear(void)
 {
     // Iterating over MAX_ITEMS, and stopping til we NULL'd render_queue_size
     // objects. This is because, although render_queue_size tells us how many
     // objects are in the queue, there may be empty slots in the queue.
     LCD_RQItem *item;
-    for (u32 i = 0, count = 0; i < MAX_RQ_ITEMS && count != render_queue_size; i++)
+    LCD_Error err;
+    u32 count = 0;
+    for (u32 i = 0; i < MAX_RQ_ITEMS && count != render_queue_size; i++)
     {
         item = &render_queue[i];
         if (item->id == -1 || !item->obj)
@@ -1564,23 +1550,28 @@ void LCD_RQClear(void)
         count++;                                                    // Found actual object, incrementing count.
         render_queue_free_list[render_queue_free_list_count++] = i; // Adding index into the FL.
 
-        LCD_Error ma_err = LCD_MAFreeObject(item->obj);
-        assert(ma_err == LCD_ERR_OK); // Should never fail
+        if ((err = LCD_MAFreeObject(item->obj)) != LCD_ERR_OK)
+            break;
     }
 
-    render_queue_size = 0;
+    render_queue_size -= count;
+    if (err != LCD_ERR_OK)
+        return err;
+
     LCD_SetBackgroundColor(current_bg_color); // Deleting everything
+    return LCD_ERR_OK;
 }
+
+// PUBLIC FONT MANAGER FUNCTIONS
 
 LCD_Error LCD_FMAddFont(LCD_Font font, LCD_FontID *out_id)
 {
     if (font_list_size >= MAX_FONTS)
         return LCD_ERR_FONT_LIST_FULL;
 
-    LCD_FontID id = font_list_size;
-    font_list[id] = font;
+    *out_id = font_list_size;
+    font_list[*out_id] = font;
     font_list_size++;
-    *out_id = id;
     return LCD_ERR_OK;
 }
 
@@ -1591,66 +1582,55 @@ LCD_Error LCD_FMRemoveFont(LCD_FontID id)
 
     for (u32 i = id; i < font_list_size - 1; i++)
         font_list[i] = font_list[i + 1];
+
     font_list_size--;
     return LCD_ERR_OK;
 }
 
 // PUBLIC DEBUG FUNCTIONS
 
-#define STRUCTS_EQ(type, a, b) (memcmp(a, b, sizeof(type)) == 0)
-
-void LCD_DEBUG_RenderBBox(LCD_BBox bbox)
+void LCD_DEBUG_RenderBBox(const LCD_BBox *const bbox)
 {
-    const LCD_BBox zero_bbox = {0};
-    if (STRUCTS_EQ(LCD_BBox, &bbox, &zero_bbox))
+    if (!bbox)
         return;
 
     const LCD_Dimension dim = {
-        abs(bbox.bottom_right.x - bbox.top_left.x),
-        abs(bbox.bottom_right.y - bbox.top_left.y),
+        abs(bbox->bottom_right.x - bbox->top_left.x),
+        abs(bbox->bottom_right.y - bbox->top_left.y),
     };
 
     // A bbox is always a rectangle, so we can render it as a rectangle directly.
     // clang-format off
-    const LCD_Obj bbox_obj = {
+    do_render(&(LCD_Obj){
         .comps_size = 3,
-        .comps = (LCD_Component[]){
+        .comps = (LCD_Component[])
+        {
             {
                 .type = LCD_COMP_RECT,
-                .pos = bbox.top_left,
+                .pos = bbox->top_left,
                 .object.rect = {
-                    .width = dim.width,
-                    .height = dim.height,
-                    .edge_color = LCD_COL_RED,
-                    .fill_color = LCD_COL_NONE,
+                    .width = dim.width, .height = dim.height,
+                    .edge_color = LCD_COL_RED, .fill_color = LCD_COL_NONE,
                 },
             },
             // Diagonal lines
             {
                 .type = LCD_COMP_LINE,
                 .object.line = {
-                    .from = bbox.top_left,
-                    .to = bbox.bottom_right,
+                    .from = bbox->top_left,
+                    .to = bbox->bottom_right,
                     .color = LCD_COL_GREEN,
                 },
             },
             {
                 .type = LCD_COMP_LINE,
                 .object.line = {
-                    .from = {
-                        .x = bbox.top_left.x + dim.width,
-                        .y = bbox.top_left.y,
-                    },
-                    .to = {
-                        .x = bbox.top_left.x,
-                        .y = bbox.top_left.y + dim.height,
-                    },
+                    .from = {bbox->top_left.x + dim.width, bbox->top_left.y},
+                    .to = {bbox->top_left.x, bbox->top_left.y + dim.height},
                     .color = LCD_COL_BLUE,
                 },
             },
         },
-    };
+    }, MD_DRAW);
     // clang-format on
-
-    do_render(&bbox_obj, MD_DRAW);
 }

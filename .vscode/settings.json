@@ -5,5 +5,4 @@
         "peripherals.h": "c",
         "button.h": "c"
     },
-    "sonarlint.pathToCompileCommands": "${workspaceFolder}\\compile_commands.json",
 }
