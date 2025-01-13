@@ -261,7 +261,7 @@ enum
 {
     MD_DRAW = 0x1,
     MD_DELETE = 0x2,
-    MD_BBOX = 0x2
+    MD_BBOX = 0x4,
 } ProcessingMode;
 
 #define IS_MODE(mode, flag) ((mode & flag) != 0)
@@ -631,7 +631,7 @@ _PRIVATE PrintCharError print_char(u8 chr, const LCD_Font *const font, LCD_Coord
     // If we don't want to actually print/delete the char, we just return the width of the char.
     // Additionally, if we want to print/delete but the char has no height data, just return,
     // so that print_text can move to the next char and leave some space between them.
-    if (((mode & 0x11) == 0) || *out_char_h == 0)
+    if (((mode & (MD_DRAW | MD_DELETE)) == 0) || *out_char_h == 0)
         return PRINT_CHR_OK;
 
     // We need to move to the correct row of the array, which contains the char data.
@@ -957,7 +957,7 @@ _PRIVATE LCD_Error unrender_item(LCD_RQItem *const item, bool redraw_underneath)
         return LCD_ERR_INVALID_OBJ;
 
     // If the object is not rendered, skip it
-    if (!item->rendered)
+    if (!item->rendered || !item->visible)
         return true;
 
     item->rendered = !do_render(item->obj, MD_DELETE);
@@ -1217,6 +1217,9 @@ LCD_Color LCD_GetPointColor(LCD_Coordinate point)
 
 LCD_Error LCD_SetPointColor(LCD_Color color, LCD_Coordinate point)
 {
+    if (color == LCD_COL_NONE)
+        return LCD_ERR_OK;
+
     // Checking if color is already 565
     if ((color & ~(0xFFFF)) != 0)
         color = rgb888_to_rgb565(color);
@@ -1225,9 +1228,7 @@ LCD_Error LCD_SetPointColor(LCD_Color color, LCD_Coordinate point)
         return LCD_ERR_COORDS_OUT_OF_BOUNDS;
 
     set_gram_cursor(point.x, point.y);
-    if (color != LCD_COL_NONE)
-        write_to(0x0022, color & 0xFFFF);
-
+    write_to(0x0022, color & 0xFFFF);
     return LCD_ERR_OK;
 }
 
@@ -1438,13 +1439,8 @@ LCD_Error LCD_RQRemoveObject(LCD_ObjID id, bool redraw_underneath)
         return LCD_ERR_INVALID_OBJ;
 
     LCD_Error err;
-
-    item->visible = false;
     if ((err = unrender_item(item, redraw_underneath)) != LCD_ERR_OK)
-    {
-        item->visible = true;
         return err;
-    }
 
     if ((err = LCD_MAFreeObject(item->obj)) != LCD_ERR_OK)
         return err;
@@ -1469,13 +1465,14 @@ LCD_Error LCD_RQGetObject(LCD_ObjID id, LCD_Obj **out_obj)
         return LCD_ERR_INVALID_OBJ;
 
     *out_obj = item->obj;
+    return LCD_ERR_OK;
 }
 
 LCD_Error LCD_RQUpdateObject(LCD_ObjID id, bool redraw_underneath)
 {
     LCD_Error err = LCD_RQSetObjectVisibility(id, false, redraw_underneath);
     if (err != LCD_ERR_OK)
-        return err;
+        return LCD_ERR_COULD_NOT_HIDE_OBJ;
 
     return LCD_RQSetObjectVisibility(id, true, false);
 }
@@ -1493,10 +1490,7 @@ LCD_Error LCD_RQSetObjectVisibility(LCD_ObjID id, bool visible, bool redraw_unde
     if (item->visible && !visible)
     {
         if ((err = unrender_item(item, redraw_underneath)) != LCD_ERR_OK)
-        {
-            item->visible = true; // Not changed
             return err;
-        }
 
         item->visible = false;
         assert(!item->rendered);
@@ -1504,10 +1498,7 @@ LCD_Error LCD_RQSetObjectVisibility(LCD_ObjID id, bool visible, bool redraw_unde
     else if (!item->visible && visible)
     {
         if (!render_item(item))
-        {
-            item->visible = false; // Not changed
             return LCD_ERR_COULD_NOT_PROCESS_SHAPE_DRAW;
-        }
 
         item->visible = true;
         assert(item->rendered);

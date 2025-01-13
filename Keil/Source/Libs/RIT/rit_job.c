@@ -23,7 +23,7 @@ typedef struct
 _DECL_EXTERNALLY u32 base_ival;
 
 /// @brief Array of jobs to execute in the RIT interrupt handler.
-_PRIVATE RIT_JobWrapper jobs[RIT_JOBS_COUNT] = {NULL};
+_PRIVATE RIT_JobWrapper jobs[RIT_JOBS_COUNT] = {{NULL}, {0}};
 _PRIVATE u8 jobs_sz = 0;
 
 /// @brief Stores the current RIT counter value, and it's incremented by each RIT interrupt.

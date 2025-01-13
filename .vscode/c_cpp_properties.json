@@ -11,7 +11,8 @@
                 //"C:/Program Files/Arm/Packs/Keil/LPC1700_DFP/2.7.2/Device/Include/**", // on macOS with Parallels VM
                 "${workspaceFolder}/Keil/Source/CMSIS_core/**",
                 "C:/Users/fabio/AppData/Local/Arm/Packs/Keil/LPC1700_DFP/2.7.2/Device/Include/**", // on Windows
-                "C:/Users/fabio/AppData/Local/Arm/Packs/Keil/LPC1700_DFP/2.7.2/RTE_Driver/**"
+                "C:/Users/fabio/AppData/Local/Arm/Packs/Keil/LPC1700_DFP/2.7.2/RTE_Driver/**",
+                "/Volumes/[C] Windows 11/Program Files/Arm/Packs/ARM/CMSIS/6.1.0/CMSIS/Driver/Include"
             ],
             "cStandard": "c11"
         }

@@ -52,6 +52,11 @@ typedef enum
 
     /// @brief An error occurred during shape deletion
     LCD_ERR_COULD_NOT_PROCESS_SHAPE_DELETE,
+
+    /// @brief An error occured while trying to hide an object.
+    LCD_ERR_COULD_NOT_HIDE_OBJ,
 } LCD_Error;
+
+
 
 #endif

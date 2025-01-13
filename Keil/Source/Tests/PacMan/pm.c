@@ -15,10 +15,11 @@
 // STATE VARIABLES
 
 _PRIVATE LCD_FontID s_font14, s_font20;
-
 _PRIVATE bool s_game_is_ready = false, s_game_playing = false;
-_PRIVATE LCD_Coordinate s_maze_pos;
+_PRIVATE PM_GameSpeed s_game_speed;
 _PRIVATE PM_GameStats s_game_stats;
+
+_PRIVATE LCD_Coordinate s_maze_pos;
 
 _PRIVATE LCD_ObjID s_pm_id;
 _PRIVATE PM_MovementDir s_pm_dir = PM_MOV_NONE;
@@ -41,7 +42,7 @@ _PRIVATE _CBACK void move_pm_right(void) { s_pm_dir = PM_MOV_RIGHT;}
 // DRAWING
 
 // clang-format off
-enum RenderMode { RM_DRAW = 0x1, RM_HIDE = 0x2, RM_UPDATE = 0x3 };
+enum RenderMode { RM_DRAW = 0x1, RM_HIDE = 0x2, RM_UPDATE = 0x4 };
 // clang-format on
 
 _PRIVATE void stat_titles_render(u8 mode)
@@ -113,7 +114,7 @@ _PRIVATE void stat_values_render(u8 mode)
             return;
     }
 
-    if (mode & RM_DRAW)
+    if (mode & (RM_DRAW | RM_UPDATE))
     {
         if (s_stat_vals_id < 0) // Never drawn before
         {
@@ -122,17 +123,17 @@ _PRIVATE void stat_values_render(u8 mode)
                 LCD_TEXT2(5, 20, {
                     .text = game_over_str,
                     .font = s_font14, .char_spacing = 2,
-                    .text_color = LCD_COL_YELLOW, .bg_color = LCD_COL_YELLOW,
+                    .text_color = LCD_COL_YELLOW, .bg_color = LCD_COL_NONE,
                 }),
                 LCD_TEXT2(LCD_GetWidth() / 2 - 10, 20, {
                     .text = score_str,
                     .font = s_font14, .char_spacing = 2,
-                    .text_color = LCD_COL_YELLOW, .bg_color = LCD_COL_YELLOW,
+                    .text_color = LCD_COL_YELLOW, .bg_color = LCD_COL_NONE,
                 }),
                 LCD_TEXT2(LCD_GetWidth() - 60, 20, {
-                    .text = game_over_str,
+                    .text = record_str,
                     .font = s_font14, .char_spacing = 2,
-                    .text_color = game_over_col, .bg_color = game_over_col,
+                    .text_color = game_over_col, .bg_color = LCD_COL_NONE,
                 }),
             });
             // clang-format on
@@ -297,11 +298,15 @@ _PRIVATE inline void move_pm_to(u16 old_row, u16 old_col, u16 new_row, u16 new_c
     LCD_Coordinate new_pm_coords;
     cell_to_coords(new_row, new_col, ANC_CENTER, &new_pm_coords);
 
-    LCD_Obj *obj;
-    LCD_RQGetObject(s_pm_id, &obj);
-    obj->comps->object.circle.center = new_pm_coords;
-    LCD_RQUpdateObject(s_pm_id, false);
+    LCD_RQRemoveObject(s_pm_id, false);
+    LCD_OBJECT(&s_pm_id, {
+        LCD_CIRCLE({
+            .center = new_pm_coords, .radius = PM_PACMAN_RADIUS,
+            .fill_color = PM_PacManColor, .edge_color = PM_PacManColor
+        }),
+    });
 
+    LCD_RQRender();
     PM_Maze[old_row][old_col] = PM_NONE;
     PM_Maze[new_row][new_col] = PM_PCMN;
 }
@@ -381,7 +386,8 @@ _PRIVATE _CBACK void render_loop(void)
 
 _PRIVATE _CBACK void seconds_counter(void)
 {
-    assert(s_game_playing);
+    if (!s_game_playing)
+        return;
 
     s_game_stats.game_over_in--;
     if (s_game_stats.game_over_in == 0)
@@ -394,7 +400,7 @@ _PRIVATE _CBACK void seconds_counter(void)
 
 // PUBLIC FUNCTIONS
 
-bool PACMAN_Init(void)
+bool PACMAN_Init(PM_GameSpeed speed)
 {
     if (!LCD_IsInitialized() || !RIT_IsEnabled() || !TP_IsInitialized())
         return false;
@@ -418,10 +424,12 @@ bool PACMAN_Init(void)
     // Joystick initialization
     JOYSTICK_Init(JOY_POLL_WITH_RIT);
     splash_waiting();
+
+    s_game_speed = speed;
     return s_game_is_ready;
 }
 
-void PACMAN_GameLoop(PM_GameSpeed speed)
+void PACMAN_GameLoop(void)
 {
     if (!s_game_is_ready)
         return;
@@ -434,6 +442,7 @@ void PACMAN_GameLoop(PM_GameSpeed speed)
     stat_titles_render(RM_DRAW);
     stat_values_render(RM_DRAW);
     draw_maze();
+    stat_titles_render(RM_HIDE);
 
     // Enabling joystick
     JOYSTICK_SetFunction(JOY_ACTION_UP, move_pm_up);
@@ -442,7 +451,7 @@ void PACMAN_GameLoop(PM_GameSpeed speed)
     JOYSTICK_SetFunction(JOY_ACTION_RIGHT, move_pm_right);
 
     // Render loop with desired speed & seconds counter
-    RIT_AddJob(render_loop, speed);
+    RIT_AddJob(render_loop, s_game_speed);
     RIT_AddJob(seconds_counter, 1000 / RIT_GetIntervalMs());
     s_game_playing = true;
 }

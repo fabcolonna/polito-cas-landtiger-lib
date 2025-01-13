@@ -3,6 +3,8 @@
         "*.s": "arm",
         "assert.h": "c",
         "peripherals.h": "c",
-        "button.h": "c"
+        "button.h": "c",
+        "driver_usart.h": "c"
     },
+    "C_Cpp.default.compilerPath": "/usr/bin/clang",
 }

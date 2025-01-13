@@ -21,10 +21,10 @@ int main(void)
 
     TP_Init(false);
 
-    if (!PACMAN_Init())
+    if (!PACMAN_Init(PM_SPEED_NORMAL))
         return EXIT_FAILURE;
 
-    PACMAN_GameLoop(PM_SPEED_NORMAL);
+    PACMAN_GameLoop();
     POWER_Init(POWR_CFG_SLEEP_ON_EXIT);
     POWER_SleepOnWFI();
     POWER_WaitForInterrupts();
