@@ -19,12 +19,17 @@ int main(void)
     if (LCD_Init(LCD_ORIENT_VER, lcd_arena, NULL) != LCD_ERR_OK)
         return EXIT_FAILURE;
 
+#if USE_TOUCH
     TP_Init(false);
+#else
+    TP_Init(true);
+    LCD_SetBackgroundColor(LCD_COL_BLACK);
+#endif
 
-    if (!PACMAN_Init(PM_SPEED_NORMAL))
+    if (!PACMAN_Init())
         return EXIT_FAILURE;
 
-    PACMAN_GameLoop();
+    PACMAN_Play(PM_SPEED_NORMAL);
     POWER_Init(POWR_CFG_SLEEP_ON_EXIT);
     POWER_SleepOnWFI();
     POWER_WaitForInterrupts();

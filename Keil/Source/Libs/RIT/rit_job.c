@@ -80,6 +80,9 @@ void RIT_ClearJobs(void)
 
 extern void RIT_IRQHandler(void)
 {
+    LPC_RIT->RICOUNTER = 0;      // Reset counter
+    SET_BIT(LPC_RIT->RICTRL, 0); // Clear interrupt flag
+
     if (jobs_sz > 0)
     {
         counter += base_ival;
@@ -95,7 +98,4 @@ extern void RIT_IRQHandler(void)
         if (counter >= counter_reset_value)
             counter = 0;
     }
-
-    LPC_RIT->RICOUNTER = 0;      // Reset counter
-    SET_BIT(LPC_RIT->RICTRL, 0); // Clear interrupt flag
 }

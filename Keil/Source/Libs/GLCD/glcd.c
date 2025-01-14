@@ -1,8 +1,6 @@
 #include "glcd.h"
 
 #include <LPC17xx.h>
-#include <assert.h>
-#include <math.h>
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
@@ -34,11 +32,16 @@
 #define LCD_WR(x) ((x) ? (LPC_GPIO0->FIOSET = PIN_WR) : (LPC_GPIO0->FIOCLR = PIN_WR))
 #define LCD_RD(x) ((x) ? (LPC_GPIO0->FIOSET = PIN_RD) : (LPC_GPIO0->FIOCLR = PIN_RD))
 
+#ifdef GLCD_REQUIRES_DELAY
 #define DELAY_COUNT(count) for (u16 i = count; i > 0; i--)
 
 #define DELAY_MS(ms)                                                                                                   \
     for (u16 i = 0; i < ms; i++)                                                                                       \
         for (u16 j = 0; j < 1141; j++)
+#else
+#define DELAY_COUNT(count)
+#define DELAY_MS(ms)
+#endif
 
 #define SWAP(type, src, dst)                                                                                           \
     {                                                                                                                  \
@@ -198,7 +201,7 @@ _PRIVATE u16 do_read(void)
 /// @brief Writes a 16-bit value to the LCD controller, at the specified register.
 /// @param reg The register to write to.
 /// @param data The value to write.
-_PRIVATE void write_to(u16 reg, u16 data)
+_PRIVATE _FORCE_INLINE void write_to(u16 reg, u16 data)
 {
     init_rw_operation_at(reg);
     do_write(data);
@@ -207,7 +210,7 @@ _PRIVATE void write_to(u16 reg, u16 data)
 /// @brief Reads an HW from the LCD controller, at the specified register.
 /// @param reg The register to read from.
 /// @return The HW.
-_PRIVATE u16 read_from(u16 reg)
+_PRIVATE _FORCE_INLINE u16 read_from(u16 reg)
 {
     init_rw_operation_at(reg);
     return do_read();
@@ -429,11 +432,11 @@ _PRIVATE bool process_rect(const LCD_Rect *const rect, LCD_Coordinate pos, LCD_B
 
 _PRIVATE bool process_circle(const LCD_Circle *const circle, LCD_BBox *out_bbox, u8 mode)
 {
+    if (!circle || !mode || circle->radius == 0)
+        return false;
+
     const LCD_Coordinate center = circle->center;
     const u16 radius = circle->radius;
-
-    if (radius == 0 || !mode)
-        return false;
 
     if (IS_MODE(mode, MD_DRAW) || IS_MODE(mode, MD_DELETE))
     {
@@ -482,10 +485,18 @@ _PRIVATE bool process_circle(const LCD_Circle *const circle, LCD_BBox *out_bbox,
 
         if (circle->fill_color != LCD_COL_NONE)
         {
+            i16 x_diff, y_diff, rad_sq;
             for (u16 i = center.x - radius + 1; i < center.x + radius; i++)
+            {
                 for (u16 j = center.y - radius + 1; j < center.y + radius; j++)
-                    if (pow((i - center.x), 2) + pow((j - center.y), 2) <= pow(radius, 2)) // Inside the circle
+                {
+                    x_diff = (i - center.x) * (i - center.x);
+                    y_diff = (j - center.y) * (j - center.y);
+                    rad_sq = radius * radius;
+                    if (x_diff + y_diff <= rad_sq)
                         SET_POINT_SIMPLER(mode, circle->fill_color, i, j);
+                }
+            }
         }
     }
 
@@ -545,7 +556,7 @@ _PRIVATE bool process_img_rle(const LCD_Image *const img, LCD_Coordinate pos, LC
                         rgb888 = (u32)(pixel_data & 0x00FFFFFF);
 
                         if (alpha_data) // Alpha is != 0
-                            SET_POINT_SIMPLER(mode, rgb888_to_rgb565(rgb888), current_x, pos.y + i);
+                            SET_POINT_SIMPLER(mode, RGB8_TO_RGB565(rgb888), current_x, pos.y + i);
 
                         current_x++; // Move to the next pixel, regardless of the alpha value
                     }
@@ -553,7 +564,7 @@ _PRIVATE bool process_img_rle(const LCD_Image *const img, LCD_Coordinate pos, LC
                     {
                         // No alpha, pixel_data is of type 0x00RRGGBB
                         rgb888 = (u32)(pixel_data & 0x00FFFFFF);
-                        SET_POINT_SIMPLER(mode, rgb888_to_rgb565(rgb888), current_x++, pos.y + i);
+                        SET_POINT_SIMPLER(mode, RGB8_TO_RGB565(rgb888), current_x++, pos.y + i);
                     }
 
                     pixels_left--;
@@ -718,13 +729,13 @@ _PRIVATE bool process_text(const LCD_Text *const text, LCD_Coordinate pos, LCD_B
         }
         else
         {
-            assert(err == PRINT_CHR_ERR_OUT_OF_VERTICAL_BOUNDS);
+            // assert(err == PRINT_CHR_ERR_OUT_OF_VERTICAL_BOUNDS);
             no_more_space = true; // Stop printing if there's no more space
         }
 
         // Update the maximum width for the current line
         cur_width = ((pos.x - start_x) < MAX_X) ? (pos.x - start_x) : MAX_X;
-        assert(cur_width >= 0); // Should never be < 0, if @ line 800 we specify to start at start_x, not 0
+        // assert(cur_width >= 0); // Should never be < 0, if @ line 800 we specify to start at start_x, not 0
         max_width = (cur_width > max_width) ? cur_width : max_width;
     }
 
@@ -813,7 +824,7 @@ _PRIVATE bool delete_button(const LCD_Button *const button, LCD_Coordinate pos)
                 .text = button->label.text,
                 .font = button->label.font,
                 .text_color = current_bg_color,
-                .bg_color = current_bg_color,
+                .bg_color = LCD_COL_NONE, // BG is never drawn w/ labels.
                 .char_spacing = button->label.char_spacing,
                 .line_spacing = button->label.line_spacing,
             },
@@ -845,9 +856,6 @@ _PRIVATE bool delete_button(const LCD_Button *const button, LCD_Coordinate pos)
 
 _PRIVATE inline bool boxes_intersect(const LCD_BBox *const a, const LCD_BBox *const b)
 {
-    if (!a || !b)
-        return false;
-
     // Check for overlap along the x-axis: left edge of a is to the left of the right edge of b
     // AND the right edge of a is to the right of the left edge of b
     return (a->top_left.x < b->bottom_right.x) && (a->bottom_right.x > b->top_left.x) &&
@@ -858,8 +866,6 @@ _PRIVATE inline bool boxes_intersect(const LCD_BBox *const a, const LCD_BBox *co
 
 _PRIVATE inline LCD_BBox get_union_bbox(LCD_BBox *comps_bbox, u16 comps_bbox_sz)
 {
-    assert(comps_bbox && comps_bbox_sz > 0); // Should never be empty / NULL
-
     LCD_BBox bbox = comps_bbox[0], *current_comp_bbox;
     for (u16 i = 0; i < comps_bbox_sz; i++)
     {
@@ -935,19 +941,25 @@ _PRIVATE bool do_render(const LCD_Obj *const obj, u8 mode)
     return res;
 }
 
+// This function needs to control the rendering phase. It will skip object which have
+// the rendered property set to true (already rendered). It WON'T TOUCH the visible property,
+// it will only update rendered (false->true).
 _PRIVATE inline bool render_item(LCD_RQItem *const item)
 {
     if (!item || !item->obj || item->id < 0 || !item->obj->comps || item->obj->comps_size == 0)
         return false;
 
-    // If the object is already rendered or not visible, skip it
-    if (item->rendered || !item->visible)
+    // If the object is already rendered, skip it.
+    if (item->rendered)
         return true;
 
     item->rendered = do_render(item->obj, MD_DRAW);
     return item->rendered;
 }
 
+// Just like render_item, this function controls the un-rendering phase. It will skip
+// items only if they have the rendered property set to false (already un-rendered). It WON'T
+// TOUCH the visible property. It will update rendered (true->false).
 _PRIVATE LCD_Error unrender_item(LCD_RQItem *const item, bool redraw_underneath)
 {
     if (!item || !item->obj)
@@ -957,7 +969,7 @@ _PRIVATE LCD_Error unrender_item(LCD_RQItem *const item, bool redraw_underneath)
         return LCD_ERR_INVALID_OBJ;
 
     // If the object is not rendered, skip it
-    if (!item->rendered || !item->visible)
+    if (!item->rendered)
         return true;
 
     item->rendered = !do_render(item->obj, MD_DELETE);
@@ -983,26 +995,39 @@ _PRIVATE LCD_Error unrender_item(LCD_RQItem *const item, bool redraw_underneath)
     LCD_BBox rq_item_bbox;
     for (u32 i = 0, count = 0; i < MAX_RQ_ITEMS && count != render_queue_size; i++)
     {
-        // There may be empty slots in the render queue, we need to skip them
+        // There may be empty slots in the render queue, we need to skip them.
+        // We also ignore already un-rendered objects (rq_item->rendered = false)
+        // and invisible objects (rq_item->visible = false).
         rq_item = &render_queue[i];
-        if (rq_item->id == -1 || !rq_item->obj || !rq_item->visible || !rq_item->rendered)
+        if (rq_item->id < 0 || !rq_item->obj)
             continue;
 
-        // Found valid object:
+        // Found valid object
         count++;
 
-        // Skipping the object we removed
-        if (rq_item->id == item->id)
+        // Skipping the object we removed, or any un-rendered / invisible obj.
+        if (rq_item->id == item->id || !rq_item->rendered || !rq_item->visible)
             continue;
 
         if ((err = LCD_GetObjBBox(rq_item->obj, &rq_item_bbox)) != LCD_ERR_OK)
             break;
 
+        // If the two objects' bboxes intersect, it means that during the upper layer un-rendering
+        // process, parts of the object underneath got deleted too. Hence, we need to mark it
+        // unrendered (rq_item->rendered = false) so that LCD_RQRender() will notice, and will redraw it.
         if (boxes_intersect(&obj_bbox, &rq_item_bbox))
             rq_item->rendered = false;
     }
 
     return err == LCD_ERR_OK ? LCD_RQRender() : err;
+}
+
+// Useful when redrawing the underneath is not required -> it will delete complex shapes like
+// text or circle by deleting the associated bbox, which is a rectangle, way faster to delete.
+_PRIVATE LCD_Error unrender_item_fast(LCD_RQItem *const item)
+{
+    
+
 }
 
 // PUBLIC FUNCTIONS
@@ -1222,7 +1247,7 @@ LCD_Error LCD_SetPointColor(LCD_Color color, LCD_Coordinate point)
 
     // Checking if color is already 565
     if ((color & ~(0xFFFF)) != 0)
-        color = rgb888_to_rgb565(color);
+        color = RGB8_TO_RGB565(color);
 
     if (point.x >= MAX_X || point.y >= MAX_Y)
         return LCD_ERR_COORDS_OUT_OF_BOUNDS;
@@ -1238,7 +1263,7 @@ void LCD_SetBackgroundColor(LCD_Color color)
         return;
 
     if ((color & ~(0xFFFF)) != 0)
-        color = rgb888_to_rgb565(color);
+        color = RGB8_TO_RGB565(color);
 
     current_bg_color = color;
 
@@ -1271,8 +1296,8 @@ void LCD_SetBackgroundColor(LCD_Color color)
         if (item->id == -1 && !item->obj)
             continue;
 
-        count++; // Found actual object, incrementing count.
-        item->rendered = false;
+        count++;                // Found actual object, incrementing count.
+        item->rendered = false; // So they will be re-rendered by LCD_RQRender().
     }
 
     // Re-rendering everything on top of the new background color.
@@ -1338,7 +1363,7 @@ LCD_Error LCD_GetObjBBox(const LCD_Obj *const obj, LCD_BBox *out_bbox)
     if (!obj->comps || obj->comps_size == 0)
         return LCD_ERR_INVALID_OBJ;
 
-    assert(obj->comps_size < MAX_COMPS_PER_OBJECT); // Should never have all these components.
+    // assert(obj->comps_size < MAX_COMPS_PER_OBJECT); // Should never have all these components.
     LCD_BBox comp_bbox[obj->comps_size];
 
     LCD_Error err = LCD_ERR_OK;
@@ -1353,7 +1378,7 @@ LCD_Error LCD_GetObjBBox(const LCD_Obj *const obj, LCD_BBox *out_bbox)
 
 // RENDERING
 
-LCD_Error LCD_RQAddObject(const LCD_Obj *const obj, LCD_ObjID *out_id)
+LCD_Error LCD_RQAddObject(const LCD_Obj *const obj, LCD_ObjID *out_id, u8 options)
 {
     if (!obj)
         return LCD_ERR_NULL_PARAMS;
@@ -1385,8 +1410,8 @@ LCD_Error LCD_RQAddObject(const LCD_Obj *const obj, LCD_ObjID *out_id)
 
     item->id = rq_slot;
     item->obj = obj_ref;
-    item->visible = true; // Object needs to be rendered, eventually
     item->rendered = false;
+    item->visible = !(options & LCD_ADD_OBJ_OPT_DONT_MARK_VISIBLE);
 
     render_queue_size++;
     if (out_id)
@@ -1438,9 +1463,15 @@ LCD_Error LCD_RQRemoveObject(LCD_ObjID id, bool redraw_underneath)
     if (!item || item->id == -1 || !item->obj)
         return LCD_ERR_INVALID_OBJ;
 
+    // Marking the item as invisible
+    item->visible = false;
+
     LCD_Error err;
     if ((err = unrender_item(item, redraw_underneath)) != LCD_ERR_OK)
+    {
+        item->visible = true;
         return err;
+    }
 
     if ((err = LCD_MAFreeObject(item->obj)) != LCD_ERR_OK)
         return err;
@@ -1448,33 +1479,12 @@ LCD_Error LCD_RQRemoveObject(LCD_ObjID id, bool redraw_underneath)
     // Freeing the RQ_Item
     item->id = -1;
     item->obj = NULL;
+    item->rendered = false;
 
     // Adding the slod index to the free list
     render_queue_free_list[render_queue_free_list_count++] = id;
     render_queue_size--;
     return LCD_ERR_OK;
-}
-
-LCD_Error LCD_RQGetObject(LCD_ObjID id, LCD_Obj **out_obj)
-{
-    if (id < 0 || id >= MAX_RQ_ITEMS)
-        return LCD_ERR_INVALID_OBJ;
-
-    LCD_RQItem *const item = &render_queue[id];
-    if (!item || item->id == -1 || !item->obj)
-        return LCD_ERR_INVALID_OBJ;
-
-    *out_obj = item->obj;
-    return LCD_ERR_OK;
-}
-
-LCD_Error LCD_RQUpdateObject(LCD_ObjID id, bool redraw_underneath)
-{
-    LCD_Error err = LCD_RQSetObjectVisibility(id, false, redraw_underneath);
-    if (err != LCD_ERR_OK)
-        return LCD_ERR_COULD_NOT_HIDE_OBJ;
-
-    return LCD_RQSetObjectVisibility(id, true, false);
 }
 
 LCD_Error LCD_RQSetObjectVisibility(LCD_ObjID id, bool visible, bool redraw_underneath)
@@ -1486,22 +1496,25 @@ LCD_Error LCD_RQSetObjectVisibility(LCD_ObjID id, bool visible, bool redraw_unde
     if (!item || item->id == -1 || !item->obj)
         return LCD_ERR_INVALID_OBJ;
 
+    if (item->visible == visible)
+        return LCD_ERR_OK;
+
     LCD_Error err;
-    if (item->visible && !visible)
+    if (!visible)
     {
-        if ((err = unrender_item(item, redraw_underneath)) != LCD_ERR_OK)
-            return err;
-
         item->visible = false;
-        assert(!item->rendered);
+        if ((err = unrender_item(item, redraw_underneath)) != LCD_ERR_OK)
+            item->visible = true;
+        return err;
     }
-    else if (!item->visible && visible)
+    else
     {
-        if (!render_item(item))
-            return LCD_ERR_COULD_NOT_PROCESS_SHAPE_DRAW;
-
         item->visible = true;
-        assert(item->rendered);
+        if (!render_item(item))
+        {
+            item->visible = false;
+            return LCD_ERR_COULD_NOT_PROCESS_SHAPE_DRAW;
+        }
     }
 
     return LCD_ERR_OK;
@@ -1551,6 +1564,71 @@ LCD_Error LCD_RQClear(void)
 
     LCD_SetBackgroundColor(current_bg_color); // Deleting everything
     return LCD_ERR_OK;
+}
+
+LCD_Error LCD_RQMoveObject(LCD_ObjID id, LCD_Coordinate new_pos, bool redraw_underneath)
+{
+    if (id < 0 || id >= MAX_RQ_ITEMS)
+        return LCD_ERR_INVALID_OBJ;
+
+    LCD_RQItem *const item = &render_queue[id];
+    if (!item || item->id == -1 || !item->obj)
+        return LCD_ERR_INVALID_OBJ;
+
+    // Starting by de-rendering the previous object
+    LCD_Error err;
+    if ((err = unrender_item(item, redraw_underneath)) != LCD_ERR_OK)
+        return err;
+
+    // Iterating through each component and update its position
+    i16 dx, dy;
+    LCD_Component *comp;
+    for (u16 i = 0; i < item->obj->comps_size; i++)
+    {
+        comp = &(item->obj->comps[i]);
+        switch (comp->type)
+        {
+        case LCD_COMP_LINE: {
+            // For a line, we need to calculate the BBox, and calculate the offset that
+            // needs to be applied to the from & to coordinates with the top-left corner
+            // of the BBox, and new_pos, which in this case is interpreted as the new
+            // top-left corner of the line.
+            LCD_BBox bbox;
+            if ((err = LCD_GetComponentBBox(comp, &bbox)) != LCD_ERR_OK)
+                return err;
+
+            dx = new_pos.x - bbox.top_left.x;
+            dy = new_pos.y - bbox.top_left.y;
+
+            comp->object.line.from.x += dx;
+            comp->object.line.from.y += dy;
+            comp->object.line.to.x += dx;
+            comp->object.line.to.y += dy;
+            break;
+        }
+        case LCD_COMP_CIRCLE:
+            dx = new_pos.x - comp->object.circle.center.x;
+            dy = new_pos.y - comp->object.circle.center.y;
+
+            // Calculate the offset
+            comp->object.circle.center.x += dx;
+            comp->object.circle.center.y += dy;
+            break;
+        case LCD_COMP_RECT:
+        case LCD_COMP_IMAGE:
+        case LCD_COMP_TEXT:
+        case LCD_COMP_BUTTON:
+            dx = new_pos.x - comp->pos.x;
+            dy = new_pos.y - comp->pos.y;
+
+            comp->pos.x += dx;
+            comp->pos.y += dy;
+            break;
+        }
+    }
+
+    // Re-rendering the new object
+    return render_item(item) ? LCD_ERR_OK : LCD_ERR_COULD_NOT_PROCESS_SHAPE_DRAW;
 }
 
 // PUBLIC FONT MANAGER FUNCTIONS

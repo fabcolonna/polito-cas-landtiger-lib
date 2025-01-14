@@ -197,4 +197,14 @@ typedef struct
 
 typedef i16 LCD_ObjID;
 
+// LCD ADDING OPTIONS
+
+typedef enum
+{
+    /// @brief Request GLCD to not mark the newly added object as visible. In that way, it
+    ///        it won't be rendered by any LCD_RQRender() call, unless it's been marked as
+    ///        visible through the LCD_RQSetObjectVisibility() function.
+    LCD_ADD_OBJ_OPT_DONT_MARK_VISIBLE = 0x1
+} LCD_RQAddOption;
+
 #endif

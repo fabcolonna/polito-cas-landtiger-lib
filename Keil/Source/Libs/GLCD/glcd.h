@@ -24,13 +24,8 @@
 ///        - 5 bits for red (bits 11-15)
 ///        - 6 bits for green (bits 5-10)
 ///        - 5 bits for blue (bits 0-4)
-_FORCE_INLINE u16 rgb888_to_rgb565(u32 rgb888)
-{
-    const u8 r = (rgb888 >> 16) & 0xFF;
-    const u8 g = (rgb888 >> 8) & 0xFF;
-    const u8 b = rgb888 & 0xFF;
-    return (u16)((r >> 3) << 11 | (g >> 2) << 5 | (b >> 3));
-}
+#define RGB8_TO_RGB565(rgb)                                                                                            \
+    (u16)((((rgb >> 16) & 0xFF) >> 3) << 11 | (((rgb >> 8) & 0xFF) >> 2) << 5 | ((rgb & 0xFF) >> 3))
 
 /// @brief Initializes TFT LCD Controller.
 /// @param orientation The orientation of the screen, from the LCD_Orientation enum
@@ -114,12 +109,13 @@ void LCD_SetBackgroundColor(LCD_Color color);
 ///        its ID (if out_id is not NULL) through the out_id pointer.
 /// @param obj The object to add
 /// @param out_id The ID of the object, or NULL on error.
+/// @param options Adding preferences, from the LCD_RQAddOption enum.
 /// @return LCD_Error The error code.
 /// @note Accepting the obj as a const * to simulate the r-value reference in C++, where
 ///       it's possible to pass a temporary (LCD_Obj&&) to the function, and then move
 ///       the object to the memory arena. This is not possible in C. If used with the two
 ///       macros LCD_OBJECT an LCD_RENDER_IMM, the object is passed as r-value reference!
-LCD_Error LCD_RQAddObject(const LCD_Obj *const obj, LCD_ObjID *out_id);
+LCD_Error LCD_RQAddObject(const LCD_Obj *const obj, LCD_ObjID *out_id, u8 options);
 
 /// @brief Manually triggers an update of the screen. Useful when you want to
 ///        add multiple objects at once, and only update the screen at the end.
@@ -145,7 +141,10 @@ LCD_Error LCD_RQRenderImmediate(const LCD_Obj *const obj);
 /// @param new_pos The new position of the object, which will replace the old one
 /// @param redraw_underneath Whether to redraw the objects that are below the object prior to the move
 /// @return LCD_Error The error code.
-/// LCD_Error LCD_RQMoveObject(LCD_ObjID id, LCD_Coordinate new_pos, bool redraw_underneath);
+/// @note As of now, this method moves the oject by translating each components' coordinate by an
+///       offset calculated from the top-left corner of the bounding box of the object itself, returned
+///       by the LCD_GetObjBBox() method. This may be imprecise!
+LCD_Error LCD_RQMoveObject(LCD_ObjID id, LCD_Coordinate new_pos, bool redraw_underneath);
 
 /// @brief Removes an object from the render queue by its ID. It also deallocates the
 ///        memory used by that object in the memory arena.
@@ -160,19 +159,6 @@ LCD_Error LCD_RQRemoveObject(LCD_ObjID id, bool redraw_underneath);
 /// @param redraw_underneath Whether to redraw the objects that are below the current one.
 /// @return LCD_Error The error code.
 LCD_Error LCD_RQSetObjectVisibility(LCD_ObjID id, bool visible, bool redraw_underneath);
-
-/// @brief Retrieves the raw LCD_Obj associated to the given ID, if present.
-/// @param id The ID of the object to retrieve
-/// @param out_obj The object itself, if present.
-/// @return LCD_Error The error code.
-LCD_Error LCD_RQGetObject(LCD_ObjID id, LCD_Obj **out_obj);
-
-/// @brief Deletes and re-renders the object associated to the given ID, which
-///        has been modified with a prior call to LCD_RQGetObject().
-/// @param id The ID of the object to update
-/// @param redraw_underneath Whether to redraw the objects that are below the removed one.
-/// @return LCD_Error The error code.
-LCD_Error LCD_RQUpdateObject(LCD_ObjID id, bool redraw_underneath);
 
 /// @brief Returns whether an object is visible on the screen or not.
 /// @param id The ID of the object to check

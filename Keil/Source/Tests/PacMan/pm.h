@@ -6,8 +6,8 @@
 
 #include <stdbool.h>
 
-bool PACMAN_Init(PM_GameSpeed speed);
+bool PACMAN_Init(void);
 
-void PACMAN_GameLoop(void);
+void PACMAN_Play(PM_GameSpeed speed);
 
 #endif

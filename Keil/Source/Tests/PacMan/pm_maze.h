@@ -25,10 +25,13 @@ const u16 PM_MazeHeightPixels = PM_MAZE_SCALED_HEIGHT * PM_MAZE_CELL_SIZE;
 
 #define MAX_LIVES 5
 
-LCD_Color PM_WallColor;
-LCD_Color PM_PacManColor;
-LCD_Color PM_StandardPillColor;
-LCD_Color PM_SuperPillColor;
+// Colors
+const LCD_Color PM_WallColor = 0x25283;
+const LCD_Color PM_PacManColor = 0xFFD86B;
+const LCD_Color PM_StandardPillColor = 0xE27417;
+const LCD_Color PM_SuperPillColor = 0xFDB897;
+
+const LCD_Color PM_NiceOrange = RGB8_TO_RGB565(0xe27417);
 
 // TYPES
 

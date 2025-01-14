@@ -33,7 +33,27 @@
 #define LCD_OBJECT(id, ...)                                                                                            \
     LCD_RQAddObject(&((LCD_Obj){.comps = (LCD_Component[])__VA_ARGS__,                                                 \
                                 .comps_size = sizeof((LCD_Component[])__VA_ARGS__) / sizeof(LCD_Component)}),          \
-                    id)
+                    id, 0);                                                                                            \
+    LCD_RQRender()
+
+/// @brief Same as LCD_OBJECT(), but it asks the GLCD to NOT make the object immediately visible. Objects like
+/// these won't be rendered simply by calling LCD_RQRender(), but they first need to have their visibility manually
+/// set to true by the user, through the LCD_RQSetObjectVisibility() function.
+#define LCD_MANUAL_VISIBILITY_OBJECT(id, ...)                                                                          \
+    LCD_RQAddObject(&((LCD_Obj){.comps = (LCD_Component[])__VA_ARGS__,                                                 \
+                                .comps_size = sizeof((LCD_Component[])__VA_ARGS__) / sizeof(LCD_Component)}),          \
+                    id, LCD_ADD_OBJ_OPT_DONT_MARK_VISIBLE);
+
+#define LCD_OBJECT_UPDATE(id, redraw_underneath, ...)                                                                  \
+    ({                                                                                                                 \
+        LCD_Error __err = LCD_RQSetObjectVisibility(id, false, redraw_underneath);                                     \
+        if (__err == LCD_ERR_OK)                                                                                       \
+        {                                                                                                              \
+            __VA_ARGS__                                                                                                \
+            __err = LCD_RQSetObjectVisibility(id, true, false);                                                        \
+        }                                                                                                              \
+        __err;                                                                                                         \
+    })
 
 /**
  * @brief Renders a list of components immediately, without adding them to the queue.

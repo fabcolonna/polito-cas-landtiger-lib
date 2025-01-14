@@ -21,8 +21,8 @@ typedef enum
 typedef enum
 {
     PM_SPEED_FAST = 1,
-    PM_SPEED_NORMAL = 2,
-    PM_SPEED_SLOW = 3,
+    PM_SPEED_NORMAL,
+    PM_SPEED_SLOW
 } PM_GameSpeed;
 
 #endif
