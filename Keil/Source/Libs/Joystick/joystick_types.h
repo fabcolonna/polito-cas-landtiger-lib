@@ -5,8 +5,12 @@
 
 typedef enum
 {
-    JOY_POLL_WITH_RIT = 0x1
-} JOYSTICK_Config;
+    /// @brief No error.
+    JOY_ERR_OK = 0,
+    /// @brief During initialization, POLL_WITH_RIT was requested
+    ///        but the RIT was not enabled.
+    JOY_ERR_RIT_UNINIT,
+} JOYSTICK_Error;
 
 /// @brief Joystick function handler function pointer
 typedef void (*JOYSTICK_Function)(void);
@@ -22,5 +26,7 @@ typedef enum
     JOY_ACTION_UP, // GPIO 1.29
     JOY_ACTION_COUNT
 } JOYSTICK_Action;
+
+#define JOY_ACTION_ALL (u8)(-1)
 
 #endif

@@ -330,7 +330,7 @@ bool calibrate(void)
     if (!LCD_IsInitialized())
         return false;
 
-    LCD_SetBackgroundColor(LCD_COL_BLACK);
+    LCD_SetBackgroundColor(LCD_COL_BLACK, false);
 
     LCD_ObjID text;
     // clang-format off

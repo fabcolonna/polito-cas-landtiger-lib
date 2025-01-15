@@ -10,8 +10,9 @@ _PRIVATE const u32 rit_clk_mhz = 100;
 //_DECL_EXTERNALLY void free_jobs_array(void);
 
 _USED_EXTERNALLY u32 base_ival;
+_DECL_EXTERNALLY u32 counter_reset_value;
 
-void RIT_Init(u32 ival_ms, u16 int_priority)
+RIT_Error RIT_Init(u32 ival_ms, u16 int_priority)
 {
     // Powering up the RIT
     POWER_TurnOnPeripheral(POW_PCRIT);
@@ -25,12 +26,16 @@ void RIT_Init(u32 ival_ms, u16 int_priority)
     LPC_RIT->RICOUNTER = 0;
 
     base_ival = ival_ms;
+    counter_reset_value = ival_ms;
 
     // Enabling interrupts coming from RIT
     NVIC_EnableIRQ(RIT_IRQn);
 
     if (!IS_DEF_PRIORITY(int_priority) && IS_BETWEEN_EQ(int_priority, 0, 15))
-        NVIC_SetPriority(RIT_IRQn, int_priority);
+        return RIT_ERR_INT_PRIO_INVALID;
+
+    NVIC_SetPriority(RIT_IRQn, int_priority);
+    return RIT_ERR_OK;
 }
 
 void RIT_Deinit(void)

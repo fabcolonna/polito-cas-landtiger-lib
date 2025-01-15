@@ -686,24 +686,24 @@
               <FilePath>.\Source\Tests\main.c</FilePath>
             </File>
             <File>
-              <FileName>pm.c</FileName>
+              <FileName>pacman.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\Source\Tests\PacMan\pm.c</FilePath>
+              <FilePath>.\Source\Tests\PacMan\pacman.c</FilePath>
             </File>
             <File>
-              <FileName>pm.h</FileName>
+              <FileName>pacman.h</FileName>
               <FileType>5</FileType>
-              <FilePath>.\Source\Tests\PacMan\pm.h</FilePath>
+              <FilePath>.\Source\Tests\PacMan\pacman.h</FilePath>
             </File>
             <File>
-              <FileName>pm_maze.h</FileName>
+              <FileName>pacman_maze.h</FileName>
               <FileType>5</FileType>
-              <FilePath>.\Source\Tests\PacMan\pm_maze.h</FilePath>
+              <FilePath>.\Source\Tests\PacMan\pacman_maze.h</FilePath>
             </File>
             <File>
-              <FileName>pm_types.h</FileName>
+              <FileName>pacman_types.h</FileName>
               <FileType>5</FileType>
-              <FilePath>.\Source\Tests\PacMan\pm_types.h</FilePath>
+              <FilePath>.\Source\Tests\PacMan\pacman_types.h</FilePath>
             </File>
           </Files>
         </Group>
@@ -1410,24 +1410,24 @@
               <FilePath>.\Source\Tests\main.c</FilePath>
             </File>
             <File>
-              <FileName>pm.c</FileName>
+              <FileName>pacman.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\Source\Tests\PacMan\pm.c</FilePath>
+              <FilePath>.\Source\Tests\PacMan\pacman.c</FilePath>
             </File>
             <File>
-              <FileName>pm.h</FileName>
+              <FileName>pacman.h</FileName>
               <FileType>5</FileType>
-              <FilePath>.\Source\Tests\PacMan\pm.h</FilePath>
+              <FilePath>.\Source\Tests\PacMan\pacman.h</FilePath>
             </File>
             <File>
-              <FileName>pm_maze.h</FileName>
+              <FileName>pacman_maze.h</FileName>
               <FileType>5</FileType>
-              <FilePath>.\Source\Tests\PacMan\pm_maze.h</FilePath>
+              <FilePath>.\Source\Tests\PacMan\pacman_maze.h</FilePath>
             </File>
             <File>
-              <FileName>pm_types.h</FileName>
+              <FileName>pacman_types.h</FileName>
               <FileType>5</FileType>
-              <FilePath>.\Source\Tests\PacMan\pm_types.h</FilePath>
+              <FilePath>.\Source\Tests\PacMan\pacman_types.h</FilePath>
             </File>
           </Files>
         </Group>
@@ -2272,24 +2272,24 @@
               <FilePath>.\Source\Tests\main.c</FilePath>
             </File>
             <File>
-              <FileName>pm.c</FileName>
+              <FileName>pacman.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\Source\Tests\PacMan\pm.c</FilePath>
+              <FilePath>.\Source\Tests\PacMan\pacman.c</FilePath>
             </File>
             <File>
-              <FileName>pm.h</FileName>
+              <FileName>pacman.h</FileName>
               <FileType>5</FileType>
-              <FilePath>.\Source\Tests\PacMan\pm.h</FilePath>
+              <FilePath>.\Source\Tests\PacMan\pacman.h</FilePath>
             </File>
             <File>
-              <FileName>pm_maze.h</FileName>
+              <FileName>pacman_maze.h</FileName>
               <FileType>5</FileType>
-              <FilePath>.\Source\Tests\PacMan\pm_maze.h</FilePath>
+              <FilePath>.\Source\Tests\PacMan\pacman_maze.h</FilePath>
             </File>
             <File>
-              <FileName>pm_types.h</FileName>
+              <FileName>pacman_types.h</FileName>
               <FileType>5</FileType>
-              <FilePath>.\Source\Tests\PacMan\pm_types.h</FilePath>
+              <FilePath>.\Source\Tests\PacMan\pacman_types.h</FilePath>
             </File>
           </Files>
         </Group>

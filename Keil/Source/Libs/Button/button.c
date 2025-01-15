@@ -12,7 +12,7 @@ _DECL_EXTERNALLY void handle_debouncing(void);
 
 // PUBLIC FUNCTIONS
 
-void BUTTON_Init(u8 options, u8 eint0_priority, u8 eint1_priority, u8 eint2_priority)
+BUTTON_Error BUTTON_Init(u8 options)
 {
     // Enabling EINT[0..2] in PINSEL4. In the table, these PINS behave
     // like EINTs when set to 01.
@@ -26,25 +26,18 @@ void BUTTON_Init(u8 options, u8 eint0_priority, u8 eint1_priority, u8 eint2_prio
     // EXTPOLAR in SC, ints are raised on FALLING EDGE.
     LPC_SC->EXTMODE = 0x7;
     LPC_SC->EXTPOLAR = 0x0;
-
-    NVIC_EnableIRQ(EINT0_IRQn);
-    NVIC_EnableIRQ(EINT1_IRQn);
-    NVIC_EnableIRQ(EINT2_IRQn);
-
-    if (!IS_DEF_PRIORITY(eint0_priority) && IS_BETWEEN_EQ(eint0_priority, 0, 15))
-        NVIC_SetPriority(RIT_IRQn, eint0_priority);
-
-    if (!IS_DEF_PRIORITY(eint1_priority) && IS_BETWEEN_EQ(eint1_priority, 0, 15))
-        NVIC_SetPriority(RIT_IRQn, eint1_priority);
-
-    if (!IS_DEF_PRIORITY(eint2_priority) && IS_BETWEEN_EQ(eint2_priority, 0, 15))
-        NVIC_SetPriority(RIT_IRQn, eint2_priority);
-
-    if (options & BTN_DEBOUNCE_WITH_RIT && RIT_IsEnabled())
+    
+    if (options & BTN_DEBOUNCE_WITH_RIT)
     {
+        if (!RIT_IsEnabled())
+            return BTN_ERR_RIT_UNINIT;
+
         debouncer_on = true;
         RIT_AddJob(handle_debouncing, RIT_NO_DIVIDER);
+        RIT_EnableJob(handle_debouncing);
     }
+
+    return BTN_ERR_OK;
 }
 
 void BUTTON_Deinit(void)
@@ -59,6 +52,9 @@ void BUTTON_Deinit(void)
     NVIC_DisableIRQ(EINT1_IRQn);
     NVIC_DisableIRQ(EINT2_IRQn);
 
-    debouncer_on = false;
-    RIT_RemoveJob(handle_debouncing);
+    if (debouncer_on)
+    {
+        debouncer_on = false;
+        RIT_RemoveJob(handle_debouncing);
+    }
 }

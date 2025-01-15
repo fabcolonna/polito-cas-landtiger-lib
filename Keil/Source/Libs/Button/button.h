@@ -6,25 +6,36 @@
 
 /// @brief Initializes the BUTTON peripherals
 /// @param options Button options from the BUTTON_Config enum
-/// @param eint0_priority Interrupt priority (0 (highest), 15 (lowest)) for EINT0.
-/// @param eint1_priority Interrupt priority for EINT1.
-/// @param eint2_priority Interrupt priority for EINT2.
-/// @note If INT_DEF_PRIO is passed to the priorities, the default priority will be used.
-void BUTTON_Init(u8 options, u8 eint0_priority, u8 eint1_priority, u8 eint2_priority);
+/// @return BUTTON_Error The error.
+BUTTON_Error BUTTON_Init(u8 options);
 
+/// @brief Deinitializes the buttons, by removing all jobs, disabling
+///        the interrupts, and removing the debouncing job from the RIT.
 void BUTTON_Deinit(void);
 
 // INTERRUPTS
 
-/// @brief Sets the interrupt handler for a TIMER peripheral, on a specific source between
-///        the 4 match registers and 2 capture channels (enum TIMER_Interrupt_Source).
-/// @param source Button interrupt source (enum BUTTON_Interrupt_Source)
-/// @param handler Function pointer to the interrupt handler: void function(void)
-void BUTTON_SetInterruptHandler(BUTTON_InterruptSource source, BUTTON_InterruptHandler handler);
+/// @brief Enables the interrupt generation of the given source, provided that
+///        there's a function associated to it.
+/// @param source The source to enable.
+/// @param int_priority The priority to assign to the specified source.
+BUTTON_Error BUTTON_EnableSource(BUTTON_Source source, u8 int_priority);
 
-/// @brief Unsets the interrupt handler for a TIMER peripheral, on a specific source between
-///        the 4 match registers and 2 capture channels (enum TIMER_Interrupt_Source).
-/// @param source Interrupt source (enum TIMER_Interrupt_Source)
-void BUTTON_UnsetInterruptHandler(BUTTON_InterruptSource source);
+/// @brief Disables the interrupt generation of the given source, but it leaves
+///        the function binding.
+/// @param source THe source to disable.
+void BUTTON_DisableSource(BUTTON_Source source);
+
+/// @brief Binds a given interrupt to a functionality.
+/// @param source Button interrupt source (enum BUTTON_Source)
+/// @param handler Function pointer to the interrupt handler.
+/// @param int_priority The priority to assign to the interrupts coming from
+/// the selected source.
+/// @param enable Whether to enable the function binding right away.
+void BUTTON_SetFunction(BUTTON_Source source, BUTTON_Function func);
+
+/// @brief Unbinds the previously set function from the selected interrupt source.
+/// @param source Interrupt source (enum BUTTON_Source)
+void BUTTON_UnsetFunction(BUTTON_Source source);
 
 #endif

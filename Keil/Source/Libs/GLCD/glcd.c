@@ -1,4 +1,5 @@
 #include "glcd.h"
+#include "peripherals.h" // For configuration defines
 
 #include <LPC17xx.h>
 #include <stdbool.h>
@@ -41,6 +42,12 @@
 #else
 #define DELAY_COUNT(count)
 #define DELAY_MS(ms)
+#endif
+
+#ifdef GLCD_INLINE_AMAP
+#define _GLCD_INLINE inline __attribute__(always_inline)
+#else
+#define _GLCD_INLINE
 #endif
 
 #define SWAP(type, src, dst)                                                                                           \
@@ -201,7 +208,7 @@ _PRIVATE u16 do_read(void)
 /// @brief Writes a 16-bit value to the LCD controller, at the specified register.
 /// @param reg The register to write to.
 /// @param data The value to write.
-_PRIVATE _FORCE_INLINE void write_to(u16 reg, u16 data)
+_PRIVATE _GLCD_INLINE void write_to(u16 reg, u16 data)
 {
     init_rw_operation_at(reg);
     do_write(data);
@@ -210,7 +217,7 @@ _PRIVATE _FORCE_INLINE void write_to(u16 reg, u16 data)
 /// @brief Reads an HW from the LCD controller, at the specified register.
 /// @param reg The register to read from.
 /// @return The HW.
-_PRIVATE _FORCE_INLINE u16 read_from(u16 reg)
+_PRIVATE _GLCD_INLINE u16 read_from(u16 reg)
 {
     init_rw_operation_at(reg);
     return do_read();
@@ -265,9 +272,12 @@ enum
     MD_DRAW = 0x1,
     MD_DELETE = 0x2,
     MD_BBOX = 0x4,
+
+    // Only for do_render
+    MD_FAST = 0x8,
 } ProcessingMode;
 
-#define IS_MODE(mode, flag) ((mode & flag) != 0)
+#define IS_MODE(mode, flag) (((mode) & (flag)) != 0)
 
 // DRAWING FUNCTIONS
 
@@ -522,11 +532,9 @@ _PRIVATE bool process_img_rle(const LCD_Image *const img, LCD_Coordinate pos, LC
     if (pos.x >= MAX_X || pos.y >= MAX_Y)
         return false; // Image is completely outside the screen
 
-    // If the image is partially outside the screen, adjust its width and height.
-    if (pos.x + width > MAX_X)
-        width = MAX_X - pos.x;
-    if (pos.y + height > MAX_Y)
-        height = MAX_Y - pos.y;
+    // Not drawing images partially out of the screen.
+    if (pos.x + width > MAX_X || pos.y + height > MAX_Y)
+        return false;
 
     if (IS_MODE(mode, MD_DRAW) || IS_MODE(mode, MD_DELETE))
     {
@@ -901,12 +909,16 @@ _PRIVATE bool do_render(const LCD_Obj *const obj, u8 mode)
         switch (comp->type)
         {
         case LCD_COMP_LINE:
+            // Cannot delete faster, skipping MD_FAST check
             res = process_line(&comp->object.line, NULL, mode);
             break;
         case LCD_COMP_RECT:
+            // Cannot delete faster, skipping MD_FAST check
             res = process_rect(&comp->object.rect, comp->pos, NULL, mode);
             break;
         case LCD_COMP_CIRCLE:
+            // Maybe BBox checking will introduce overhead? Skipping for now
+            // TODO: Reconsider this when you'll implement cached_bbox in RQItem.
             res = process_circle(&comp->object.circle, NULL, mode);
             break;
         case LCD_COMP_IMAGE: {
@@ -926,9 +938,25 @@ _PRIVATE bool do_render(const LCD_Obj *const obj, u8 mode)
             break;
         }
         case LCD_COMP_TEXT:
-            res = process_text(&comp->object.text, comp->pos, NULL, mode);
+            if (IS_MODE(mode, MD_DELETE | MD_FAST))
+            {
+                LCD_BBox bbox;
+                if (!(res = process_text(&comp->object.text, comp->pos, &bbox, MD_BBOX)))
+                    break;
+
+                res = process_rect(
+                    &(LCD_Rect){
+                        .width = abs(bbox.top_left.x - bbox.bottom_right.x),
+                        .height = abs(bbox.top_left.y - bbox.bottom_right.y),
+                    },
+                    comp->pos, NULL, MD_DELETE);
+                break;
+            }
+            else
+                res = process_text(&comp->object.text, comp->pos, NULL, mode);
             break;
         case LCD_COMP_BUTTON: {
+            // For buttons, we could skip label deletion, but buttons are not as frequent...
             if (IS_MODE(mode, MD_DELETE))
                 res = delete_button(&comp->object.button, comp->pos);
             else
@@ -972,7 +1000,7 @@ _PRIVATE LCD_Error unrender_item(LCD_RQItem *const item, bool redraw_underneath)
     if (!item->rendered)
         return true;
 
-    item->rendered = !do_render(item->obj, MD_DELETE);
+    item->rendered = !do_render(item->obj, redraw_underneath ? MD_DELETE : (MD_DELETE | MD_FAST));
     if (!redraw_underneath)
     {
         // If rendered is false, we deleted, it's not a bug!
@@ -1020,14 +1048,6 @@ _PRIVATE LCD_Error unrender_item(LCD_RQItem *const item, bool redraw_underneath)
     }
 
     return err == LCD_ERR_OK ? LCD_RQRender() : err;
-}
-
-// Useful when redrawing the underneath is not required -> it will delete complex shapes like
-// text or circle by deleting the associated bbox, which is a rectangle, way faster to delete.
-_PRIVATE LCD_Error unrender_item_fast(LCD_RQItem *const item)
-{
-    
-
 }
 
 // PUBLIC FUNCTIONS
@@ -1165,7 +1185,7 @@ LCD_Error LCD_Init(LCD_Orientation orientation, const LCD_MemoryArena *const are
     initialized = true;
 
     if (clear_to)
-        LCD_SetBackgroundColor(*clear_to);
+        LCD_SetBackgroundColor(*clear_to, false);
 
     return LCD_ERR_OK;
 }
@@ -1257,7 +1277,7 @@ LCD_Error LCD_SetPointColor(LCD_Color color, LCD_Coordinate point)
     return LCD_ERR_OK;
 }
 
-void LCD_SetBackgroundColor(LCD_Color color)
+void LCD_SetBackgroundColor(LCD_Color color, bool redraw_objects)
 {
     if (color == LCD_COL_NONE)
         return;
@@ -1285,6 +1305,9 @@ void LCD_SetBackgroundColor(LCD_Color color)
     init_rw_operation_at(0x0022); // Write GRAM
     for (u32 index = 0; index < MAX_X * MAX_Y; index++)
         do_write(color & 0xFFFF);
+
+    if (!redraw_objects)
+        return;
 
     // No object is displayed anymore, so we need to change the rendered
     // property of each object in the render queue to false, so that after
@@ -1546,23 +1569,23 @@ LCD_Error LCD_RQClear(void)
         if (item->id == -1 || !item->obj)
             continue;
 
-        item->id = -1;
-        item->obj = NULL;
-        item->rendered = false;
-        item->visible = false;
-
         count++;                                                    // Found actual object, incrementing count.
         render_queue_free_list[render_queue_free_list_count++] = i; // Adding index into the FL.
 
         if ((err = LCD_MAFreeObject(item->obj)) != LCD_ERR_OK)
             break;
+
+        item->id = -1;
+        item->obj = NULL;
+        item->rendered = false;
+        item->visible = false;
     }
 
     render_queue_size -= count;
     if (err != LCD_ERR_OK)
         return err;
 
-    LCD_SetBackgroundColor(current_bg_color); // Deleting everything
+    LCD_SetBackgroundColor(current_bg_color, false); // Deleting everything
     return LCD_ERR_OK;
 }
 

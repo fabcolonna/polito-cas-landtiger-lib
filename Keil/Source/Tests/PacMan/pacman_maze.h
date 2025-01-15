@@ -1,44 +1,18 @@
 #ifndef __PACMAN_MAZE_H
 #define __PACMAN_MAZE_H
 
-#include "glcd_types.h"
-#include "utils.h"
-
 // VARIABLES
 
 #define PM_MAZE_SCALED_WIDTH 23
 #define PM_MAZE_SCALED_HEIGHT 25
 #define PM_MAZE_CELL_SIZE 10
 
-const u16 PM_MazeWidthPixels = PM_MAZE_SCALED_WIDTH * PM_MAZE_CELL_SIZE;
-const u16 PM_MazeHeightPixels = PM_MAZE_SCALED_HEIGHT * PM_MAZE_CELL_SIZE;
+#define PM_MAZE_PIXEL_WIDTH (PM_MAZE_SCALED_WIDTH * PM_MAZE_CELL_SIZE)
+#define PM_MAZE_PIXEL_HEIGHT (PM_MAZE_SCALED_HEIGHT * PM_MAZE_CELL_SIZE)
 
-#define PM_PACMAN_RADIUS 4
-#define PM_STAND_PILL_RADIUS 1
-#define PM_SUPER_PILL_RADIUS 2
-
-#define PM_STAND_PILL_COUNT 240
-#define PM_SUPER_PILL_COUNT 6
-
-#define PM_STAND_PILL_POINTS 10
-#define PM_SUPER_PILL_POINTS 50
-
-#define MAX_LIVES 5
-
-// Colors
-const LCD_Color PM_WallColor = 0x25283;
-const LCD_Color PM_PacManColor = 0xFFD86B;
-const LCD_Color PM_StandardPillColor = 0xE27417;
-const LCD_Color PM_SuperPillColor = 0xFDB897;
-
-const LCD_Color PM_NiceOrange = RGB8_TO_RGB565(0xe27417);
+#define PM_WALL_COLOR 0x25283
 
 // TYPES
-
-typedef struct
-{
-    u16 row, col;
-} PM_MazeCell;
 
 typedef enum
 {

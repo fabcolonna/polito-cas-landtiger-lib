@@ -35,6 +35,7 @@ typedef enum
 #define _USED_EXTERNALLY volatile
 #define _DECL_EXTERNALLY extern
 #define _PRIVATE static
+#define _PROTOTYPE_ONLY
 
 #define NO_PRESCALER 0
 

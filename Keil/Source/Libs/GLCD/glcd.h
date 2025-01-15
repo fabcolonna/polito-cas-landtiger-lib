@@ -5,19 +5,6 @@
 #include "glcd_mem.h"
 #include "glcd_types.h"
 
-// CONFIGURATION DEFINES
-
-/// @brief Maximum number of components that can be rendered on the screen.
-/// @note RQ only referneces objects stored in the memory arena, hence it's memory
-///       footprint in the ZI section is not huge. We can afford to have a larger number.
-#define MAX_RQ_ITEMS 512
-
-/// @brief Setting a limit to the number of components that a given object can have.
-#define MAX_COMPS_PER_OBJECT 12
-
-/// @brief Maximum number of fonts that can be loaded into the LCD.
-#define MAX_FONTS 16
-
 // PUBLIC FUNCTIONS
 
 /// @brief Converts RGB (24 bit) into RGB565 (16 bit):
@@ -101,9 +88,11 @@ LCD_Error LCD_SetPointColor(LCD_Color color, LCD_Coordinate point);
 
 /// @brief Sets the background color of the screen.
 /// @param color The RGB565 color to set
+/// @param redraw_objects If true, the object that were previously visible
+///        are re-rendered on top of the new background color.
 /// @note This function clears the screen, then re-renders all the objects
 ///       in the render queue with the new background color.
-void LCD_SetBackgroundColor(LCD_Color color);
+void LCD_SetBackgroundColor(LCD_Color color, bool redraw_objects);
 
 /// @brief Adds a new object to the memory arena and to the render queue, and returns
 ///        its ID (if out_id is not NULL) through the out_id pointer.
