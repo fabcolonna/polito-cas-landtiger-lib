@@ -13,7 +13,7 @@
 /// @param clock_divider The clock divider to be used by the ADC (division is performed by clock_divider+1)
 /// @param int_priority The priority of the ADC interrupt. If the priority is set to INT_PRIO_DEF,
 ///                     the default priority will be used.
-void ADC_PMInit(u8 options, u8 clock_divider, u8 int_priority);
+ADC_PMError ADC_PMInit(u8 options, u8 clock_divider, u8 int_priority);
 
 void ADC_PMDeinit(void);
 
@@ -27,7 +27,7 @@ bool ADC_PMIsInitialized(void);
 void ADC_PMGetSample(void);
 
 /// @todo This function is not implemented
-void ADC_PMDisableSampling();
+/// void ADC_PMDisableSampling();
 
 // INTERRUPTS
 

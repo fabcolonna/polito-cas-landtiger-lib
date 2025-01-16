@@ -21,6 +21,8 @@ _PRIVATE PM_Game sGame;
 _PRIVATE LCD_ObjID sPauseID;
 _PRIVATE LCD_FontID sFont14, sFont20;
 
+PM_MazeObj copied_maze[PM_MAZE_SCALED_HEIGHT][PM_MAZE_SCALED_WIDTH];
+
 // Memory arena allocation for game.
 LCD_MA_ALLOC_STATIC_MEM(sMemory, 4096);
 
@@ -133,7 +135,7 @@ _PRIVATE void DrawMaze(void)
     {
         for (u16 col = 0; col < PM_MAZE_SCALED_WIDTH; col++)
         {
-            obj = PM_Maze[row][col];
+            obj = copied_maze[row][col];
             obj_cell = (PM_MazeCell){row, col};
 
             // clang-format off
@@ -189,7 +191,7 @@ _PRIVATE _CBACK void pRenderLoop(void)
     {
     case PM_MOV_UP:
         // If the cell above (row - 1) is not a wall, continue.
-        if (pacman.row > 0 && PM_Maze[pacman.row - 1][pacman.col] != PM_WALL)
+        if (pacman.row > 0 && copied_maze[pacman.row - 1][pacman.col] != PM_WALL)
         {
             new.row = pacman.row - 1;
             new.col = pacman.col;
@@ -201,7 +203,7 @@ _PRIVATE _CBACK void pRenderLoop(void)
             return;
         }
     case PM_MOV_DOWN:
-        if (pacman.row < PM_MAZE_SCALED_HEIGHT - 1 && PM_Maze[pacman.row + 1][pacman.col] != PM_WALL)
+        if (pacman.row < PM_MAZE_SCALED_HEIGHT - 1 && copied_maze[pacman.row + 1][pacman.col] != PM_WALL)
         {
             new.row = pacman.row + 1;
             new.col = pacman.col;
@@ -214,11 +216,12 @@ _PRIVATE _CBACK void pRenderLoop(void)
         }
     case PM_MOV_LEFT:
         // If the cell to the left (col - 1) is not a wall, continue.
-        if (pacman.col > 0 && PM_Maze[pacman.row][pacman.col - 1] != PM_WALL)
+        if (pacman.col > 0 && copied_maze[pacman.row][pacman.col - 1] != PM_WALL)
         {
             new.row = pacman.row;
             // If it's a teleport, jump to the right one.
-            new.col = (PM_Maze[pacman.row][pacman.col - 1] == PM_LTPL) ? (PM_MAZE_SCALED_WIDTH - 2) : pacman.col - 1;
+            new.col =
+                (copied_maze[pacman.row][pacman.col - 1] == PM_LTPL) ? (PM_MAZE_SCALED_WIDTH - 2) : pacman.col - 1;
             break;
         }
         else
@@ -227,11 +230,11 @@ _PRIVATE _CBACK void pRenderLoop(void)
             return;
         }
     case PM_MOV_RIGHT:
-        if (pacman.col < PM_MAZE_SCALED_WIDTH - 1 && PM_Maze[pacman.row][pacman.col + 1] != PM_WALL)
+        if (pacman.col < PM_MAZE_SCALED_WIDTH - 1 && copied_maze[pacman.row][pacman.col + 1] != PM_WALL)
         {
             new.row = pacman.row;
             // If it's a teleport, jump to the left one.
-            new.col = (PM_Maze[pacman.row][pacman.col + 1] == PM_RTPL) ? 1 : pacman.col + 1;
+            new.col = (copied_maze[pacman.row][pacman.col + 1] == PM_RTPL) ? 1 : pacman.col + 1;
             break;
         }
         else
@@ -245,7 +248,7 @@ _PRIVATE _CBACK void pRenderLoop(void)
 
     // Checking for pills or super pills in the next cell he's going to visit.
     u16 cur_score = sGame.stat_values.score;
-    const PM_MazeObj new_obj = PM_Maze[new.row][new.col];
+    const PM_MazeObj new_obj = copied_maze[new.row][new.col];
     if (new_obj == PM_PILL || new_obj == PM_SUPER_PILL)
     {
         cur_score += (new_obj == PM_PILL) ? PM_STD_PILL_POINTS : PM_SUP_PILL_POINTS;
@@ -261,15 +264,15 @@ _PRIVATE _CBACK void pRenderLoop(void)
         // Incrementing the score variable
         sGame.stat_values.score = cur_score;
 
-        if (++sGame.stat_values.pills_eaten == (PM_STD_PILL_COUNT + PM_SUP_PILL_COUNT))
+        if (++sGame.stat_values.pills_eaten == (PM_SUP_PILL_COUNT + PM_STD_PILL_COUNT))
             pGameVictory();
     }
 
     // Finally, moving PacMan.
     LCD_RQMoveObject(sGame.pacman.id, pMazeCellToCoords(new, ANC_CENTER), false);
-    PM_Maze[pacman.row][pacman.col] = PM_NONE;
-    PM_Maze[new.row][new.col] = PM_PCMN;
-    pacman = new;
+    copied_maze[pacman.row][pacman.col] = PM_NONE;
+    copied_maze[new.row][new.col] = PM_PCMN;
+    sGame.pacman.cell = new;
 }
 
 _PRIVATE _CBACK void pStatsUpdater(void)
@@ -321,11 +324,11 @@ _PRIVATE _CBACK void pPauseResumeGame(void)
     sGame.playing_now = !sGame.playing_now;
     sGame.pacman.dir = PM_MOV_NONE;
 
-    // Turning off controls.
-    JOYSTICK_DisableAction(JOY_ACTION_ALL);
-
     if (sGame.playing_now)
+    {
         LCD_RQSetObjectVisibility(sPauseID, false, false);
+        JOYSTICK_DisableAction(JOY_ACTION_ALL);
+    }
 
     LCD_RQSetObjectVisibility(sGame.stat_obj_ids.titles, sGame.playing_now, false);
     LCD_RQSetObjectVisibility(sGame.stat_obj_ids.score_record_values, sGame.playing_now, false);
@@ -338,7 +341,10 @@ _PRIVATE _CBACK void pPauseResumeGame(void)
     // If paused, we set the pause view visible after we've done hiding the playing views,
     // otherwise we would have overlapping.
     if (!sGame.playing_now)
+    {
         LCD_RQSetObjectVisibility(sPauseID, true, false);
+        JOYSTICK_EnableAction(JOY_ACTION_ALL);
+    }
 }
 
 // MOVEMENT CALLBACKS
@@ -387,11 +393,13 @@ void pDoPlay(void)
         .score = 0,
     };
 
+    // Copying the maze into a new array, so we can modify it without affecting the original.
+    memcpy(copied_maze, PM_Maze, sizeof(PM_Maze));
+
     LCD_RQClear();
     InitInfoView();
     InitPauseView();
     DrawMaze();
-    LCD_RQRender();
 
     // TODO: InitPowerPillsGenerator();
 
@@ -400,6 +408,7 @@ void pDoPlay(void)
     {
         for (u16 col = 0; col < PM_MAZE_SCALED_WIDTH; col++)
         {
+            // Always starting from the original position.
             if (PM_Maze[row][col] == PM_PCMN)
             {
                 sGame.pacman.cell = (PM_MazeCell){row, col};
@@ -417,6 +426,8 @@ void pDoPlay(void)
 
 _PRIVATE void pGameVictory(void)
 {
+    LCD_SetBackgroundColor(LCD_COL_BLACK, false);
+
     // Disabling controls & stopping the game
     pUnbindCallbacks();
 
@@ -449,7 +460,7 @@ _PRIVATE void pGameVictory(void)
     {
         char new_record_str[30];
         sGame.prev_record = sGame.stat_values.record;
-        sprintf(new_record_str, "NEW_RECORD: %d", sGame.prev_record);
+        sprintf(new_record_str, "NEW RECORD: %d", sGame.prev_record);
 
         // clang-format off
         LCD_RENDER_IMM({
@@ -466,9 +477,9 @@ _PRIVATE void pGameVictory(void)
 
     // clang-format off
     LCD_RENDER_IMM({
-        LCD_BUTTON2(score_pos.x - 10, score_pos.y + (new_record ? 40 : 20), play_again_btn, {
+        LCD_BUTTON2(score_pos.x - 20, score_pos.y + (new_record ? 40 : 20), play_again_btn, {
             .label = LCD_BUTTON_LABEL({
-                .text = "NEW_GAME?", .font = sFont20,
+                .text = "NEW GAME?", .font = sFont20,
                 .char_spacing = 2, .text_color = LCD_COL_BLACK,
             }),
             .padding = {4, 5, 4, 5},
@@ -495,18 +506,18 @@ _PRIVATE void pGameDefeat(void)
     char score_str[10];
     sprintf(score_str, "SCORE: %d", sGame.stat_values.score);
 
-    const LCD_Coordinate you_lost_pos = {LCD_GetWidth() / 2 - 70, LCD_GetHeight() / 2};
-    const LCD_Coordinate score_pos = {LCD_GetWidth() / 2 - 50, LCD_GetHeight() / 2 + 50};
+    const LCD_Coordinate you_lost_pos = {LCD_GetWidth() / 2 - 60, LCD_GetHeight() / 2};
+    const LCD_Coordinate score_pos = {LCD_GetWidth() / 2 - 40, LCD_GetHeight() / 2 + 15};
 
     // clang-format off
     LCD_RENDER_IMM({
         LCD_TEXT(you_lost_pos, {
-            .text = "YOU LOST! :(", .font = sFont20, .char_spacing = 2,
+            .text = "YOU LOST!", .font = sFont20, .char_spacing = 2,
             .text_color = LCD_COL_WHITE, .bg_color = LCD_COL_NONE,
         }),
         LCD_TEXT(score_pos, {
-            .text = score_str, .font = sFont20, .char_spacing = 2,
-            .text_color = sColorOrange, .bg_color = LCD_COL_NONE,
+            .text = score_str, .font = sFont14, .char_spacing = 2,
+            .text_color = LCD_COL_WHITE, .bg_color = LCD_COL_NONE,
         }),
     });
     // clang-format on
@@ -516,7 +527,7 @@ _PRIVATE void pGameDefeat(void)
 
     // clang-format off
     LCD_RENDER_IMM({
-        LCD_BUTTON2(score_pos.x - 20, score_pos.y + 20, play_again_btn, {
+        LCD_BUTTON2(score_pos.x - 30, score_pos.y + 25, play_again_btn, {
             .label = LCD_BUTTON_LABEL({
                 .text = "NEW GAME?", .font = sFont20,
                 .char_spacing = 2, .text_color = LCD_COL_BLACK,

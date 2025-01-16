@@ -10,7 +10,7 @@
 
 _PRIVATE bool initialized = false;
 
-void ADC_PMInit(u8 options, u8 clock_divider, u8 int_priority)
+ADC_PMError ADC_PMInit(u8 options, u8 clock_divider, u8 int_priority)
 {
     POWER_TurnOnPeripheral(POW_PCADC);
 
@@ -23,10 +23,17 @@ void ADC_PMInit(u8 options, u8 clock_divider, u8 int_priority)
     if (!IS_DEF_PRIORITY(int_priority) && IS_BETWEEN_EQ(int_priority, 0, 15))
         NVIC_SetPriority(ADC_IRQn, int_priority);
 
-    if (options & ADC_PM_SAMPLE_WITH_RIT && RIT_IsEnabled())
+    if (options & ADC_PM_SAMPLE_WITH_RIT)
+    {
+        if (!RIT_IsEnabled())
+            return ADC_PM_RIT_UNINIT;
+
         RIT_AddJob(ADC_PMGetSample, RIT_NO_DIVIDER);
+        RIT_EnableJob(ADC_PMGetSample);
+    }
 
     initialized = true;
+    return ADC_PM_ERR_OK;
 }
 
 bool ADC_PMIsInitialized(void)

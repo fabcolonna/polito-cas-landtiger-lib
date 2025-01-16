@@ -152,7 +152,7 @@ LCD_Error LCD_RQSetObjectVisibility(LCD_ObjID id, bool visible, bool redraw_unde
 /// @brief Returns whether an object is visible on the screen or not.
 /// @param id The ID of the object to check
 /// @return Whether the object is visible or not
-bool LCD_IsObjectVisible(LCD_ObjID id);
+bool LCD_RQIsObjectVisible(LCD_ObjID id);
 
 /// @brief Removes all visible and non-visible objects from the screen.
 /// @return LCD_Error The error code.

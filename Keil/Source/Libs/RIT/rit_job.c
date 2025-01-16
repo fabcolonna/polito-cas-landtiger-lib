@@ -164,6 +164,7 @@ extern void RIT_IRQHandler(void)
         // Reset the counter if the maximum value is reached
         if (counter >= counter_reset_value)
             counter = 0;
+				
     }
 
 #ifdef SIMULATOR

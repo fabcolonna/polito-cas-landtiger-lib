@@ -58,10 +58,7 @@ _PRIVATE LCD_ObjSlot *find_free_obj_slot(u16 comps_size)
             // Check if the next slot is also free
             next = (LCD_ObjSlot *)(ptr + slot->size);
             if ((u8 *)next < end && !next->used)
-            {
                 slot->size += next->size; // Coalesce slots
-                continue;
-            }
 
             // Checking if the slot is big enough
             if (slot->size >= size_needed)

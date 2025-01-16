@@ -707,6 +707,7 @@ _PRIVATE bool process_text(const LCD_Text *const text, LCD_Coordinate pos, LCD_B
     u16 cur_width = 0, max_width = 0, total_height = font.max_char_height;
 
     PrintCharError err;
+    i16 x_diff;
     bool no_more_space = false;
     u16 char_w, char_h, x_inc, y_inc;
     while ((chr = *str) && !no_more_space)
@@ -741,8 +742,12 @@ _PRIVATE bool process_text(const LCD_Text *const text, LCD_Coordinate pos, LCD_B
             no_more_space = true; // Stop printing if there's no more space
         }
 
-        // Update the maximum width for the current line
-        cur_width = ((pos.x - start_x) < MAX_X) ? (pos.x - start_x) : MAX_X;
+        x_diff = pos.x - start_x;
+        if ((pos.x + x_inc) < MAX_X)
+            cur_width = (x_diff < MAX_X) ? x_diff : MAX_X;
+        else
+            cur_width = (x_diff + char_w) < MAX_X ? (x_diff + char_w) : MAX_X;
+
         // assert(cur_width >= 0); // Should never be < 0, if @ line 800 we specify to start at start_x, not 0
         max_width = (cur_width > max_width) ? cur_width : max_width;
     }
@@ -1306,9 +1311,6 @@ void LCD_SetBackgroundColor(LCD_Color color, bool redraw_objects)
     for (u32 index = 0; index < MAX_X * MAX_Y; index++)
         do_write(color & 0xFFFF);
 
-    if (!redraw_objects)
-        return;
-
     // No object is displayed anymore, so we need to change the rendered
     // property of each object in the render queue to false, so that after
     // calling LCD_RQRender(), they will be re-rendered with the new background.
@@ -1322,6 +1324,9 @@ void LCD_SetBackgroundColor(LCD_Color color, bool redraw_objects)
         count++;                // Found actual object, incrementing count.
         item->rendered = false; // So they will be re-rendered by LCD_RQRender().
     }
+
+    if (!redraw_objects)
+        return;
 
     // Re-rendering everything on top of the new background color.
     LCD_RQRender();
@@ -1543,7 +1548,7 @@ LCD_Error LCD_RQSetObjectVisibility(LCD_ObjID id, bool visible, bool redraw_unde
     return LCD_ERR_OK;
 }
 
-bool LCD_IsObjectVisible(LCD_ObjID id)
+bool LCD_RQIsObjectVisible(LCD_ObjID id)
 {
     if (id < 0 || id >= MAX_RQ_ITEMS)
         return false;
