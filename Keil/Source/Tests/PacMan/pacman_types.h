@@ -31,6 +31,17 @@ typedef struct
 
 typedef struct
 {
+    PM_MazeCell cell;
+    LCD_ObjID id;
+
+    /// @brief The second of the game between 5 and 59, at
+    ///        which the power pill will spawn. This implements
+    ///        the randomization of the power pill in time.
+    u16 spawn_sec;
+} PM_SuperPill;
+
+typedef struct
+{
     u16 score, record, lives;
     u16 game_over_in, pills_eaten;
 } PM_GameStatValues;
@@ -74,6 +85,7 @@ typedef struct
 {
     u16 prev_record;
     PM_PacMan pacman;
+    PM_SuperPill super_pills[PM_SUP_PILL_COUNT];
     LCD_Coordinate maze_pos;
     bool playing_now;
     PM_GameStatValues stat_values;

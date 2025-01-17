@@ -5,18 +5,21 @@
 
 // PUBLIC TYPES
 
-/// @brief PRNG automatically seeds itself using an hardware entropy source.
-#define USE_AUTO_SEED 0
+typedef enum
+{
+    /// @brief PRNG automatically seeds itself using an hardware entropy source.
+    PRNG_USE_AUTO_SEED,
+} PRNG_Config;
 
 // PUBLIC FUNCTIONS
 
-/// @brief Seeds the PRNG with the given seed. Use USE_AUTO_SEED to seed it
-///        automatically using an HW entropy source.
+/// @brief Initializes the PRNG by seeding it with the given seed. Use 
+///        PRNG_USE_AUTO_SEED to seed it automatically using an HW entropy source.
 /// @param seed The seed to use.
-void PRNG_Seed(u32 seed);
+void PRNG_Set(u32 seed);
 
 /// @brief Releases the HW entropy sources used to seed the PRNG.
-void PRNG_Deinit(void);
+void PRNG_Release(void);
 
 /// @brief Generates the next pseudo-random number.
 /// @return The PRN

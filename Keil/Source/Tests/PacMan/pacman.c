@@ -8,6 +8,7 @@
 #include "Assets/Fonts/font-upheaval20.h"
 #include "Assets/Images/pacman-life.h"
 #include "Assets/Images/pacman-logo.h"
+#include "Assets/Images/pacman-sad.h"
 #include "Assets/Images/pacman-victory.h"
 
 // PRIVATE TYPES
@@ -48,7 +49,7 @@ _PRIVATE inline LCD_Coordinate pMazeCellToCoords(PM_MazeCell cell, enum Anchor a
 
 // VIEW DEFINITIONS
 
-_PRIVATE void InitInfoView(void)
+_PRIVATE void pInitInfoView(void)
 {
     // clang-format off
     LCD_OBJECT(&sGame.stat_obj_ids.titles, {
@@ -111,7 +112,7 @@ _PRIVATE void InitInfoView(void)
     // clang-format on
 }
 
-_PRIVATE void InitPauseView(void)
+_PRIVATE void pInitPauseView(void)
 {
     // clang-format off
     LCD_MANUAL_VISIBILITY_OBJECT(&sPauseID, {
@@ -127,7 +128,7 @@ _PRIVATE void InitPauseView(void)
     // clang-format on
 }
 
-_PRIVATE void DrawMaze(void)
+_PRIVATE void pDrawMaze(void)
 {
     PM_MazeObj obj;
     PM_MazeCell obj_cell;
@@ -174,6 +175,63 @@ _PRIVATE void DrawMaze(void)
             // clang-format on
         }
     }
+}
+
+// POWER PILLS
+
+_PRIVATE inline bool pSuperPillSpawnSecAlreadyTaken(u32 sec, u16 super_pills_arr_length)
+{
+    for (u8 i = 0; i < super_pills_arr_length; i++)
+        if (sGame.super_pills[i].spawn_sec == sec)
+            return true;
+
+    return false;
+}
+
+_PRIVATE void pInitSuperPills(void)
+{
+    // 6 Super pills need to be generated at random positions in the maze
+    // (i.e. we have to randomize the row & col values of the maze cells),
+    // and at random times (i.e. we have to randomize the time intervals
+    // between the generation of each power pill), till the end of the 60s.
+    PRNG_Set(PRNG_USE_AUTO_SEED);
+
+    u16 i = 0, row, col, spawn_sec = 0;
+    while (i < PM_SUP_PILL_COUNT)
+    {
+        // Generate random position in maze
+        row = PRNG_Range(1, PM_MAZE_SCALED_HEIGHT - 1);
+        col = PRNG_Range(1, PM_MAZE_SCALED_WIDTH - 1);
+
+        // Checking if the cell is not a wall, another power pill, PacMan,
+        // a teleport, or a ghost. If it is, we need to generate another one.
+        if (copied_maze[row][col] != PM_PILL)
+            continue;
+
+        sGame.super_pills[i].cell = (PM_MazeCell){row, col};
+
+        // clang-format off
+        LCD_MANUAL_VISIBILITY_OBJECT(&sGame.super_pills[i].id, {
+            LCD_CIRCLE({
+                .center = pMazeCellToCoords(sGame.super_pills[i].cell, ANC_CENTER),
+                .fill_color = PM_SUP_PILL_COLOR,
+                .edge_color = PM_SUP_PILL_COLOR,
+                .radius = PM_SUP_PILL_RADIUS,
+            }),
+        });
+        // clang-format on
+
+        // Generate random times for the power pills to spawn
+        do
+        {
+            spawn_sec = PRNG_Range(5, 59);
+        } while (pSuperPillSpawnSecAlreadyTaken(spawn_sec, i));
+
+        sGame.super_pills[i].spawn_sec = spawn_sec;
+        i++;
+    }
+
+    PRNG_Release();
 }
 
 // CALLBACKS
@@ -313,6 +371,18 @@ _PRIVATE _CBACK void pGameOverInCounter(void)
             sprintf(sGame.stat_strings.game_over_in, "%d", sGame.stat_values.game_over_in);
         });
         // clang-format on
+
+        // Checking if there's a super pill to spawn at the given time.
+        PM_SuperPill *pill;
+        for (u8 i = 0; i < PM_SUP_PILL_COUNT; i++)
+        {
+            pill = &(sGame.super_pills[i]);
+            if (pill->spawn_sec == sGame.stat_values.game_over_in)
+            {
+                LCD_RQSetObjectVisibility(pill->id, true, false);
+                copied_maze[pill->cell.row][pill->cell.col] = PM_SUPER_PILL;
+            }
+        }
     }
 }
 
@@ -327,7 +397,7 @@ _PRIVATE _CBACK void pPauseResumeGame(void)
     if (sGame.playing_now)
     {
         LCD_RQSetObjectVisibility(sPauseID, false, false);
-        JOYSTICK_DisableAction(JOY_ACTION_ALL);
+        JOYSTICK_EnableAction(JOY_ACTION_ALL);
     }
 
     LCD_RQSetObjectVisibility(sGame.stat_obj_ids.titles, sGame.playing_now, false);
@@ -343,7 +413,7 @@ _PRIVATE _CBACK void pPauseResumeGame(void)
     if (!sGame.playing_now)
     {
         LCD_RQSetObjectVisibility(sPauseID, true, false);
-        JOYSTICK_EnableAction(JOY_ACTION_ALL);
+        JOYSTICK_DisableAction(JOY_ACTION_ALL);
     }
 }
 
@@ -397,11 +467,10 @@ void pDoPlay(void)
     memcpy(copied_maze, PM_Maze, sizeof(PM_Maze));
 
     LCD_RQClear();
-    InitInfoView();
-    InitPauseView();
-    DrawMaze();
-
-    // TODO: InitPowerPillsGenerator();
+    pInitInfoView();
+    pInitPauseView();
+    pInitSuperPills();
+    pDrawMaze();
 
     // Determining the initial PacMan position
     for (u16 row = 0; row < PM_MAZE_SCALED_HEIGHT; row++)
@@ -506,11 +575,18 @@ _PRIVATE void pGameDefeat(void)
     char score_str[10];
     sprintf(score_str, "SCORE: %d", sGame.stat_values.score);
 
+    // Showing a victory view.
+    const LCD_Coordinate image_pos = {
+        .x = LCD_GetWidth() / 2 - (Image_PACMAN_Sad.width / 2),
+        .y = LCD_GetHeight() / 2 - (Image_PACMAN_Victory.height / 2) - 50,
+    };
+
     const LCD_Coordinate you_lost_pos = {LCD_GetWidth() / 2 - 60, LCD_GetHeight() / 2};
-    const LCD_Coordinate score_pos = {LCD_GetWidth() / 2 - 40, LCD_GetHeight() / 2 + 15};
+    const LCD_Coordinate score_pos = {LCD_GetWidth() / 2 - 50, LCD_GetHeight() / 2 + 15};
 
     // clang-format off
     LCD_RENDER_IMM({
+        LCD_IMAGE(image_pos, Image_PACMAN_Sad),
         LCD_TEXT(you_lost_pos, {
             .text = "YOU LOST!", .font = sFont20, .char_spacing = 2,
             .text_color = LCD_COL_WHITE, .bg_color = LCD_COL_NONE,
@@ -527,7 +603,7 @@ _PRIVATE void pGameDefeat(void)
 
     // clang-format off
     LCD_RENDER_IMM({
-        LCD_BUTTON2(score_pos.x - 30, score_pos.y + 25, play_again_btn, {
+        LCD_BUTTON2(score_pos.x - 20, score_pos.y + 25, play_again_btn, {
             .label = LCD_BUTTON_LABEL({
                 .text = "NEW GAME?", .font = sFont20,
                 .char_spacing = 2, .text_color = LCD_COL_BLACK,
