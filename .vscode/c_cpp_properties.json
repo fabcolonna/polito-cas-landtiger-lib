@@ -3,18 +3,19 @@
         {
             "name": "Keil",
             "includePath": [
-                "${workspaceFolder}/**",
-                "${workspaceFolder}/Keil/Source/**/**",
+                "${workspaceFolder}/Keil/Source/**",
+                "${workspaceFolder}/Keil/Source/CMSIS_core/**",
+                "${workspaceFolder}/Keil/Source/Lib/**/**",
                 "${workspaceFolder}/Keil/Source/System/**",
                 "${workspaceFolder}/Keil/Source/Tests/**",
-                "${workspaceFolder}/Keil/Source/Libs/**/**/**",
-                //"C:/Program Files/Arm/Packs/Keil/LPC1700_DFP/2.7.2/Device/Include/**", // on macOS with Parallels VM
-                "${workspaceFolder}/Keil/Source/CMSIS_core/**",
-                "C:/Users/fabio/AppData/Local/Arm/Packs/Keil/LPC1700_DFP/2.7.2/Device/Include/**", // on Windows
+                "${workspaceFolder}/Keil/Source/Lib/Configs/**",
+                "C:/Users/fabio/AppData/Local/Arm/Packs/Keil/LPC1700_DFP/2.7.2/Device/Include/**",
                 "C:/Users/fabio/AppData/Local/Arm/Packs/Keil/LPC1700_DFP/2.7.2/RTE_Driver/**",
-                "/Volumes/[C] Windows 11/Program Files/Arm/Packs/ARM/CMSIS/6.1.0/CMSIS/Driver/Include"
+                "C:/Users/fabio/AppData/Local/Keil_v5/ARM/ARMCLANG/include/**",
+                "C:/Users/fabio/AppData/Local/Keil_v5/ARM/ARMCLANG/include/libcxx/**"
             ],
-            "cStandard": "c11"
+            "cStandard": "c11",
+            "cppStandard": "c++17"
         }
     ],
     "version": 4

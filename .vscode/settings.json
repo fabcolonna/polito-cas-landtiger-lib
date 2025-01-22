@@ -1,11 +1,11 @@
 {
     "files.associations": {
         "*.s": "arm",
-        "assert.h": "c",
+        "glcd_config.h": "c",
+        "array": "cpp",
         "peripherals.h": "c",
-        "button.h": "c",
-        "driver_usart.h": "c",
-        "system.h": "c"
-    },
-    "C_Cpp.default.compilerPath": "/usr/bin/clang",
+        "pacman.h": "c",
+        "cl_prioqueue.h": "c",
+        "font-upheaval20.h": "c"
+    }
 }

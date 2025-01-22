@@ -3,17 +3,6 @@
 // TODO: Replace every .sh script with a .ps1 script
 // TODO: Update this project's README.md
 // TODO: Update docs with new changes
-// TODO: Implement GetObjectBBox (public API)
-// TODO: Make the component macros assign their value to an extern variable, if specified, so that i can
-// TODO: Readme, added RIT timeout dividers support
-// TODO: Implemented bounding box for objects with selective re-rendering upon removal based on bounding box overlapping
 // TODO: Implement centering of objects
-
-// BUG: Touch Area sensitivity not correctly set when fill_color is set but edge_color is not
-// BUG: RQ_RemoveObject does not completely delete the Button
-
-// Added a limitation to the number of components that can be added to a single object (12)
-// Max rq items 512
-
-// TODO: Implement MoveObject for moving objects (not every component, but moving the global object keeping
-// the component consistent)
+// TODO: Update the GLCD so that is uses the new Allocator.
+// TODO: Remove the branch for the sample project. Aggiorna direttamente quello di Pacman.
