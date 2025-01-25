@@ -1,3 +1,11 @@
+$null = $OutputStreams = 0..5 | ForEach-Object {
+     New-Object -TypeName System.Management.Automation.Host.PSHostNullConsole 
+}
+
+
+
+Set-Location ..\
+
 # Check if there's a Keil folder in the current directory
 if (-Not (Test-Path "Keil" -PathType Container)) {
     Write-Host "No Keil folder found in the current directory"
@@ -43,7 +51,7 @@ $hFiles | ForEach-Object {
     }
 }
 
-
+<# 
 # Asking the user if he wants to copy the new library to another project directory
 $stop = $false
 while (-Not $stop) {
@@ -95,3 +103,4 @@ while (-Not $stop) {
 
 
 
+ #>
