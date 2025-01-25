@@ -341,7 +341,7 @@
               <MiscControls></MiscControls>
               <Define></Define>
               <Undefine></Undefine>
-              <IncludePath>.\Source\Libs\Button;.\Source\CMSIS_core;.\Source;.\Source\Libs\RIT;.\Source\Libs\Timer;.\Source\Libs\LED;.\Source\Libs\Power;.\Source\Libs\Utils;.\Source\Tests;.\Source\Libs\SysTick;.\Source\Libs\Joystick;.\Source\Libs\ADC-PM;.\Source\Libs\DAC;.\Source\Libs\GLCD;.\Source\Libs\GLCD\Fonts;.\Source\Libs\TouchPanel;.\Source\System;.\Source\Libs</IncludePath>
+              <IncludePath>.\Source\CMSIS_core;.\Source\System;.\Source\Lib;.\Source\Lib\Allocator;.\Source\Lib\Collections;.\Source\Lib\Collections\PriorityQueue;.\Source\Lib\Collections\List;.\Source\Lib\Collections\Vector;.\Source\Lib\Configs;.\Source\Lib\Peripherals;.\Source\Lib\Peripherals\ADC-PM;.\Source\Lib\Peripherals\Buttons;.\Source\Lib\Peripherals\DAC;.\Source\Lib\Peripherals\Joystick;.\Source\Lib\Peripherals\LED;.\Source\Lib\Peripherals\Power;.\Source\Lib\Peripherals\RIT;.\Source\Lib\Peripherals\Timer;.\Source\Lib\Peripherals\TouchPanel;.\Source\Lib\PRNG;.\Source\Lib\Peripherals\GLCD;.\Source\Lib\Peripherals\GLCD\Fonts;.\Source\Lib\Peripherals\GLCD\LowLevel;.\Source\Lib\Peripherals\GLCD\Processor;.\Source\Tests;.\Include;.\Include\Allocator;.\Include\Collections;.\Include\Peripherals;.\Include\Configs;.\Include\PRNG;.\Source\PacMan;.\Source\PacMan\Assets\Images;.\Source\PacMan\Assets\Fonts</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -424,31 +424,6 @@
               <FileName>system_LPC17xx.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\Source\System\system_LPC17xx.c</FilePath>
-            </File>
-          </Files>
-        </Group>
-        <Group>
-          <GroupName>PacMan</GroupName>
-          <Files>
-            <File>
-              <FileName>main.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\Source\PacMan\main.c</FilePath>
-            </File>
-            <File>
-              <FileName>pacman.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\Source\PacMan\pacman.c</FilePath>
-            </File>
-            <File>
-              <FileName>pacman.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\Source\PacMan\pacman.h</FilePath>
-            </File>
-            <File>
-              <FileName>pacman_types.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\Source\PacMan\pacman_types.h</FilePath>
             </File>
           </Files>
         </Group>
@@ -1227,31 +1202,6 @@
           </Files>
         </Group>
         <Group>
-          <GroupName>PacMan</GroupName>
-          <Files>
-            <File>
-              <FileName>main.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\Source\PacMan\main.c</FilePath>
-            </File>
-            <File>
-              <FileName>pacman.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\Source\PacMan\pacman.c</FilePath>
-            </File>
-            <File>
-              <FileName>pacman.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\Source\PacMan\pacman.h</FilePath>
-            </File>
-            <File>
-              <FileName>pacman_types.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\Source\PacMan\pacman_types.h</FilePath>
-            </File>
-          </Files>
-        </Group>
-        <Group>
           <GroupName>Lib/Allocator</GroupName>
           <Files>
             <File>
@@ -2022,100 +1972,6 @@
               <FileName>system_LPC17xx.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\Source\System\system_LPC17xx.c</FilePath>
-            </File>
-          </Files>
-        </Group>
-        <Group>
-          <GroupName>PacMan</GroupName>
-          <GroupOption>
-            <CommonProperty>
-              <UseCPPCompiler>0</UseCPPCompiler>
-              <RVCTCodeConst>0</RVCTCodeConst>
-              <RVCTZI>0</RVCTZI>
-              <RVCTOtherData>0</RVCTOtherData>
-              <ModuleSelection>0</ModuleSelection>
-              <IncludeInBuild>0</IncludeInBuild>
-              <AlwaysBuild>0</AlwaysBuild>
-              <GenerateAssemblyFile>2</GenerateAssemblyFile>
-              <AssembleAssemblyFile>2</AssembleAssemblyFile>
-              <PublicsOnly>2</PublicsOnly>
-              <StopOnExitCode>11</StopOnExitCode>
-              <CustomArgument></CustomArgument>
-              <IncludeLibraryModules></IncludeLibraryModules>
-              <ComprImg>1</ComprImg>
-            </CommonProperty>
-            <GroupArmAds>
-              <Cads>
-                <interw>2</interw>
-                <Optim>0</Optim>
-                <oTime>2</oTime>
-                <SplitLS>2</SplitLS>
-                <OneElfS>2</OneElfS>
-                <Strict>2</Strict>
-                <EnumInt>2</EnumInt>
-                <PlainCh>2</PlainCh>
-                <Ropi>2</Ropi>
-                <Rwpi>2</Rwpi>
-                <wLevel>0</wLevel>
-                <uThumb>2</uThumb>
-                <uSurpInc>2</uSurpInc>
-                <uC99>2</uC99>
-                <uGnu>2</uGnu>
-                <useXO>2</useXO>
-                <v6Lang>0</v6Lang>
-                <v6LangP>0</v6LangP>
-                <vShortEn>2</vShortEn>
-                <vShortWch>2</vShortWch>
-                <v6Lto>2</v6Lto>
-                <v6WtE>2</v6WtE>
-                <v6Rtti>2</v6Rtti>
-                <VariousControls>
-                  <MiscControls></MiscControls>
-                  <Define></Define>
-                  <Undefine></Undefine>
-                  <IncludePath></IncludePath>
-                </VariousControls>
-              </Cads>
-              <Aads>
-                <interw>2</interw>
-                <Ropi>2</Ropi>
-                <Rwpi>2</Rwpi>
-                <thumb>2</thumb>
-                <SplitLS>2</SplitLS>
-                <SwStkChk>2</SwStkChk>
-                <NoWarn>2</NoWarn>
-                <uSurpInc>2</uSurpInc>
-                <useXO>2</useXO>
-                <ClangAsOpt>0</ClangAsOpt>
-                <VariousControls>
-                  <MiscControls></MiscControls>
-                  <Define></Define>
-                  <Undefine></Undefine>
-                  <IncludePath></IncludePath>
-                </VariousControls>
-              </Aads>
-            </GroupArmAds>
-          </GroupOption>
-          <Files>
-            <File>
-              <FileName>main.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\Source\PacMan\main.c</FilePath>
-            </File>
-            <File>
-              <FileName>pacman.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\Source\PacMan\pacman.c</FilePath>
-            </File>
-            <File>
-              <FileName>pacman.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\Source\PacMan\pacman.h</FilePath>
-            </File>
-            <File>
-              <FileName>pacman_types.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\Source\PacMan\pacman_types.h</FilePath>
             </File>
           </Files>
         </Group>
