@@ -24,7 +24,7 @@
 */
 var NAVTREE =
 [
-  [ "Landtiger LPC1768 Peripheral C Library", "index.html", ]
+  [ "Landtiger LPC1768 C BigLib", "index.html", ]
 ];
 
 var NAVTREEINDEX =
