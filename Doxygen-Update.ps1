@@ -23,7 +23,7 @@ Move-Item -Force "Docs\html\*" -Destination $dir
 Remove-Item -Recurse -Force "Docs\"
 
 # Moving to gh-pages
-git checkout gh-pages >/dev/null 2>&1
+git checkout gh-pages
 Remove-Item -Recurse -Force *
 Move-Item -Force "$dir\*" -Destination .\
 Remove-Item -Recurse -Force $dir
