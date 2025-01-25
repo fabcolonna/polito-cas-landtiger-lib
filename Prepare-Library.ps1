@@ -4,11 +4,10 @@ if (-Not (Test-Path "Keil" -PathType Container)) {
     return
 }
 
-$libName = "peripherals.lib"
-$libDir = "Peripherals"
+$libName = "big-lib.lib"
+$libDir = "BigLib"
 $incDir = "$libDir\Include"
-$sourceDir = "Keil\Source\Libs"
-
+$hFiles = Get-ChildItem -Path "Keil\Include" -Filter *.h -Recurse
 
 # If no peripherals.lib file is found in Keil\Objects, return
 if (-Not (Test-Path "Keil\Objects\$libName" -PathType Leaf)) {
@@ -16,10 +15,9 @@ if (-Not (Test-Path "Keil\Objects\$libName" -PathType Leaf)) {
     return
 }
 
-# If no .h files are found in Keil\Source\Libs, return
-$hFiles = Get-ChildItem -Path "$sourceDir" -Filter *.h -Recurse
+# If no .h files are found in Keil\Include, return
 if ($hFiles.Count -eq 0) {
-    Write-Host "No .h files found in $sourceDir"
+    Write-Host "No .h files found in Keil\Include"
     return
 }
 

@@ -2,7 +2,5 @@
 // TODO: Update sample project branch with new changes (Scripts, new stack size in System.s etc.)
 // TODO: Replace every .sh script with a .ps1 script
 // TODO: Update this project's README.md
-// TODO: Update docs with new changes
 // TODO: Implement centering of objects
-// TODO: Update the GLCD so that is uses the new Allocator.
 // TODO: Remove the branch for the sample project. Aggiorna direttamente quello di Pacman.
