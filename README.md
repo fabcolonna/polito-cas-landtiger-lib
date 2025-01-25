@@ -1,5 +1,7 @@
 # Polito CAS LandTiger LPC1768 Sample Project
 
+[![Documentation](https://img.shields.io/badge/docs-GitHub%20Pages-blue)](https://fabcolonna.github.io/polito-cas-landtiger-lib/)
+
 This repository contains a sample project for the LandTiger LPC1768 board. The project demonstrates the usage of the custom library "BigLib" for handling peripherals and other functionalities.
 
 ## Getting Started
