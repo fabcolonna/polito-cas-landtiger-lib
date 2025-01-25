@@ -3,7 +3,10 @@
 
 #include "glcd_errors.h"
 #include "types.h"
+
 #include <stdbool.h>
+
+// GENERIC
 
 typedef enum
 {
@@ -12,20 +15,6 @@ typedef enum
     LCD_ORIENT_VER_INV = 180,
     LCD_ORIENT_HOR_INV = 270
 } LCD_Orientation;
-
-// TODO: Implement alignment!
-typedef enum
-{
-    LCD_ALIGN_TOP_LEFT,
-    LCD_ALIGN_TOP_CENTER,
-    LCD_ALIGN_TOP_RIGHT,
-    LCD_ALIGN_CENTER_LEFT,
-    LCD_ALIGN_CENTER,
-    LCD_ALIGN_CENTER_RIGHT,
-    LCD_ALIGN_BOTTOM_LEFT,
-    LCD_ALIGN_BOTTOM_CENTER,
-    LCD_ALIGN_BOTTOM_RIGHT
-} LCD_Alignment;
 
 /// @brief Even though the LCD itself supports 260K colors, the bus interface
 ///        is only 16-bit, so we can only use 65K colors
@@ -62,7 +51,10 @@ typedef struct
 
 typedef struct
 {
-    u16 top, right, bottom, left;
+    u8 top : 4;
+    u8 right : 4;
+    u8 bottom : 4;
+    u8 left : 4;
 } LCD_Padding;
 
 typedef struct
@@ -101,7 +93,7 @@ typedef i8 LCD_FontID;
 #define ASCII_FONT_MIN_VALUE 32
 #define ASCII_FONT_MAX_VALUE 126
 
-// COMPONENTS
+// SINGLE COMPONENTS
 
 typedef struct
 {
@@ -126,7 +118,7 @@ typedef struct
 {
     const u32 *pixels; // RGB or ARGB data
     u16 width, height;
-    bool has_alpha;
+    bool has_alpha : 1;
 } LCD_Image;
 
 typedef struct
@@ -134,17 +126,17 @@ typedef struct
     char *text;
     LCD_Color text_color, bg_color;
     LCD_FontID font;
-    i16 char_spacing, line_spacing;
+    i8 char_spacing : 4;
+    i8 line_spacing : 4;
 } LCD_Text;
-
-// BUTTON STUFF
 
 typedef struct
 {
     char *text;
     LCD_Color text_color;
     LCD_FontID font;
-    i16 char_spacing, line_spacing;
+    i8 char_spacing : 4;
+    i8 line_spacing : 4;
 } LCD_ButtonLabel;
 
 typedef struct
@@ -156,8 +148,9 @@ typedef struct
 
 #define LCD_TEXT_DEF_CHAR_SPACING 0
 #define LCD_TEXT_DEF_LINE_SPACING 0
-
 #define LCD_NO_PADDING (LCD_Padding){0, 0, 0, 0}
+
+// COMPONENT OBJECT
 
 /// @brief Represents a drawable component that can be rendered on the screen.
 typedef enum
@@ -175,15 +168,18 @@ typedef struct
 {
     LCD_ComponentType type;
     LCD_Coordinate pos;
+    LCD_BBox cached_bbox; // Used to cache the bounding box of the component
     union {
-        LCD_Line line;
-        LCD_Rect rect;
-        LCD_Circle circle;
-        LCD_Image image;
-        LCD_Text text;
-        LCD_Button button;
+        LCD_Line *line;
+        LCD_Rect *rect;
+        LCD_Circle *circle;
+        LCD_Image *image;
+        LCD_Text *text;
+        LCD_Button *button;
     } object;
 } LCD_Component;
+
+// OBJECT
 
 /// @brief Represents a generic object, made up of 1 or more basic
 ///        components, that are rendered on the screen.
@@ -191,20 +187,21 @@ typedef struct
 ///       the objects that he wants to represent.
 typedef struct
 {
+    LCD_BBox bbox;        // Used to cache the bounding box of the object
     LCD_Component *comps; // Array of components, or just one.
     u8 comps_size;
 } LCD_Obj;
 
-typedef i16 LCD_ObjID;
+typedef i32 LCD_ObjID;
 
 // LCD ADDING OPTIONS
 
 typedef enum
 {
     /// @brief Request GLCD to not mark the newly added object as visible. In that way, it
-    ///        it won't be rendered by any LCD_RQRender() call, unless it's been marked as
-    ///        visible through the LCD_RQSetObjectVisibility() function.
+    ///        it won't be rendered by any LCD_RMRender() call, unless it's been marked as
+    ///        visible through the LCD_RMSetVisibility() function.
     LCD_ADD_OBJ_OPT_DONT_MARK_VISIBLE = 0x1
-} LCD_RQAddOption;
+} LCD_RMAddOption;
 
 #endif

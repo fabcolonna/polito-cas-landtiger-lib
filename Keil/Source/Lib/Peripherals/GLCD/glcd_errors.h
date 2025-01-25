@@ -7,17 +7,14 @@ typedef enum
     /// @brief No error occurred.
     LCD_ERR_OK = 0,
 
-    /// @brief The memory arena is NULL or invalid.
-    LCD_ERR_INVALID_ARENA,
+    /// @brief The library is not initialized.
+    LCD_ERR_UNINITIALIZED,
 
     /// @brief The object is invalid (invalid ID, empty components array, etc.)
     LCD_ERR_INVALID_OBJ,
 
     /// @brief One or more params is NULL
     LCD_ERR_NULL_PARAMS,
-
-    /// @brief The render queue is full. No more objects can be added.
-    LCD_ERR_RQ_FULL,
 
     /// @brief The object has too many components.
     LCD_ERR_TOO_MANY_COMPS_IN_OBJ,
@@ -31,22 +28,19 @@ typedef enum
     /// @brief The font ID is invalid.
     LCD_ERR_INVALID_FONT_ID,
 
-    /// @brief The memory arena does not have enough space to allocate the object.
-    LCD_ERR_NOT_ENOUGH_SPACE,
+    /// @brief The memory pool does not have enough space to allocate the object.
+    LCD_ERR_NO_MEMORY,
 
     // PROCESS SHAPE ERRORS
 
-    /// @brief An error occurred during BBox evaluation for a shape
-    LCD_ERR_COULD_NOT_PROCESS_SHAPE_BBOX,
-
     /// @brief An error occurred during shape drawing
-    LCD_ERR_COULD_NOT_PROCESS_SHAPE_DRAW,
+    LCD_ERR_DURING_RENDER,
 
     /// @brief An error occurred during shape deletion
-    LCD_ERR_COULD_NOT_PROCESS_SHAPE_DELETE,
+    LCD_ERR_DURING_UNRENDER,
 
-    /// @brief An error occured while trying to hide an object.
-    LCD_ERR_COULD_NOT_HIDE_OBJ,
+    /// @brief An error occurred during bounding box calculation
+    LCD_ERR_DURING_BBOX_CALC,
 } LCD_Error;
 
 #endif

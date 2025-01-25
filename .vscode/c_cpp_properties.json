@@ -3,12 +3,13 @@
         {
             "name": "Keil",
             "includePath": [
+                "${workspaceFolder}/Keil/Include",
+                "${workspaceFolder}/Keil/Include/**",
                 "${workspaceFolder}/Keil/Source/**",
                 "${workspaceFolder}/Keil/Source/CMSIS_core/**",
                 "${workspaceFolder}/Keil/Source/Lib/**/**",
                 "${workspaceFolder}/Keil/Source/System/**",
                 "${workspaceFolder}/Keil/Source/Tests/**",
-                "${workspaceFolder}/Keil/Source/Lib/Configs/**",
                 "C:/Users/fabio/AppData/Local/Arm/Packs/Keil/LPC1700_DFP/2.7.2/Device/Include/**",
                 "C:/Users/fabio/AppData/Local/Arm/Packs/Keil/LPC1700_DFP/2.7.2/RTE_Driver/**",
                 "C:/Users/fabio/AppData/Local/Keil_v5/ARM/ARMCLANG/include/**",

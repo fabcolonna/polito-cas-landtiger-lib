@@ -278,13 +278,13 @@ _PRIVATE inline void draw_calibration_cross(u16 x, u16 y)
         }),
     });
 
-    LCD_RQRender();
+    LCD_RMRender();
     // clang-format on
 }
 
 _PRIVATE inline void delete_calibration_cross(void)
 {
-    LCD_RQRemoveObject(calib_cross_obj_id, false);
+    LCD_RMRemove(calib_cross_obj_id, false);
 }
 
 _PRIVATE bool calc_calibration_matrix(TP_CalibrationMatrix *out_matrix, const LCD_Coordinate *const lcd_3points,
@@ -343,7 +343,7 @@ bool calibrate(void)
     });
     // clang-format on
 
-    LCD_RQRender();
+    LCD_RMRender();
 
     for (u8 i = 0; i < 3; i++)
     {
@@ -363,7 +363,7 @@ bool calibrate(void)
     if (!calc_calibration_matrix(&current_calib_matrix, lcd_crosses, tp_crosses))
         return false;
 
-    LCD_RQRemoveObject(text, false);
+    LCD_RMClear();
     calibratated = true;
     return calibratated;
 }
@@ -435,17 +435,22 @@ const LCD_Coordinate *TP_GetLCDCoordinateFor(const TP_Coordinate *const tp_point
 
 TP_ButtonArea TP_AssignButtonArea(LCD_Button button, LCD_Coordinate pos)
 {
-    LCD_BBox bbox;
-    if (LCD_GetComponentBBox(
-            &(LCD_Component){
-                .object.button = button,
-                .type = LCD_COMP_BUTTON,
-                .pos = pos,
+    const LCD_Obj obj = {
+        .comps_size = 1,
+        .comps =
+            (LCD_Component[]){
+                (LCD_Component){
+                    .type = LCD_COMP_BUTTON,
+                    .pos = pos,
+                    .object.button = &button,
+                },
             },
-            &bbox) != LCD_ERR_OK)
+    };
+
+    LCD_BBox bbox;
+    if (LCD_CalcBBoxForObject(&obj, &bbox) != LCD_ERR_OK)
     {
-        // TODO: Implement proper error management
-        // assert(false); // Should return some error here
+        return (TP_ButtonArea){0};
     }
 
     return (TP_ButtonArea){

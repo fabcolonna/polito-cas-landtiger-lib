@@ -6,6 +6,11 @@
         "peripherals.h": "c",
         "pacman.h": "c",
         "cl_prioqueue.h": "c",
-        "font-upheaval20.h": "c"
+        "font-upheaval20.h": "c",
+        "adc_pm.h": "c",
+        "glcd.h": "c",
+        "glcd_processor.h": "c",
+        "glcd_types.h": "c",
+        "glcd_errors.h": "c"
     }
 }

@@ -259,7 +259,7 @@ CL_Error CL_ListInsertAt(CL_List *const list, u32 index, const void *const elem)
 
 CL_Error CL_ListRemoveAt(CL_List *const list, u32 index, void *out_elem)
 {
-    if (!list || !out_elem)
+    if (!list)
         return CL_ERR_INVALID_PARAMS;
 
     if (index >= list->size)

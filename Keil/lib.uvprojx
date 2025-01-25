@@ -421,11 +421,6 @@
               <FilePath>.\Source\System\startup_LPC17xx.s</FilePath>
             </File>
             <File>
-              <FileName>system.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\Source\System\system.h</FilePath>
-            </File>
-            <File>
               <FileName>system_LPC17xx.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\Source\System\system_LPC17xx.c</FilePath>
@@ -461,11 +456,6 @@
           <GroupName>Lib/Allocator</GroupName>
           <Files>
             <File>
-              <FileName>allocator.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\Source\Lib\Allocator\allocator.h</FilePath>
-            </File>
-            <File>
               <FileName>allocator.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\Source\Lib\Allocator\allocator.c</FilePath>
@@ -476,26 +466,6 @@
           <GroupName>Lib/Collections</GroupName>
           <Files>
             <File>
-              <FileName>cl_vector.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\Source\Lib\Collections\Vector\cl_vector.c</FilePath>
-            </File>
-            <File>
-              <FileName>cl_vector.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\Source\Lib\Collections\Vector\cl_vector.h</FilePath>
-            </File>
-            <File>
-              <FileName>cl_prioqueue.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\Source\Lib\Collections\PriorityQueue\cl_prioqueue.c</FilePath>
-            </File>
-            <File>
-              <FileName>cl_prioqueue.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\Source\Lib\Collections\PriorityQueue\cl_prioqueue.h</FilePath>
-            </File>
-            <File>
               <FileName>cl_types.h</FileName>
               <FileType>5</FileType>
               <FilePath>.\Source\Lib\Collections\cl_types.h</FilePath>
@@ -503,22 +473,17 @@
             <File>
               <FileName>cl_list.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\Source\Lib\Collections\List\cl_list.c</FilePath>
+              <FilePath>.\Source\Lib\Collections\cl_list.c</FilePath>
             </File>
             <File>
-              <FileName>cl_list.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\Source\Lib\Collections\List\cl_list.h</FilePath>
+              <FileName>cl_prioqueue.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Source\Lib\Collections\cl_prioqueue.c</FilePath>
             </File>
-          </Files>
-        </Group>
-        <Group>
-          <GroupName>Lib/Configs</GroupName>
-          <Files>
             <File>
-              <FileName>glcd_config.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\Source\Lib\Configs\glcd_config.h</FilePath>
+              <FileName>cl_vector.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Source\Lib\Collections\cl_vector.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -530,11 +495,6 @@
               <FileType>1</FileType>
               <FilePath>.\Source\Lib\PRNG\prng.c</FilePath>
             </File>
-            <File>
-              <FileName>prng.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\Source\Lib\PRNG\prng.h</FilePath>
-            </File>
           </Files>
         </Group>
         <Group>
@@ -544,11 +504,6 @@
               <FileName>adc_pm.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\Source\Lib\Peripherals\ADC-PM\adc_pm.c</FilePath>
-            </File>
-            <File>
-              <FileName>adc_pm.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\Source\Lib\Peripherals\ADC-PM\adc_pm.h</FilePath>
             </File>
             <File>
               <FileName>adc_pm_irq.c</FileName>
@@ -576,11 +531,6 @@
               <FilePath>.\Source\Lib\Peripherals\Buttons\buttons.c</FilePath>
             </File>
             <File>
-              <FileName>buttons.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\Source\Lib\Peripherals\Buttons\buttons.h</FilePath>
-            </File>
-            <File>
               <FileName>buttons_irq.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\Source\Lib\Peripherals\Buttons\buttons_irq.c</FilePath>
@@ -594,11 +544,6 @@
               <FileName>dac.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\Source\Lib\Peripherals\DAC\dac.c</FilePath>
-            </File>
-            <File>
-              <FileName>dac.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\Source\Lib\Peripherals\DAC\dac.h</FilePath>
             </File>
             <File>
               <FileName>dac_dma.c</FileName>
@@ -621,11 +566,6 @@
               <FilePath>.\Source\Lib\Peripherals\GLCD\glcd.c</FilePath>
             </File>
             <File>
-              <FileName>glcd.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\Source\Lib\Peripherals\GLCD\glcd.h</FilePath>
-            </File>
-            <File>
               <FileName>glcd_errors.h</FileName>
               <FileType>5</FileType>
               <FilePath>.\Source\Lib\Peripherals\GLCD\glcd_errors.h</FilePath>
@@ -640,6 +580,26 @@
               <FileType>5</FileType>
               <FilePath>.\Source\Lib\Peripherals\GLCD\glcd_types.h</FilePath>
             </File>
+            <File>
+              <FileName>glcd_lowlevel.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Source\Lib\Peripherals\GLCD\LowLevel\glcd_lowlevel.c</FilePath>
+            </File>
+            <File>
+              <FileName>glcd_lowlevel.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Source\Lib\Peripherals\GLCD\LowLevel\glcd_lowlevel.h</FilePath>
+            </File>
+            <File>
+              <FileName>glcd_processor.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Source\Lib\Peripherals\GLCD\Processor\glcd_processor.c</FilePath>
+            </File>
+            <File>
+              <FileName>glcd_processor.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Source\Lib\Peripherals\GLCD\Processor\glcd_processor.h</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -649,11 +609,6 @@
               <FileName>joystick.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\Source\Lib\Peripherals\Joystick\joystick.c</FilePath>
-            </File>
-            <File>
-              <FileName>joystick.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\Source\Lib\Peripherals\Joystick\joystick.h</FilePath>
             </File>
             <File>
               <FileName>joystick_types.h</FileName>
@@ -671,11 +626,6 @@
               <FilePath>.\Source\Lib\Peripherals\LED\led.c</FilePath>
             </File>
             <File>
-              <FileName>led.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\Source\Lib\Peripherals\LED\led.h</FilePath>
-            </File>
-            <File>
               <FileName>led_types.h</FileName>
               <FileType>5</FileType>
               <FilePath>.\Source\Lib\Peripherals\LED\led_types.h</FilePath>
@@ -691,11 +641,6 @@
               <FilePath>.\Source\Lib\Peripherals\Power\power.c</FilePath>
             </File>
             <File>
-              <FileName>power.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\Source\Lib\Peripherals\Power\power.h</FilePath>
-            </File>
-            <File>
               <FileName>power_types.h</FileName>
               <FileType>5</FileType>
               <FilePath>.\Source\Lib\Peripherals\Power\power_types.h</FilePath>
@@ -709,11 +654,6 @@
               <FileName>rit.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\Source\Lib\Peripherals\RIT\rit.c</FilePath>
-            </File>
-            <File>
-              <FileName>rit.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\Source\Lib\Peripherals\RIT\rit.h</FilePath>
             </File>
             <File>
               <FileName>rit_job.c</FileName>
@@ -736,11 +676,6 @@
               <FilePath>.\Source\Lib\Peripherals\Timer\timer.c</FilePath>
             </File>
             <File>
-              <FileName>timer.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\Source\Lib\Peripherals\Timer\timer.h</FilePath>
-            </File>
-            <File>
               <FileName>timer_irq.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\Source\Lib\Peripherals\Timer\timer_irq.c</FilePath>
@@ -760,25 +695,105 @@
               <FileType>1</FileType>
               <FilePath>.\Source\Lib\Peripherals\TouchPanel\touch.c</FilePath>
             </File>
-            <File>
-              <FileName>touch.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\Source\Lib\Peripherals\TouchPanel\touch.h</FilePath>
-            </File>
           </Files>
         </Group>
         <Group>
-          <GroupName>Headers</GroupName>
+          <GroupName>Include</GroupName>
           <Files>
             <File>
-              <FileName>types.h</FileName>
+              <FileName>allocator.h</FileName>
               <FileType>5</FileType>
-              <FilePath>.\Source\Lib\types.h</FilePath>
+              <FilePath>.\Include\Allocator\allocator.h</FilePath>
+            </File>
+            <File>
+              <FileName>cl_list.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Include\Collections\cl_list.h</FilePath>
+            </File>
+            <File>
+              <FileName>cl_prioqueue.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Include\Collections\cl_prioqueue.h</FilePath>
+            </File>
+            <File>
+              <FileName>cl_vector.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Include\Collections\cl_vector.h</FilePath>
+            </File>
+            <File>
+              <FileName>glcd_config.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Include\Configs\glcd_config.h</FilePath>
+            </File>
+            <File>
+              <FileName>adc_pm.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Include\Peripherals\adc_pm.h</FilePath>
+            </File>
+            <File>
+              <FileName>buttons.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Include\Peripherals\buttons.h</FilePath>
+            </File>
+            <File>
+              <FileName>dac.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Include\Peripherals\dac.h</FilePath>
+            </File>
+            <File>
+              <FileName>glcd.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Include\Peripherals\glcd.h</FilePath>
+            </File>
+            <File>
+              <FileName>joystick.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Include\Peripherals\joystick.h</FilePath>
+            </File>
+            <File>
+              <FileName>led.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Include\Peripherals\led.h</FilePath>
             </File>
             <File>
               <FileName>peripherals.h</FileName>
               <FileType>5</FileType>
-              <FilePath>.\Source\Lib\Peripherals\peripherals.h</FilePath>
+              <FilePath>.\Include\Peripherals\peripherals.h</FilePath>
+            </File>
+            <File>
+              <FileName>power.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Include\Peripherals\power.h</FilePath>
+            </File>
+            <File>
+              <FileName>rit.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Include\Peripherals\rit.h</FilePath>
+            </File>
+            <File>
+              <FileName>timer.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Include\Peripherals\timer.h</FilePath>
+            </File>
+            <File>
+              <FileName>touch.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Include\Peripherals\touch.h</FilePath>
+            </File>
+            <File>
+              <FileName>prng.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Include\PRNG\prng.h</FilePath>
+            </File>
+            <File>
+              <FileName>system.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Include\system.h</FilePath>
+            </File>
+            <File>
+              <FileName>types.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Include\types.h</FilePath>
             </File>
           </Files>
         </Group>
@@ -1125,7 +1140,7 @@
               <MiscControls></MiscControls>
               <Define>SIMULATOR</Define>
               <Undefine></Undefine>
-              <IncludePath>.\Source\CMSIS_core;.\Source\System;.\Source\Lib;.\Source\Lib\Allocator;.\Source\Lib\Collections;.\Source\Lib\Collections\PriorityQueue;.\Source\Lib\Collections\List;.\Source\Lib\Collections\Vector;.\Source\Lib\Configs;.\Source\Lib\Peripherals;.\Source\Lib\Peripherals\ADC-PM;.\Source\Lib\Peripherals\Buttons;.\Source\Lib\Peripherals\DAC;.\Source\Lib\Peripherals\Joystick;.\Source\Lib\Peripherals\LED;.\Source\Lib\Peripherals\Power;.\Source\Lib\Peripherals\RIT;.\Source\Lib\Peripherals\Timer;.\Source\Lib\Peripherals\TouchPanel;.\Source\Lib\PRNG;.\Source\Lib\Peripherals\GLCD;.\Source\Lib\Peripherals\GLCD\Fonts;.\Source\Tests;.\Source\PacMan;.\Source\PacMan\Assets\Images;.\Source\PacMan\Assets\Fonts</IncludePath>
+              <IncludePath>.\Source\CMSIS_core;.\Source\System;.\Source\Lib;.\Source\Lib\Allocator;.\Source\Lib\Collections;.\Source\Lib\Collections\PriorityQueue;.\Source\Lib\Collections\List;.\Source\Lib\Collections\Vector;.\Source\Lib\Configs;.\Source\Lib\Peripherals;.\Source\Lib\Peripherals\ADC-PM;.\Source\Lib\Peripherals\Buttons;.\Source\Lib\Peripherals\DAC;.\Source\Lib\Peripherals\Joystick;.\Source\Lib\Peripherals\LED;.\Source\Lib\Peripherals\Power;.\Source\Lib\Peripherals\RIT;.\Source\Lib\Peripherals\Timer;.\Source\Lib\Peripherals\TouchPanel;.\Source\Lib\PRNG;.\Source\Lib\Peripherals\GLCD;.\Source\Lib\Peripherals\GLCD\Fonts;.\Source\Lib\Peripherals\GLCD\LowLevel;.\Source\Lib\Peripherals\GLCD\Processor;.\Source\Tests;.\Include;.\Include\Allocator;.\Include\Collections;.\Include\Peripherals;.\Include\Configs;.\Include\PRNG;.\Source\PacMan;.\Source\PacMan\Assets\Images;.\Source\PacMan\Assets\Fonts</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -1205,11 +1220,6 @@
               <FilePath>.\Source\System\startup_LPC17xx.s</FilePath>
             </File>
             <File>
-              <FileName>system.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\Source\System\system.h</FilePath>
-            </File>
-            <File>
               <FileName>system_LPC17xx.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\Source\System\system_LPC17xx.c</FilePath>
@@ -1245,11 +1255,6 @@
           <GroupName>Lib/Allocator</GroupName>
           <Files>
             <File>
-              <FileName>allocator.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\Source\Lib\Allocator\allocator.h</FilePath>
-            </File>
-            <File>
               <FileName>allocator.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\Source\Lib\Allocator\allocator.c</FilePath>
@@ -1260,26 +1265,6 @@
           <GroupName>Lib/Collections</GroupName>
           <Files>
             <File>
-              <FileName>cl_vector.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\Source\Lib\Collections\Vector\cl_vector.c</FilePath>
-            </File>
-            <File>
-              <FileName>cl_vector.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\Source\Lib\Collections\Vector\cl_vector.h</FilePath>
-            </File>
-            <File>
-              <FileName>cl_prioqueue.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\Source\Lib\Collections\PriorityQueue\cl_prioqueue.c</FilePath>
-            </File>
-            <File>
-              <FileName>cl_prioqueue.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\Source\Lib\Collections\PriorityQueue\cl_prioqueue.h</FilePath>
-            </File>
-            <File>
               <FileName>cl_types.h</FileName>
               <FileType>5</FileType>
               <FilePath>.\Source\Lib\Collections\cl_types.h</FilePath>
@@ -1287,22 +1272,17 @@
             <File>
               <FileName>cl_list.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\Source\Lib\Collections\List\cl_list.c</FilePath>
+              <FilePath>.\Source\Lib\Collections\cl_list.c</FilePath>
             </File>
             <File>
-              <FileName>cl_list.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\Source\Lib\Collections\List\cl_list.h</FilePath>
+              <FileName>cl_prioqueue.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Source\Lib\Collections\cl_prioqueue.c</FilePath>
             </File>
-          </Files>
-        </Group>
-        <Group>
-          <GroupName>Lib/Configs</GroupName>
-          <Files>
             <File>
-              <FileName>glcd_config.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\Source\Lib\Configs\glcd_config.h</FilePath>
+              <FileName>cl_vector.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Source\Lib\Collections\cl_vector.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -1314,11 +1294,6 @@
               <FileType>1</FileType>
               <FilePath>.\Source\Lib\PRNG\prng.c</FilePath>
             </File>
-            <File>
-              <FileName>prng.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\Source\Lib\PRNG\prng.h</FilePath>
-            </File>
           </Files>
         </Group>
         <Group>
@@ -1328,11 +1303,6 @@
               <FileName>adc_pm.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\Source\Lib\Peripherals\ADC-PM\adc_pm.c</FilePath>
-            </File>
-            <File>
-              <FileName>adc_pm.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\Source\Lib\Peripherals\ADC-PM\adc_pm.h</FilePath>
             </File>
             <File>
               <FileName>adc_pm_irq.c</FileName>
@@ -1360,11 +1330,6 @@
               <FilePath>.\Source\Lib\Peripherals\Buttons\buttons.c</FilePath>
             </File>
             <File>
-              <FileName>buttons.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\Source\Lib\Peripherals\Buttons\buttons.h</FilePath>
-            </File>
-            <File>
               <FileName>buttons_irq.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\Source\Lib\Peripherals\Buttons\buttons_irq.c</FilePath>
@@ -1378,11 +1343,6 @@
               <FileName>dac.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\Source\Lib\Peripherals\DAC\dac.c</FilePath>
-            </File>
-            <File>
-              <FileName>dac.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\Source\Lib\Peripherals\DAC\dac.h</FilePath>
             </File>
             <File>
               <FileName>dac_dma.c</FileName>
@@ -1405,11 +1365,6 @@
               <FilePath>.\Source\Lib\Peripherals\GLCD\glcd.c</FilePath>
             </File>
             <File>
-              <FileName>glcd.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\Source\Lib\Peripherals\GLCD\glcd.h</FilePath>
-            </File>
-            <File>
               <FileName>glcd_errors.h</FileName>
               <FileType>5</FileType>
               <FilePath>.\Source\Lib\Peripherals\GLCD\glcd_errors.h</FilePath>
@@ -1424,6 +1379,26 @@
               <FileType>5</FileType>
               <FilePath>.\Source\Lib\Peripherals\GLCD\glcd_types.h</FilePath>
             </File>
+            <File>
+              <FileName>glcd_lowlevel.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Source\Lib\Peripherals\GLCD\LowLevel\glcd_lowlevel.c</FilePath>
+            </File>
+            <File>
+              <FileName>glcd_lowlevel.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Source\Lib\Peripherals\GLCD\LowLevel\glcd_lowlevel.h</FilePath>
+            </File>
+            <File>
+              <FileName>glcd_processor.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Source\Lib\Peripherals\GLCD\Processor\glcd_processor.c</FilePath>
+            </File>
+            <File>
+              <FileName>glcd_processor.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Source\Lib\Peripherals\GLCD\Processor\glcd_processor.h</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -1433,11 +1408,6 @@
               <FileName>joystick.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\Source\Lib\Peripherals\Joystick\joystick.c</FilePath>
-            </File>
-            <File>
-              <FileName>joystick.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\Source\Lib\Peripherals\Joystick\joystick.h</FilePath>
             </File>
             <File>
               <FileName>joystick_types.h</FileName>
@@ -1455,11 +1425,6 @@
               <FilePath>.\Source\Lib\Peripherals\LED\led.c</FilePath>
             </File>
             <File>
-              <FileName>led.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\Source\Lib\Peripherals\LED\led.h</FilePath>
-            </File>
-            <File>
               <FileName>led_types.h</FileName>
               <FileType>5</FileType>
               <FilePath>.\Source\Lib\Peripherals\LED\led_types.h</FilePath>
@@ -1475,11 +1440,6 @@
               <FilePath>.\Source\Lib\Peripherals\Power\power.c</FilePath>
             </File>
             <File>
-              <FileName>power.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\Source\Lib\Peripherals\Power\power.h</FilePath>
-            </File>
-            <File>
               <FileName>power_types.h</FileName>
               <FileType>5</FileType>
               <FilePath>.\Source\Lib\Peripherals\Power\power_types.h</FilePath>
@@ -1493,11 +1453,6 @@
               <FileName>rit.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\Source\Lib\Peripherals\RIT\rit.c</FilePath>
-            </File>
-            <File>
-              <FileName>rit.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\Source\Lib\Peripherals\RIT\rit.h</FilePath>
             </File>
             <File>
               <FileName>rit_job.c</FileName>
@@ -1520,11 +1475,6 @@
               <FilePath>.\Source\Lib\Peripherals\Timer\timer.c</FilePath>
             </File>
             <File>
-              <FileName>timer.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\Source\Lib\Peripherals\Timer\timer.h</FilePath>
-            </File>
-            <File>
               <FileName>timer_irq.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\Source\Lib\Peripherals\Timer\timer_irq.c</FilePath>
@@ -1544,25 +1494,105 @@
               <FileType>1</FileType>
               <FilePath>.\Source\Lib\Peripherals\TouchPanel\touch.c</FilePath>
             </File>
-            <File>
-              <FileName>touch.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\Source\Lib\Peripherals\TouchPanel\touch.h</FilePath>
-            </File>
           </Files>
         </Group>
         <Group>
-          <GroupName>Headers</GroupName>
+          <GroupName>Include</GroupName>
           <Files>
             <File>
-              <FileName>types.h</FileName>
+              <FileName>allocator.h</FileName>
               <FileType>5</FileType>
-              <FilePath>.\Source\Lib\types.h</FilePath>
+              <FilePath>.\Include\Allocator\allocator.h</FilePath>
+            </File>
+            <File>
+              <FileName>cl_list.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Include\Collections\cl_list.h</FilePath>
+            </File>
+            <File>
+              <FileName>cl_prioqueue.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Include\Collections\cl_prioqueue.h</FilePath>
+            </File>
+            <File>
+              <FileName>cl_vector.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Include\Collections\cl_vector.h</FilePath>
+            </File>
+            <File>
+              <FileName>glcd_config.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Include\Configs\glcd_config.h</FilePath>
+            </File>
+            <File>
+              <FileName>adc_pm.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Include\Peripherals\adc_pm.h</FilePath>
+            </File>
+            <File>
+              <FileName>buttons.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Include\Peripherals\buttons.h</FilePath>
+            </File>
+            <File>
+              <FileName>dac.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Include\Peripherals\dac.h</FilePath>
+            </File>
+            <File>
+              <FileName>glcd.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Include\Peripherals\glcd.h</FilePath>
+            </File>
+            <File>
+              <FileName>joystick.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Include\Peripherals\joystick.h</FilePath>
+            </File>
+            <File>
+              <FileName>led.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Include\Peripherals\led.h</FilePath>
             </File>
             <File>
               <FileName>peripherals.h</FileName>
               <FileType>5</FileType>
-              <FilePath>.\Source\Lib\Peripherals\peripherals.h</FilePath>
+              <FilePath>.\Include\Peripherals\peripherals.h</FilePath>
+            </File>
+            <File>
+              <FileName>power.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Include\Peripherals\power.h</FilePath>
+            </File>
+            <File>
+              <FileName>rit.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Include\Peripherals\rit.h</FilePath>
+            </File>
+            <File>
+              <FileName>timer.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Include\Peripherals\timer.h</FilePath>
+            </File>
+            <File>
+              <FileName>touch.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Include\Peripherals\touch.h</FilePath>
+            </File>
+            <File>
+              <FileName>prng.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Include\PRNG\prng.h</FilePath>
+            </File>
+            <File>
+              <FileName>system.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Include\system.h</FilePath>
+            </File>
+            <File>
+              <FileName>types.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Include\types.h</FilePath>
             </File>
           </Files>
         </Group>
@@ -1989,11 +2019,6 @@
               <FilePath>.\Source\System\startup_LPC17xx.s</FilePath>
             </File>
             <File>
-              <FileName>system.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\Source\System\system.h</FilePath>
-            </File>
-            <File>
               <FileName>system_LPC17xx.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\Source\System\system_LPC17xx.c</FilePath>
@@ -2029,11 +2054,6 @@
           <GroupName>Lib/Allocator</GroupName>
           <Files>
             <File>
-              <FileName>allocator.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\Source\Lib\Allocator\allocator.h</FilePath>
-            </File>
-            <File>
               <FileName>allocator.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\Source\Lib\Allocator\allocator.c</FilePath>
@@ -2044,26 +2064,6 @@
           <GroupName>Lib/Collections</GroupName>
           <Files>
             <File>
-              <FileName>cl_vector.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\Source\Lib\Collections\Vector\cl_vector.c</FilePath>
-            </File>
-            <File>
-              <FileName>cl_vector.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\Source\Lib\Collections\Vector\cl_vector.h</FilePath>
-            </File>
-            <File>
-              <FileName>cl_prioqueue.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\Source\Lib\Collections\PriorityQueue\cl_prioqueue.c</FilePath>
-            </File>
-            <File>
-              <FileName>cl_prioqueue.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\Source\Lib\Collections\PriorityQueue\cl_prioqueue.h</FilePath>
-            </File>
-            <File>
               <FileName>cl_types.h</FileName>
               <FileType>5</FileType>
               <FilePath>.\Source\Lib\Collections\cl_types.h</FilePath>
@@ -2071,22 +2071,17 @@
             <File>
               <FileName>cl_list.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\Source\Lib\Collections\List\cl_list.c</FilePath>
+              <FilePath>.\Source\Lib\Collections\cl_list.c</FilePath>
             </File>
             <File>
-              <FileName>cl_list.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\Source\Lib\Collections\List\cl_list.h</FilePath>
+              <FileName>cl_prioqueue.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Source\Lib\Collections\cl_prioqueue.c</FilePath>
             </File>
-          </Files>
-        </Group>
-        <Group>
-          <GroupName>Lib/Configs</GroupName>
-          <Files>
             <File>
-              <FileName>glcd_config.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\Source\Lib\Configs\glcd_config.h</FilePath>
+              <FileName>cl_vector.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Source\Lib\Collections\cl_vector.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -2098,11 +2093,6 @@
               <FileType>1</FileType>
               <FilePath>.\Source\Lib\PRNG\prng.c</FilePath>
             </File>
-            <File>
-              <FileName>prng.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\Source\Lib\PRNG\prng.h</FilePath>
-            </File>
           </Files>
         </Group>
         <Group>
@@ -2112,11 +2102,6 @@
               <FileName>adc_pm.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\Source\Lib\Peripherals\ADC-PM\adc_pm.c</FilePath>
-            </File>
-            <File>
-              <FileName>adc_pm.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\Source\Lib\Peripherals\ADC-PM\adc_pm.h</FilePath>
             </File>
             <File>
               <FileName>adc_pm_irq.c</FileName>
@@ -2144,11 +2129,6 @@
               <FilePath>.\Source\Lib\Peripherals\Buttons\buttons.c</FilePath>
             </File>
             <File>
-              <FileName>buttons.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\Source\Lib\Peripherals\Buttons\buttons.h</FilePath>
-            </File>
-            <File>
               <FileName>buttons_irq.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\Source\Lib\Peripherals\Buttons\buttons_irq.c</FilePath>
@@ -2162,11 +2142,6 @@
               <FileName>dac.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\Source\Lib\Peripherals\DAC\dac.c</FilePath>
-            </File>
-            <File>
-              <FileName>dac.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\Source\Lib\Peripherals\DAC\dac.h</FilePath>
             </File>
             <File>
               <FileName>dac_dma.c</FileName>
@@ -2189,11 +2164,6 @@
               <FilePath>.\Source\Lib\Peripherals\GLCD\glcd.c</FilePath>
             </File>
             <File>
-              <FileName>glcd.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\Source\Lib\Peripherals\GLCD\glcd.h</FilePath>
-            </File>
-            <File>
               <FileName>glcd_errors.h</FileName>
               <FileType>5</FileType>
               <FilePath>.\Source\Lib\Peripherals\GLCD\glcd_errors.h</FilePath>
@@ -2208,6 +2178,26 @@
               <FileType>5</FileType>
               <FilePath>.\Source\Lib\Peripherals\GLCD\glcd_types.h</FilePath>
             </File>
+            <File>
+              <FileName>glcd_lowlevel.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Source\Lib\Peripherals\GLCD\LowLevel\glcd_lowlevel.c</FilePath>
+            </File>
+            <File>
+              <FileName>glcd_lowlevel.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Source\Lib\Peripherals\GLCD\LowLevel\glcd_lowlevel.h</FilePath>
+            </File>
+            <File>
+              <FileName>glcd_processor.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Source\Lib\Peripherals\GLCD\Processor\glcd_processor.c</FilePath>
+            </File>
+            <File>
+              <FileName>glcd_processor.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Source\Lib\Peripherals\GLCD\Processor\glcd_processor.h</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -2217,11 +2207,6 @@
               <FileName>joystick.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\Source\Lib\Peripherals\Joystick\joystick.c</FilePath>
-            </File>
-            <File>
-              <FileName>joystick.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\Source\Lib\Peripherals\Joystick\joystick.h</FilePath>
             </File>
             <File>
               <FileName>joystick_types.h</FileName>
@@ -2239,11 +2224,6 @@
               <FilePath>.\Source\Lib\Peripherals\LED\led.c</FilePath>
             </File>
             <File>
-              <FileName>led.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\Source\Lib\Peripherals\LED\led.h</FilePath>
-            </File>
-            <File>
               <FileName>led_types.h</FileName>
               <FileType>5</FileType>
               <FilePath>.\Source\Lib\Peripherals\LED\led_types.h</FilePath>
@@ -2259,11 +2239,6 @@
               <FilePath>.\Source\Lib\Peripherals\Power\power.c</FilePath>
             </File>
             <File>
-              <FileName>power.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\Source\Lib\Peripherals\Power\power.h</FilePath>
-            </File>
-            <File>
               <FileName>power_types.h</FileName>
               <FileType>5</FileType>
               <FilePath>.\Source\Lib\Peripherals\Power\power_types.h</FilePath>
@@ -2277,11 +2252,6 @@
               <FileName>rit.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\Source\Lib\Peripherals\RIT\rit.c</FilePath>
-            </File>
-            <File>
-              <FileName>rit.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\Source\Lib\Peripherals\RIT\rit.h</FilePath>
             </File>
             <File>
               <FileName>rit_job.c</FileName>
@@ -2304,11 +2274,6 @@
               <FilePath>.\Source\Lib\Peripherals\Timer\timer.c</FilePath>
             </File>
             <File>
-              <FileName>timer.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\Source\Lib\Peripherals\Timer\timer.h</FilePath>
-            </File>
-            <File>
               <FileName>timer_irq.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\Source\Lib\Peripherals\Timer\timer_irq.c</FilePath>
@@ -2328,25 +2293,105 @@
               <FileType>1</FileType>
               <FilePath>.\Source\Lib\Peripherals\TouchPanel\touch.c</FilePath>
             </File>
-            <File>
-              <FileName>touch.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\Source\Lib\Peripherals\TouchPanel\touch.h</FilePath>
-            </File>
           </Files>
         </Group>
         <Group>
-          <GroupName>Headers</GroupName>
+          <GroupName>Include</GroupName>
           <Files>
             <File>
-              <FileName>types.h</FileName>
+              <FileName>allocator.h</FileName>
               <FileType>5</FileType>
-              <FilePath>.\Source\Lib\types.h</FilePath>
+              <FilePath>.\Include\Allocator\allocator.h</FilePath>
+            </File>
+            <File>
+              <FileName>cl_list.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Include\Collections\cl_list.h</FilePath>
+            </File>
+            <File>
+              <FileName>cl_prioqueue.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Include\Collections\cl_prioqueue.h</FilePath>
+            </File>
+            <File>
+              <FileName>cl_vector.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Include\Collections\cl_vector.h</FilePath>
+            </File>
+            <File>
+              <FileName>glcd_config.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Include\Configs\glcd_config.h</FilePath>
+            </File>
+            <File>
+              <FileName>adc_pm.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Include\Peripherals\adc_pm.h</FilePath>
+            </File>
+            <File>
+              <FileName>buttons.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Include\Peripherals\buttons.h</FilePath>
+            </File>
+            <File>
+              <FileName>dac.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Include\Peripherals\dac.h</FilePath>
+            </File>
+            <File>
+              <FileName>glcd.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Include\Peripherals\glcd.h</FilePath>
+            </File>
+            <File>
+              <FileName>joystick.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Include\Peripherals\joystick.h</FilePath>
+            </File>
+            <File>
+              <FileName>led.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Include\Peripherals\led.h</FilePath>
             </File>
             <File>
               <FileName>peripherals.h</FileName>
               <FileType>5</FileType>
-              <FilePath>.\Source\Lib\Peripherals\peripherals.h</FilePath>
+              <FilePath>.\Include\Peripherals\peripherals.h</FilePath>
+            </File>
+            <File>
+              <FileName>power.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Include\Peripherals\power.h</FilePath>
+            </File>
+            <File>
+              <FileName>rit.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Include\Peripherals\rit.h</FilePath>
+            </File>
+            <File>
+              <FileName>timer.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Include\Peripherals\timer.h</FilePath>
+            </File>
+            <File>
+              <FileName>touch.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Include\Peripherals\touch.h</FilePath>
+            </File>
+            <File>
+              <FileName>prng.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Include\PRNG\prng.h</FilePath>
+            </File>
+            <File>
+              <FileName>system.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Include\system.h</FilePath>
+            </File>
+            <File>
+              <FileName>types.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Include\types.h</FilePath>
             </File>
           </Files>
         </Group>

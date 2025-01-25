@@ -36,7 +36,7 @@ _PRIVATE PM_MazeObj sCurrentMaze[PM_MAZE_SCALED_HEIGHT][PM_MAZE_SCALED_WIDTH];
 
 // Memory manager for the game.
 _PRIVATE MEM_Allocator *sAllocator = NULL;
-_PRIVATE _MEM_POOL_ALIGN4(sMemoryPool, 20480);
+_PRIVATE _MEM_POOL_ALIGN4(sMemoryPool, 32768);
 
 // OTHER VARIABLES
 
@@ -121,20 +121,22 @@ _PRIVATE void init_info(void)
             .y = LCD_GetHeight() - 28,
         };
 
-        LCD_MANUAL_VISIBILITY_OBJECT(&sGame.stat_obj_ids.lives[i], {
+        LCD_INVISIBLE_OBJECT(&sGame.stat_obj_ids.lives[i], {
             LCD_IMAGE(life_img_pos, Image_PACMAN_Life),
         });
     }
 
     // 1 life is always present
-    LCD_RQSetObjectVisibility(sGame.stat_obj_ids.lives[0], true, false);
     // clang-format on
+
+    LCD_RMSetVisibility(sGame.stat_obj_ids.lives[0], true, false);
+    LCD_RMRender();
 }
 
 _PRIVATE void init_pause(void)
 {
     // clang-format off
-    LCD_MANUAL_VISIBILITY_OBJECT(&sPauseID, {
+    LCD_INVISIBLE_OBJECT(&sPauseID, {
         LCD_TEXT2(LCD_GetWidth() / 2 - 50, 5, {
             .text = "PAUSED", .char_spacing = 2, .font = sFont20,
             .text_color = sColorOrange, .bg_color = LCD_COL_NONE,
@@ -162,7 +164,7 @@ _PRIVATE void draw_maze(void)
             switch (obj)
             {
             case PM_WALL:
-                LCD_RENDER_IMM({
+                LCD_RENDER_TMP({
                     LCD_RECT(maze_cell_to_coords(obj_cell, ANC_TOP_LEFT), {
                         .width = PM_MAZE_CELL_SIZE, .height = PM_MAZE_CELL_SIZE,
                         .fill_color = PM_WALL_COLOR, .edge_color = PM_WALL_COLOR,
@@ -193,6 +195,8 @@ _PRIVATE void draw_maze(void)
             // clang-format on
         }
     }
+
+    LCD_RMRender();
 }
 
 // POWER PILLS
@@ -229,7 +233,7 @@ _PRIVATE void init_super_pills(void)
         sGame.super_pills[i].cell = (PM_MazeCell){row, col};
 
         // clang-format off
-        LCD_MANUAL_VISIBILITY_OBJECT(&sGame.super_pills[i].id, {
+        LCD_INVISIBLE_OBJECT(&sGame.super_pills[i].id, {
             LCD_CIRCLE({
                 .center = maze_cell_to_coords(sGame.super_pills[i].cell, ANC_CENTER),
                 .fill_color = PM_SUP_PILL_COLOR,
@@ -453,6 +457,8 @@ _PRIVATE void init_ghost(bool scared)
             });
             // clang-format on
 
+            LCD_RMRender();
+
             return;
         }
     }
@@ -509,7 +515,7 @@ _PRIVATE _CBACK void red_ghost_ai(void)
     {
         PM_MazeCell next_cell;
         CL_ListPopFront(ghost->path.path, &next_cell);
-        LCD_RQMoveObject(ghost->id, maze_cell_to_coords_img(next_cell, &Image_PACMAN_RedGhost, ANC_CENTER), true);
+        LCD_RMMove(ghost->id, maze_cell_to_coords_img(next_cell, &Image_PACMAN_RedGhost, ANC_CENTER), true);
 
         // Need to restore the previous cell to its original state and update the current cell.
         // Checking if at the actual ghost position there is a pill or a super pill.
@@ -571,7 +577,7 @@ _PRIVATE _CBACK void ghost_scared_counter(void)
         sGame.ghost.scared_counter = 0;
 
         // Reinitializing the ghost to its original color.
-        LCD_RQRemoveObject(sGame.ghost.id, false);
+        LCD_RMRemove(sGame.ghost.id, false);
         init_ghost(false);
 
         // Disabling the scared counter job.
@@ -673,7 +679,7 @@ _PRIVATE _CBACK void render_loop(void)
         if (new_obj == PM_PILL)
         {
             // Removing the pill from the screen, and setting its ID to -1 in the array.
-            LCD_RQRemoveObject(sGame.pill_ids[new.row][new.col], false);
+            LCD_RMRemove(sGame.pill_ids[new.row][new.col], false);
             sGame.pill_ids[new.row][new.col] = -1;
         }
         // If we ate a super pill, we need to scare the ghost.
@@ -684,7 +690,7 @@ _PRIVATE _CBACK void render_loop(void)
             {
                 if (sGame.super_pills[i].cell.row == new.row && sGame.super_pills[i].cell.col == new.col)
                 {
-                    LCD_RQRemoveObject(sGame.super_pills[i].id, false);
+                    LCD_RMRemove(sGame.super_pills[i].id, false);
                     sGame.super_pills[i].id = -1;
                     break;
                 }
@@ -692,13 +698,13 @@ _PRIVATE _CBACK void render_loop(void)
 
             sGame.ghost.is_scared = true;
             RIT_EnableJob(ghost_scared_counter);
-            LCD_RQRemoveObject(sGame.ghost.id, false);
+            LCD_RMRemove(sGame.ghost.id, false);
             init_ghost(true);
         }
     }
 
     // Finally, moving PacMan.
-    LCD_RQMoveObject(sGame.pacman.id, maze_cell_to_coords(new, ANC_CENTER), false);
+    LCD_RMMove(sGame.pacman.id, maze_cell_to_coords(new, ANC_CENTER), false);
     sCurrentMaze[pacman.row][pacman.col] = PM_NONE;
     sCurrentMaze[new.row][new.col] = PM_PCMN;
     sGame.pacman.cell = new;
@@ -710,13 +716,13 @@ _PRIVATE _CBACK void stats_updater(void)
     if (!sGame.playing_now || sGame.pacman.dir == PM_MOV_NONE)
         return;
 
-    LCD_OBJECT_UPDATE(sGame.stat_obj_ids.score_record_values, false, {
+    LCD_OBJECT_UPDATE_COMMANDS(sGame.stat_obj_ids.score_record_values, false, {
         sprintf(sGame.stat_strings.record, "%d", sGame.stat_values.record);
         sprintf(sGame.stat_strings.score, "%d", sGame.stat_values.score);
     });
 
     // If lives incremented, need to make another icon visible.
-    LCD_RQSetObjectVisibility(sGame.stat_obj_ids.lives[sGame.stat_values.lives - 1], true, false);
+    LCD_RMSetVisibility(sGame.stat_obj_ids.lives[sGame.stat_values.lives - 1], true, false);
 }
 
 _PRIVATE _CBACK void game_over_counter(void)
@@ -738,7 +744,7 @@ _PRIVATE _CBACK void game_over_counter(void)
         sGame.stat_values.game_over_in--;
 
         // clang-format off
-        LCD_OBJECT_UPDATE(sGame.stat_obj_ids.game_over_in_value, false, {
+        LCD_OBJECT_UPDATE_COMMANDS(sGame.stat_obj_ids.game_over_in_value, false, {
             sprintf(sGame.stat_strings.game_over_in, "%d", sGame.stat_values.game_over_in);
         });
         // clang-format on
@@ -750,7 +756,7 @@ _PRIVATE _CBACK void game_over_counter(void)
             pill = &(sGame.super_pills[i]);
             if (pill->spawn_sec == sGame.stat_values.game_over_in)
             {
-                LCD_RQSetObjectVisibility(pill->id, true, false);
+                LCD_RMSetVisibility(pill->id, true, false);
                 sCurrentMaze[pill->cell.row][pill->cell.col] = PM_SUPER_PILL;
             }
         }
@@ -774,23 +780,23 @@ _PRIVATE _CBACK void pause_resume_game(void)
 
     if (sGame.playing_now)
     {
-        LCD_RQSetObjectVisibility(sPauseID, false, false);
+        LCD_RMSetVisibility(sPauseID, false, false);
         JOYSTICK_EnableAction(JOY_ACTION_ALL);
     }
 
-    LCD_RQSetObjectVisibility(sGame.stat_obj_ids.titles, sGame.playing_now, false);
-    LCD_RQSetObjectVisibility(sGame.stat_obj_ids.score_record_values, sGame.playing_now, false);
-    LCD_RQSetObjectVisibility(sGame.stat_obj_ids.game_over_in_value, sGame.playing_now, false);
+    LCD_RMSetVisibility(sGame.stat_obj_ids.titles, sGame.playing_now, false);
+    LCD_RMSetVisibility(sGame.stat_obj_ids.score_record_values, sGame.playing_now, false);
+    LCD_RMSetVisibility(sGame.stat_obj_ids.game_over_in_value, sGame.playing_now, false);
 
     // Handling lives
     for (u8 i = 0; i < sGame.stat_values.lives; i++)
-        LCD_RQSetObjectVisibility(sGame.stat_obj_ids.lives[i], sGame.playing_now, false);
+        LCD_RMSetVisibility(sGame.stat_obj_ids.lives[i], sGame.playing_now, false);
 
     // If paused, we set the pause view visible after we've done hiding the playing views,
     // otherwise we would have overlapping.
     if (!sGame.playing_now)
     {
-        LCD_RQSetObjectVisibility(sPauseID, true, false);
+        LCD_RMSetVisibility(sPauseID, true, false);
         JOYSTICK_DisableAction(JOY_ACTION_ALL);
     }
 }
@@ -850,7 +856,7 @@ void do_play(void)
     // Copying the maze into a new array, so we can modify it without affecting the original.
     memcpy((void *)sCurrentMaze, PACMAN_BaseMaze, sizeof(PACMAN_BaseMaze));
 
-    LCD_RQClear();
+    LCD_RMClear();
     init_info();
     init_pause();
     init_super_pills();
@@ -899,7 +905,7 @@ _PRIVATE void game_victory(void)
     const LCD_Coordinate score_pos = {LCD_GetWidth() / 2 - 50, LCD_GetHeight() / 2 + 50};
 
     // clang-format off
-    LCD_RENDER_IMM({
+    LCD_RENDER_TMP({
         LCD_IMAGE(image_pos, Image_PACMAN_Victory), 
         LCD_TEXT(score_pos, {
             .text = score_str, .font = sFont20, .char_spacing = 2,
@@ -917,7 +923,7 @@ _PRIVATE void game_victory(void)
         sprintf(new_record_str, "NEW RECORD: %d", sGame.prev_record);
 
         // clang-format off
-        LCD_RENDER_IMM({
+        LCD_RENDER_TMP({
             LCD_TEXT2(score_pos.x - 40, score_pos.y + 20, {
                 .text = new_record_str, .font = sFont20, .char_spacing = 2,
                 .text_color = sColorOrange, .bg_color = LCD_COL_NONE,
@@ -930,7 +936,7 @@ _PRIVATE void game_victory(void)
     TP_ButtonArea play_again_btn;
 
     // clang-format off
-    LCD_RENDER_IMM({
+    LCD_RENDER_TMP({
         LCD_BUTTON2(score_pos.x - 20, score_pos.y + (new_record ? 40 : 20), play_again_btn, {
             .label = LCD_BUTTON_LABEL({
                 .text = "NEW GAME?", .font = sFont20,
@@ -970,7 +976,7 @@ _PRIVATE void game_defeat(void)
     const LCD_Coordinate score_pos = {LCD_GetWidth() / 2 - 50, LCD_GetHeight() / 2 + 15};
 
     // clang-format off
-    LCD_RENDER_IMM({
+    LCD_RENDER_TMP({
         LCD_IMAGE(image_pos, Image_PACMAN_Sad),
         LCD_TEXT(you_lost_pos, {
             .text = "YOU LOST!", .font = sFont20, .char_spacing = 2,
@@ -987,7 +993,7 @@ _PRIVATE void game_defeat(void)
     TP_ButtonArea play_again_btn;
 
     // clang-format off
-    LCD_RENDER_IMM({
+    LCD_RENDER_TMP({
         LCD_BUTTON2(score_pos.x - 20, score_pos.y + 25, play_again_btn, {
             .label = LCD_BUTTON_LABEL({
                 .text = "NEW GAME?", .font = sFont20,
@@ -1054,7 +1060,7 @@ void PACMAN_Play(PM_Speed speed)
 
     TP_ButtonArea button_tp;
     // clang-format off
-    LCD_RENDER_IMM({
+    LCD_RENDER_TMP({
         LCD_IMAGE(logo_pos, Image_PACMAN_Logo),
         LCD_BUTTON(button_pos, button_tp, {
             .label = LCD_BUTTON_LABEL({.text = "START", .font = sFont20, .text_color = LCD_COL_BLACK}),
