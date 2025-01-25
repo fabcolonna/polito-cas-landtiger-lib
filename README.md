@@ -2,13 +2,15 @@
 
 This repository contains a sample project for the LandTiger LPC1768 board. The project demonstrates the usage of the custom library "BigLib" for handling peripherals and other functionalities.
 
-## Prerequisites
+## Getting Started
+
+### Prerequisites
 
 - Keil uVision IDE;
 - LandTiger LPC1768 board;
 - THe `BigLib` library.
 
-## Installation & Usage
+### Installation & Usage
 
 1. Clone this repository to your local machine:
 
