@@ -24,7 +24,9 @@ Remove-Item -Recurse -Force "Docs\"
 
 # Moving to gh-pages
 git checkout gh-pages
-Remove-Item -Recurse -Force *
+
+# Removing everything except .git
+Get-ChildItem -Exclude .git | Remove-Item -Recurse -Force
 Move-Item -Force "$dir\*" -Destination .\
 Remove-Item -Recurse -Force $dir
 
