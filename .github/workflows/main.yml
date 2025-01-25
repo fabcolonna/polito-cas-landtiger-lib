@@ -1,0 +1,38 @@
+name: Update Doxygen Documentation
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  update-doxygen:
+    runs-on: ubuntu-latest
+
+    steps:
+    # Checkout the repository
+    - name: Checkout Repository
+      uses: actions/checkout@v3
+
+    # Set up Python (needed for Doxygen)
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.x'
+
+    # Install Doxygen
+    - name: Install Doxygen
+      run: sudo apt-get update && sudo apt-get install -y doxygen
+
+    # Generate Doxygen Documentation
+    - name: Generate Documentation
+      run: doxygen Doxyfile
+
+    # Deploy to gh-pages branch
+    - name: Deploy to GitHub Pages
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./docs
+        destination_dir: .
+        publish_branch: gh-pages
