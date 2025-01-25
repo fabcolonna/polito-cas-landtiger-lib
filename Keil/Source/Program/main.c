@@ -7,7 +7,7 @@ int main(void)
 
     // Your code...
 
-    POWER_Init(POW_SLEEPONEXIT);
+    POWER_Init(POWR_CFG_SLEEP_ON_EXIT);
     POWER_SleepOnWFI();
     POWER_WaitForInterrupts();
 
