@@ -1,14 +1,25 @@
 var dir_d1095239c66a360027a0b255427bde34 =
 [
     [ "adc_pm.h", "adc__pm_8h.html", "adc__pm_8h" ],
+    [ "adc_pm_types.h", "adc__pm__types_8h.html", "adc__pm__types_8h" ],
+    [ "button_types.h", "button__types_8h.html", "button__types_8h" ],
     [ "buttons.h", "buttons_8h.html", "buttons_8h" ],
     [ "dac.h", "dac_8h.html", "dac_8h" ],
+    [ "dac_types.h", "dac__types_8h.html", "dac__types_8h" ],
     [ "glcd.h", "glcd_8h.html", "glcd_8h" ],
+    [ "glcd_errors.h", "glcd__errors_8h.html", "glcd__errors_8h" ],
+    [ "glcd_macros.h", "glcd__macros_8h.html", "glcd__macros_8h" ],
+    [ "glcd_types.h", "glcd__types_8h.html", "glcd__types_8h" ],
     [ "joystick.h", "joystick_8h.html", "joystick_8h" ],
+    [ "joystick_types.h", "joystick__types_8h.html", "joystick__types_8h" ],
     [ "led.h", "led_8h.html", "led_8h" ],
+    [ "led_types.h", "led__types_8h.html", "led__types_8h" ],
     [ "peripherals.h", "peripherals_8h.html", null ],
     [ "power.h", "power_8h.html", "power_8h" ],
+    [ "power_types.h", "power__types_8h.html", "power__types_8h" ],
     [ "rit.h", "rit_8h.html", "rit_8h" ],
+    [ "rit_types.h", "rit__types_8h.html", "rit__types_8h" ],
     [ "timer.h", "timer_8h.html", "timer_8h" ],
+    [ "timer_types.h", "timer__types_8h.html", "timer__types_8h" ],
     [ "touch.h", "touch_8h.html", "touch_8h" ]
 ];
