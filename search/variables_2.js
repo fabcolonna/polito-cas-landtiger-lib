@@ -1,0 +1,20 @@
+var searchData=
+[
+  ['c_5fn_0',['c_n',['../structTP__CalibrationMatrix.html#adf8e93acce17075b9dfd19150c294834',1,'TP_CalibrationMatrix']]],
+  ['cached_5fbbox_1',['cached_bbox',['../structLCD__Component.html#ab63c081194e73daaa2c5c0c00f56ca43',1,'LCD_Component']]],
+  ['calib_5fcross_5fobj_5fid_2',['calib_cross_obj_id',['../touch_8c.html#a720420c27831ee0a5fc55ade8972c522',1,'touch.c']]],
+  ['calibratated_3',['calibratated',['../touch_8c.html#a9e5b98c0906c33b79a39d43668ad31cc',1,'touch.c']]],
+  ['capacity_4',['capacity',['../struct____PQueue.html#a60d976d39ee919f0e922a77fb1dd25fc',1,'__PQueue::capacity'],['../struct____Vector.html#a33bb72fcdfb3b3341c6c42000682d88e',1,'__Vector::capacity']]],
+  ['center_5',['center',['../structLCD__Circle.html#aa7ad84322a589ee3c9330f454f2607a9',1,'LCD_Circle']]],
+  ['char_5fheights_6',['char_heights',['../structLCD__Font.html#a591b8790b5529be66a7c1ae7e55c9fbf',1,'LCD_Font']]],
+  ['char_5fspacing_7',['char_spacing',['../structLCD__Text.html#a6b4ef7e042570246243cc64feaa35af4',1,'LCD_Text::char_spacing'],['../structLCD__ButtonLabel.html#afd7768c3c1e0527db035aa953021aa04',1,'LCD_ButtonLabel::char_spacing']]],
+  ['char_5fwidths_8',['char_widths',['../structLCD__Font.html#a16d1b702ff17a55963e807e2a07bb7b0',1,'LCD_Font']]],
+  ['circle_9',['circle',['../structLCD__Component.html#a0832ac96c111c1ffbce756b43440774c',1,'LCD_Component']]],
+  ['color_10',['color',['../structLCD__Line.html#a8c605599fcd22bbb29373cb071e99d66',1,'LCD_Line']]],
+  ['compare_5ffn_11',['compare_fn',['../struct____PQueue.html#acad426983fb638dc523c351b2edd6733',1,'__PQueue']]],
+  ['comps_12',['comps',['../structLCD__Obj.html#ac82cd4cd5ceb1a66624ea56a0b9d2bf0',1,'LCD_Obj']]],
+  ['comps_5fsize_13',['comps_size',['../structLCD__Obj.html#a55ad0a62797c445db92af2ea0520382e',1,'LCD_Obj']]],
+  ['counter_14',['counter',['../rit__job_8c.html#a8e5ec117825f00a9e2cd7d5740d4bd72',1,'rit_job.c']]],
+  ['counter_5freset_5fvalue_15',['counter_reset_value',['../rit_8c.html#a64cbca0f2ffbcfd573071184a9fa6310',1,'counter_reset_value:&#160;rit.c'],['../rit__job_8c.html#a80f92504dff0cdd5b92f828befc36c52',1,'counter_reset_value:&#160;rit_job.c']]],
+  ['current_5fcalib_5fmatrix_16',['current_calib_matrix',['../touch_8c.html#a0da85263f6f5d41c8d3fabed663a8ca6',1,'touch.c']]]
+];

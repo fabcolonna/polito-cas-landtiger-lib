@@ -1,0 +1,9 @@
+var searchData=
+[
+  ['joystick_5fdeinit_0',['joystick_deinit',['../joystick_8h.html#a0f356381177fb3025f5863e4c04c84bd',1,'JOYSTICK_Deinit(void):&#160;joystick.c'],['../joystick_8c.html#a0f356381177fb3025f5863e4c04c84bd',1,'JOYSTICK_Deinit(void):&#160;joystick.c']]],
+  ['joystick_5fdisableaction_1',['joystick_disableaction',['../joystick_8h.html#ad303f2b71b20f742759295549a305bd4',1,'JOYSTICK_DisableAction(JOYSTICK_Action action):&#160;joystick.c'],['../joystick_8c.html#ad303f2b71b20f742759295549a305bd4',1,'JOYSTICK_DisableAction(JOYSTICK_Action action):&#160;joystick.c']]],
+  ['joystick_5fenableaction_2',['joystick_enableaction',['../joystick_8h.html#ad4c1855b412ec35577e2b92e2be16aaf',1,'JOYSTICK_EnableAction(JOYSTICK_Action action):&#160;joystick.c'],['../joystick_8c.html#ad4c1855b412ec35577e2b92e2be16aaf',1,'JOYSTICK_EnableAction(JOYSTICK_Action action):&#160;joystick.c']]],
+  ['joystick_5finit_3',['joystick_init',['../joystick_8h.html#a7f49d7b23ec106e4fda7be5365031711',1,'JOYSTICK_Init(void):&#160;joystick.c'],['../joystick_8c.html#a7f49d7b23ec106e4fda7be5365031711',1,'JOYSTICK_Init(void):&#160;joystick.c']]],
+  ['joystick_5fsetfunction_4',['joystick_setfunction',['../joystick_8h.html#a8bcbbd91ec84d9b4834c775dd2adb05c',1,'JOYSTICK_SetFunction(JOYSTICK_Action action, JOYSTICK_Function function):&#160;joystick.c'],['../joystick_8c.html#a8bcbbd91ec84d9b4834c775dd2adb05c',1,'JOYSTICK_SetFunction(JOYSTICK_Action action, JOYSTICK_Function function):&#160;joystick.c']]],
+  ['joystick_5funsetfunction_5',['joystick_unsetfunction',['../joystick_8h.html#a521d56a1e845ec5df5c95eafe119e7aa',1,'JOYSTICK_UnsetFunction(JOYSTICK_Action action):&#160;joystick.c'],['../joystick_8c.html#a521d56a1e845ec5df5c95eafe119e7aa',1,'JOYSTICK_UnsetFunction(JOYSTICK_Action action):&#160;joystick.c']]]
+];
