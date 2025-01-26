@@ -26,10 +26,23 @@ void TIMER_SetMatch(TIMER timer, TIMER_MatchRegister match_reg);
 /// @param match_reg Match register to unset. This variable won't be touched.
 void TIMER_UnsetMatch(TIMER timer, TIMER_MatchRegister match_reg);
 
+/// @brief Enables a TIMER peripheral.
+/// @param timer TIMER peripheral
 void TIMER_Enable(TIMER timer);
+
+/// @brief Disables a TIMER peripheral.
+/// @param timer TIMER peripheral
 void TIMER_Disable(TIMER timer);
 
+/// @brief Checks if a TIMER peripheral is enabled.
+/// @param timer TIMER peripheral
+/// @return true if the TIMER peripheral is enabled, false otherwise
 bool TIMER_IsEnabled(TIMER timer);
+
+/// @brief Reads the current value of a TIMER peripheral.
+/// @param timer TIMER peripheral
+/// @return Current value of the TIMER peripheral
+u32 TIMER_ReadValue(TIMER timer);
 
 /// @brief Resets a TIMER peripheral without deconfiguring it.
 /// @note In order to use the TIMER peripheral again, it must be enabled.

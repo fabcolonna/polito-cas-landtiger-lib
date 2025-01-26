@@ -281,3 +281,21 @@ void TIMER_Reset(TIMER timer)
         break;
     }
 }
+
+u32 TIMER_ReadValue(TIMER timer)
+{
+    switch (timer.which)
+    {
+    case 0:
+        return LPC_TIM0->TC;
+    case 1:
+        return LPC_TIM1->TC;
+    case 2:
+        return LPC_TIM2->TC;
+    case 3:
+        return LPC_TIM3->TC;
+    }
+
+    return 0;
+}
+
