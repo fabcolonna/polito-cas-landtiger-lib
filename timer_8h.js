@@ -5,6 +5,7 @@ var timer_8h =
     [ "TIMER_Enable", "timer_8h.html#a780be605a83aded3ab6c6a87868ba225", null ],
     [ "TIMER_Init", "timer_8h.html#a69aa5e0cea45d6ddbb45ff4c1ccb86d9", null ],
     [ "TIMER_IsEnabled", "timer_8h.html#a9aa75657361c83fba9def9c70de56a93", null ],
+    [ "TIMER_ReadValue", "timer_8h.html#a5e2c0ea5d559b2af95d7c20ffc720911", null ],
     [ "TIMER_Reset", "timer_8h.html#a4f8c93698725955ad7266a7d6cd5f78c", null ],
     [ "TIMER_SetInterruptHandler", "timer_8h.html#af14ccfb785489415199bb942b6942ab3", null ],
     [ "TIMER_SetMatch", "timer_8h.html#ad37af181a1c52d1637a4434a778a37a6", null ],
